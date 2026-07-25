@@ -319,11 +319,11 @@ easier to examine.
 plot(res_ar1)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 The long-term trend in the upper-left panel indicates an increasing SST
 pattern over the study period. In this example, the average annual rate
-of SST increase over the study period is approximately 0.036 °C.
+of SST increase over the study period is approximately 0.034 °C.
 
 However, the rate of SST change itself also appears to vary over time.
 Focusing on the rate of change (drift) in the upper-right panel, the
@@ -357,7 +357,7 @@ temporal dependence and departures from the Gaussian error assumption.
 plot_tempssm_residual_diagnostics(res_ar1)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 In the model diagnostic plot, the upper panel shows the residual time
 series, the lower-left panel shows the residual autocorrelation plot
@@ -461,7 +461,7 @@ summary(res_ar2)
 plot_tempssm_residual_diagnostics(res_ar2)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 diag_lag12_ar2 <- diagnose_residuals(res_ar2, lb_lag = 12)
@@ -538,7 +538,7 @@ print(mean_drift_year)
 
     ## [1] 0.03365529
 
-The average annual rate of SST increase was estimated to be 0.0366 °C.
+The average annual rate of SST increase was estimated to be 0.0337 °C.
 
 ### Short-Term Prediction
 
@@ -708,7 +708,7 @@ plt_pdo <- forecast::autoplot(pdo_trim) +
 plt_yamaguchi_sst_trim + plt_pdo + patchwork::plot_layout(ncol=1)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 The PDO index data used in this exercise contain no missing values. When
 using your own exogenous-variable data, however, make sure that the
@@ -764,7 +764,7 @@ summary(res_without)
 plot_tempssm_residual_diagnostics(res_without)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ``` r
 diag_res_without <- diagnose_residuals(res_without)
@@ -832,7 +832,7 @@ summary(res_with)
 plot_tempssm_residual_diagnostics(res_with)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 ``` r
 diag_res_with <- diagnose_residuals(res_with)
@@ -903,6 +903,21 @@ Here, by comparing cross-validation metrics for models with and without
 the exogenous PDO variable, we assess whether the statistical signal
 found in the PDO coefficient is also reflected in out-of-sample
 predictive performance.
+
+For the model with the PDO index, the test-period PDO values are
+supplied to the forecast step as exogenous variables. Therefore, this
+tsCV setting evaluates conditional forecasts, or hindcasts, under the
+assumption that the PDO values during each test period are known. This
+is appropriate when the aim is to assess the explanatory or
+reconstructive value of the PDO index.
+
+For real-time future forecasting, however, future PDO values are usually
+unknown. In that setting, users must either provide future PDO
+scenarios, forecast the PDO index with a separate model, or use a
+simplified assumption such as carrying the last observed value forward.
+The results below should therefore be interpreted as evidence for
+improved conditional predictive performance, not as a direct guarantee
+of operational forecast improvement.
 
 ``` r
 # (Optional) Load packages for parallel processing.
@@ -1046,16 +1061,31 @@ plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal + patchwork::plot_layou
 plot(plt_tsCV)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 The tsCV results show that the model with the exogenous variable
 performs better than the model without it. The comparison table produced
 by `compare_ts_cv()` summarizes the number of folds, convergence rates,
 and mean prediction-error metrics for each model, while the boxplots
 show how the fold-level errors vary across validation periods. In this
-tutorial, the number of tsCV iterations is set to eight to reduce
-execution time. In actual validation, please use a sufficient number of
+tutorial, the number of tsCV iterations is set to 8 to reduce execution
+time. In actual validation, please use a sufficient number of
 iterations.
+
+The mean MAE of the model with the exogenous variable is approximately
+0.55 °C. Relative to the seasonal amplitude based on monthly mean SST
+(about 13.6 °C), this corresponds to roughly 4.0%. Thus, the prediction
+error is small compared with the dominant seasonal scale of variation in
+this data set, and may be practically useful for short-term marine
+monitoring.
+
+Although the number of validation folds is limited to 8, the model with
+the exogenous variable reduces the mean MAE by approximately 9.2%
+compared with the model without the exogenous variable. Similar
+improvements are also seen in the MASE metrics. This interpretation
+should be kept conditional on the tsCV setting used here, in which
+observed PDO values during the test periods are supplied as exogenous
+variables.
 
 Taken together, the results consistently support including the PDO index
 as an exogenous variable in the state-space model. The PDO coefficient
@@ -1100,7 +1130,7 @@ plt_level_drift_without_ts <- plt_level_without_ts +
 plot(plt_level_drift_without_ts)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 ``` r
 plt_level_with_ts <- autoplot(res_with,
@@ -1122,7 +1152,7 @@ plt_level_drift_with_ts <- plt_level_with_ts +
 plot(plt_level_drift_with_ts)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-23-2.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-27-2.png)<!-- -->
 
 ``` r
 #　Smoothing estimate of drift component
@@ -1380,7 +1410,7 @@ plt_niigata_sst_anomaly <- forecast::autoplot(niigata_sst_anomaly) +
 plot(plt_niigata_sst_anomaly) 
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 ## 5. `compute_monthly_climatology()`
 
@@ -1427,4 +1457,4 @@ plt_monthly_seasonal_cycle_niigata_sst <- ggplot(
 plot(plt_monthly_seasonal_cycle_niigata_sst)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->

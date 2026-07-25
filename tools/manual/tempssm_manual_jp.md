@@ -212,8 +212,8 @@ plot(plt_yamaguchi_sst)
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-SST の全体平均は約 19.5 °C
-であり、明瞭な季節変動パターンが認められます。
+SST の全体平均は約 19.5 °C であり、
+明瞭な季節変動パターンが認められます。
 この時系列には欠損値は含まれていません。観測期間を通じて SST
 は上昇している
 ように見えますが、年変動も認められるため、生の時系列だけから長期トレンドを
@@ -305,11 +305,11 @@ attr(ll, "df") # number of parameters
 plot(res_ar1)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 パネル左上の長期トレンドは、解析期間を通じてSST上昇していくパターンを
 示しています。このグラフの例において、解析期間を通じたSST の平均的な
-年上昇率は約 0.036 °C です。
+年上昇率は約 0.034 °C です。
 
 しかしながら、SSTの変化率そのものも時系列に沿って変化しているようです。
 パネル右上の変化率（ドリフト）に注目すると、2000 年代に 変化率が 0
@@ -342,7 +342,7 @@ plt_ar1 <- autoplot(res_ar1, component = c("ar1"))
 plot_tempssm_residual_diagnostics(res_ar1)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 モデル診断プロットにおいて、上パネルは残差の時系列プロット、下左パネルは
 残差の自己相関プロット（ACFプロット）、下右パネルは頻度分布プロットを表します。
@@ -440,7 +440,7 @@ summary(res_ar2)
 plot_tempssm_residual_diagnostics(res_ar2)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 diag_lag12_ar2 <- diagnose_residuals(res_ar2, lb_lag = 12)
@@ -517,7 +517,7 @@ print(mean_drift_year)
 
     ## [1] 0.03365529
 
-SST の平均的な年上昇率は 0.0366 °C と推定されました。
+SST の平均的な年上昇率は 0.0337 °C と 推定されました。
 
 ### 短期予測
 
@@ -687,7 +687,8 @@ plt_pdo <- forecast::autoplot(pdo_trim) +
 plt_yamaguchi_sst_trim + plt_pdo + patchwork::plot_layout(ncol=1)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+
 演習用の PDO 指数データには欠損値はありません。ただし、ユーザー自身の
 外生変数データを用いる場合には、外生変数に欠損値が含まれていないことを
 事前に確認してください。`tempssm()`では、欠損値を含む外生変数は許容されず、
@@ -737,7 +738,7 @@ summary(res_without)
 plot_tempssm_residual_diagnostics(res_without)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
 ``` r
 diag_res_without <- diagnose_residuals(res_without)
@@ -802,7 +803,7 @@ summary(res_with)
 plot_tempssm_residual_diagnostics(res_with)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
 
 ``` r
 diag_res_with <- diagnose_residuals(res_with)
@@ -819,17 +820,16 @@ PDO 指数を含むモデルの残差診断でも、lag 12 までの残差自己
 AR(1) は残差診断上、作業モデルとして十分な自己回帰構造を与えていると
 考えられます。
 
-モデルの推定結果を確認します。外生 PDO
-指数の推定係数は負（-0.45）であり、 その 95%
-信頼区間はゼロを含まず、-0.54 から -0.36 の範囲でした。
-これは、山口県沖の局所的な SST と PDO の変動との間に、
+モデルの推定結果を確認します。外生 PDO 指数の推定係数は負
+（-0.45）であり、その 95% 信頼区間はゼロを含まず、 -0.54 から -0.36
+の範囲でした。 これは、山口県沖の局所的な SST と PDO の変動との間に、
 統計的に有意な負の関係があることを示しています。
 
 具体的な解釈として、基礎となる長期トレンド、季節周期、自己回帰的依存性を
 考慮した後でも、PDO 指数が 1 単位増加すると、月別 SST は平均して 約 0.45
-°C 低下することがモデルから示唆されます。この結果は、 PDO
-の正の位相が、調査地点における低温の条件に体系的に寄与することを
-意味します。
+°C 低下することがモデルから示唆されます。 この結果は、PDO
+の正の位相が、調査地点における低温の条件に体系的に
+寄与することを意味します。
 
 重要な点として、この外生変数の効果は、長期トレンドや時間依存性の表現が
 改善されたことによる見かけの効果としてではなく、温度時系列の内部動態に
@@ -869,6 +869,19 @@ pred_with_last_exo
 比較することで、PDO
 係数に認められた統計的なシグナルが、標本外予測性能にも
 反映されているかを評価します。
+
+外生 PDO 変数を含むモデルでは、テスト期間の PDO 観測値を外生変数として
+予測ステップに与えています。したがって、この tsCV は、各 テスト期間の
+PDO 値 が既知であるという条件下での conditional forecast、または
+hindcast 的な 評価に相当します。この設定は、PDO
+指数の説明力や再現性を評価する目的では 妥当です。
+
+一方で、実際の将来予測では、将来の PDO
+値は通常未知です。その場合には、将来の PDO シナリオを与える、PDO
+指数自体を別モデルで予測する、あるいは最終観測値を
+持ち越すような簡易仮定を用いる、といった対応が必要になります。したがって、
+以下の結果は、外生変数が既知である条件下での予測性能改善を示すものであり、
+実運用上の将来予測性能の改善をそのまま保証するものではありません。
 
 ``` r
 # (Optional) Load packages for parallel processing.
@@ -1012,16 +1025,29 @@ plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal + patchwork::plot_layou
 plot(plt_tsCV)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
-tsCV
-の解析結果は、外生変数を含むモデルが、外生変数を含まないモデルよりも良好で
-あることを示しています。`compare_ts_cv()` によって作成された比較表では、
-各モデルの fold
-数、収束率、および平均的な予測誤差指標を確認できます。一方で、
-箱ひげ図からは、検証期間ごとの誤差のばらつきを確認できます。
-このチュートリアルでは、実行時間を短縮するため、tsCV の反復回数を 8
-回に設定しています。実際の検証では、十分な回数の反復を行ってください。
+時系列交差検証（tsCV）の解析結果は、外生変数を含むモデルが、外生変数を含まない
+モデルよりも良好であることを示しています。`compare_ts_cv()`
+によって作成された 比較表では、各モデルの fold
+数、収束率、および平均的な予測誤差指標を
+確認できます。一方で、箱ひげ図からは、検証期間ごとの誤差のばらつきを
+確認できます。このチュートリアルでは、実行時間を短縮するため、tsCV の
+反復回数を 8 回に設定しています。実際の検証では、十分な回数の反復を
+行ってください。
+
+外生変数ありモデルの平均 MAE は約 0.55 °C です。
+月別平均に基づく季節変動幅（約 13.6 °C） と比べると、これは約 4.0%
+に相当します。
+したがって、このデータセットにおける主要な季節変動スケールと比べれば、
+予測誤差は小さく、短期的な海洋モニタリングにおいて実用的な精度と
+解釈できる可能性があります。
+
+また、反復数は 8 fold に限られていますが、外生変数ありモデルは
+外生変数なしモデルに比べて平均 MAE を約 9.2% 低下させました。
+同様の改善は MASE 指標でも確認されます。ただし、この解釈はテスト期間の
+観測済み PDO を外生変数として与える conditional forecast / hindcast 的な
+評価設定に基づくものです。
 
 以上の結果を総合すると、状態空間モデルに外生変数として PDO
 指数を含めることが 一貫して支持されます。PDO
@@ -1063,7 +1089,7 @@ plt_level_drift_without_ts <- plt_level_without_ts +
 plot(plt_level_drift_without_ts)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
 ``` r
 plt_level_with_ts <- autoplot(res_with,
@@ -1085,7 +1111,7 @@ plt_level_drift_with_ts <- plt_level_with_ts +
 plot(plt_level_drift_with_ts)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-23-2.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-27-2.png)<!-- -->
 
 ``` r
 #　Smoothing estimate of drift component
@@ -1339,7 +1365,7 @@ plt_niigata_sst_anomaly <- forecast::autoplot(niigata_sst_anomaly) +
 plot(plt_niigata_sst_anomaly) 
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
 ## 5. `compute_monthly_climatology()`
 
@@ -1386,4 +1412,4 @@ plt_monthly_seasonal_cycle_niigata_sst <- ggplot(
 plot(plt_monthly_seasonal_cycle_niigata_sst)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->

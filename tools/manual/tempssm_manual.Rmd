@@ -7,9 +7,9 @@ output:
 #  pdf_document:
 #    latex_engine: lualatex
 #    toc: true
-#  rmarkdown::html_vignette: default
-  md_document:
-    variant: gfm+tex_math_dollars
+  rmarkdown::html_vignette: default
+#  md_document:
+#    variant: gfm+tex_math_dollars
 vignette: >
   %\VignetteIndexEntry{tempssm Reference Manual}
   %\VignetteEngine{knitr::rmarkdown}
@@ -220,7 +220,12 @@ plt_yamaguchi_sst <- forecast::autoplot(yamaguchi_sst) +
 plot(plt_yamaguchi_sst)
 ```
 
-The overall mean SST is approximately 19.5 °C, and a clear seasonal pattern is
+```{r echo = FALSE}
+yamaguchi_sst_mean <- mean(yamaguchi_sst, na.rm = TRUE)
+```
+
+The overall mean SST is approximately
+`r sprintf("%.1f", yamaguchi_sst_mean)` °C, and a clear seasonal pattern is
 visible. The series contains no missing observations. Although SST appears to
 increase over the study period, year-to-year variability is also evident,
 making the long-term trend difficult to assess from the raw time series alone.
@@ -280,9 +285,14 @@ dependence as well makes the underlying trend structure easier to examine.
 plot(res_ar1)
 ```
 
+```{r echo = FALSE}
+mean_drift_year <- mean(get_drift_ts(res_ar1))
+```
+
 The long-term trend in the upper-left panel indicates an increasing SST pattern
 over the study period. In this example, the average annual rate of SST increase
-over the study period is approximately 0.036 °C.
+over the study period is approximately
+`r sprintf("%.3f", mean_drift_year)` °C.
 
 However, the rate of SST change itself also appears to vary over time. Focusing
 on the rate of change (drift) in the upper-right panel, the rate of change
@@ -414,7 +424,8 @@ mean_drift_year <- mean(drift_ts)
 print(mean_drift_year)
 ```
  
-The average annual rate of SST increase was estimated to be 0.0366 °C.
+The average annual rate of SST increase was estimated to be
+`r sprintf("%.4f", mean_drift_year)` °C.
 
 ### Short-Term Prediction
 
@@ -598,22 +609,31 @@ diag_res_with <- diagnose_residuals(res_with)
 print(diag_res_with)
 ```
 
+```{r echo = FALSE}
+exo_coef <- get_exo_coef(res_with)
+pdo_coef <- exo_coef$Coefficient[exo_coef$Variable == "PDO"]
+pdo_lwr <- exo_coef$lwr[exo_coef$Variable == "PDO"]
+pdo_upr <- exo_coef$upr[exo_coef$Variable == "PDO"]
+```
+
 The residual diagnostics for the model with the PDO index also do not indicate
 significant residual autocorrelation up to lag 12. Thus, for both models
 considered here, the AR(1) specification provides an adequate working
 autoregressive structure according to these residual checks.
 
 We then examine the model estimates. The estimated coefficient for the
-exogenous PDO index is negative (-0.45), and its 95% confidence interval does
-not include zero, ranging from -0.54 to -0.36. This indicates a statistically 
-significant negative relationship between local SST off Yamaguchi Prefecture 
-and PDO variability.
+exogenous PDO index is negative (`r sprintf("%.2f", pdo_coef)`), and its 95%
+confidence interval does not include zero, ranging from
+`r sprintf("%.2f", pdo_lwr)` to `r sprintf("%.2f", pdo_upr)`. This indicates a
+statistically significant negative relationship between local SST off Yamaguchi
+Prefecture and PDO variability.
 
 Specifically, after accounting for the underlying long-term trend, seasonal
 cycle, and autoregressive dependence, the model suggests that a one-unit
 increase in the PDO index is associated with an average decrease of
-approximately 0.45 °C in monthly SST. This result implies that positive phases
-of the PDO systematically contribute to cooler conditions at the study site.
+approximately `r sprintf("%.2f", abs(pdo_coef))` °C in monthly SST. This result
+implies that positive phases of the PDO systematically contribute to cooler
+conditions at the study site.
 
 Importantly, the effect of this exogenous variable is identified as an
 additional factor beyond the internal dynamics of the temperature time series,
@@ -651,6 +671,19 @@ model validation with temporal data.
 Here, by comparing cross-validation metrics for models with and without the
 exogenous PDO variable, we assess whether the statistical signal found in the
 PDO coefficient is also reflected in out-of-sample predictive performance.
+
+For the model with the PDO index, the test-period PDO values are supplied to
+the forecast step as exogenous variables. Therefore, this tsCV setting evaluates
+conditional forecasts, or hindcasts, under the assumption that the PDO values
+during each test period are known. This is appropriate when the aim is to assess
+the explanatory or reconstructive value of the PDO index.
+
+For real-time future forecasting, however, future PDO values are usually
+unknown. In that setting, users must either provide future PDO scenarios,
+forecast the PDO index with a separate model, or use a simplified assumption
+such as carrying the last observed value forward. The results below should
+therefore be interpreted as evidence for improved conditional predictive
+performance, not as a direct guarantee of operational forecast improvement.
 
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
@@ -791,13 +824,45 @@ plot(plt_tsCV)
 
 ```
 
+```{r echo = FALSE}
+monthly_mean_sst <- tapply(
+  as.numeric(yamaguchi_sst_trim),
+  cycle(yamaguchi_sst_trim),
+  mean,
+  na.rm = TRUE
+)
+seasonal_amplitude <- diff(range(monthly_mean_sst, na.rm = TRUE))
+mae_without <- cv_comparison$mean_MAE[cv_comparison$model == "Without"]
+mae_with <- cv_comparison$mean_MAE[cv_comparison$model == "With"]
+mae_relative_to_season <- 100 * mae_with / seasonal_amplitude
+mae_improvement <- 100 * (mae_without - mae_with) / mae_without
+n_folds <- unique(cv_comparison$n_folds)
+n_folds <- if (length(n_folds) == 1L) n_folds else min(n_folds)
+```
+
 The tsCV results show that the model with the exogenous variable performs
 better than the model without it. The comparison table produced by
 `compare_ts_cv()` summarizes the number of folds, convergence rates, and mean
 prediction-error metrics for each model, while the boxplots show how the
 fold-level errors vary across validation periods. In this tutorial, the number
-of tsCV iterations is set to eight to reduce execution time. In actual
+of tsCV iterations is set to `r n_folds` to reduce execution time. In actual
 validation, please use a sufficient number of iterations.
+
+The mean MAE of the model with the exogenous variable is approximately
+`r sprintf("%.2f", mae_with)` °C. Relative to the seasonal amplitude based on
+monthly mean SST (about `r sprintf("%.1f", seasonal_amplitude)` °C), this
+corresponds to roughly `r sprintf("%.1f", mae_relative_to_season)`%. Thus, the
+prediction error is small compared with the dominant seasonal scale of
+variation in this data set, and may be practically useful for short-term marine
+monitoring.
+
+Although the number of validation folds is limited to `r n_folds`, the model
+with the exogenous variable reduces the mean MAE by approximately
+`r sprintf("%.1f", mae_improvement)`% compared with the model without the
+exogenous variable. Similar improvements are also seen in the MASE metrics.
+This interpretation should be kept conditional on the tsCV setting used here,
+in which observed PDO values during the test periods are supplied as exogenous
+variables.
 
 Taken together, the results consistently support including the PDO index as an
 exogenous variable in the state-space model. The PDO coefficient is
@@ -877,9 +942,10 @@ the exogenous variable, the long-term trend and its rate of change show a more
 stable pattern. This suggests that the wavelike pattern reflects the influence
 of the exogenous PDO variable.
 
-The estimated annual rate of SST change over the observation period is 0.0339
-in the model without the exogenous variable and 0.0112 in the model with the
-exogenous variable.
+The estimated annual rate of SST change over the observation period is
+`r sprintf("%.4f", mean_drift_year_without)` in the model without the
+exogenous variable and `r sprintf("%.4f", mean_drift_year_with)` in the model
+with the exogenous variable.
 
 In this case, the model incorporating the PDO index is considered preferable
 for accurately estimating the SST trend. Thus, the SST warming rate, which was

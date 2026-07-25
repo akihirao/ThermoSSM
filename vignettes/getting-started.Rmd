@@ -225,11 +225,16 @@ plt_niigata_sst <- forecast::autoplot(niigata_sst) +
 plot(plt_niigata_sst)
 ```
 
-The overall mean SST is approximately 17 °C, and a clear seasonal pattern is 
-visible. The series contains two missing observations, in September 2005 and 
-February 2006. Although SST appears to be higher near the end of the series 
-than near the beginning, year-to-year variability is also evident, making the 
-long-term trend difficult to assess from the raw time series alone.
+```{r echo = FALSE}
+niigata_sst_mean <- mean(niigata_sst, na.rm = TRUE)
+```
+
+The overall mean SST is approximately `r sprintf("%.0f", niigata_sst_mean)` °C,
+and a clear seasonal pattern is visible. The series contains two missing
+observations, in September 2005 and February 2006. Although SST appears to be
+higher near the end of the series than near the beginning, year-to-year
+variability is also evident, making the long-term trend difficult to assess
+from the raw time series alone.
 
 ### Applying a Linear Gaussian State-Space Model
 
@@ -350,7 +355,8 @@ mean_drift_year <- mean(drift_ts)
 print(mean_drift_year)
 ```
  
-Average annual increase in SST is approximately 0.05 °C.
+Average annual increase in SST is approximately
+`r sprintf("%.2f", mean_drift_year)` °C.
 
 ### Short-Term Prediction
 
