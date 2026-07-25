@@ -22,11 +22,15 @@ test_that("tempssm AIC method does not compute information criteria", {
 })
 
 
+get_ar1_ts_internal <- function(...) {
+  getFromNamespace("get_ar1_ts", "tempssm")(...)
+}
+
 test_that("component accessors match KFAS smoothed states", {
   level_ts <- get_level_ts(res_tempssm, ci = FALSE)
   drift_ts <- get_drift_ts(res_tempssm, ci = FALSE)
   season_ts <- get_season_ts(res_tempssm, ci = FALSE)
-  ar1_ts <- get_ar1_ts(res_tempssm, ci = FALSE)
+  ar1_ts <- get_ar1_ts_internal(res_tempssm, ci = FALSE)
   kfas_states <- res_tempssm$kfs$alphahat
   freq <- stats::frequency(res_tempssm$temp_data)
 
@@ -47,7 +51,7 @@ test_that("component accessors match KFAS filtered states", {
   level_ts <- get_level_ts(res_tempssm, estimate = "filtered")
   drift_ts <- get_drift_ts(res_tempssm, estimate = "filtered")
   season_ts <- get_season_ts(res_tempssm, estimate = "filtered")
-  ar1_ts <- get_ar1_ts(res_tempssm, estimate = "filtered")
+  ar1_ts <- get_ar1_ts_internal(res_tempssm, estimate = "filtered")
   kfas_states <- res_tempssm$kfs$att
   freq <- stats::frequency(res_tempssm$temp_data)
   diffuse_end <- res_tempssm$kfs$d
@@ -93,7 +97,7 @@ test_that("filtered component intervals match KFAS state covariances", {
     ci = TRUE,
     estimate = "filtered"
   )
-  ar1_ci <- get_ar1_ts(
+  ar1_ci <- get_ar1_ts_internal(
     res_tempssm,
     ci = TRUE,
     estimate = "filtered"
@@ -147,7 +151,7 @@ test_that("component confidence intervals match KFAS confint output", {
   level_ci <- get_level_ts(res_tempssm, ci = TRUE, ci_level = 0.95)
   drift_ci <- get_drift_ts(res_tempssm, ci = TRUE, ci_level = 0.95)
   season_ci <- get_season_ts(res_tempssm, ci = TRUE, ci_level = 0.95)
-  ar1_ci <- get_ar1_ts(res_tempssm, ci = TRUE, ci_level = 0.95)
+  ar1_ci <- get_ar1_ts_internal(res_tempssm, ci = TRUE, ci_level = 0.95)
 
   expect_identical(
     as.numeric(level_ci[, "lwr"]),

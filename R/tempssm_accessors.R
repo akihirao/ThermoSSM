@@ -552,6 +552,188 @@ get_season_ts <- function(res, ci = FALSE, ci_level = 0.95,
 }
 
 
+#' Extract autoregressive components as a time series
+#'
+#' @inheritParams get_level_ts
+#' @param component Character scalar specifying which autoregressive
+#'   component(s) to return. The default \code{"sum"} returns the summed
+#'   contribution of all autoregressive states. Use \code{"first"} to return
+#'   the first autoregressive state (AR1), or \code{"individual"} to return
+#'   all autoregressive states as a multivariate \code{ts} object.
+#'
+#' @details
+#' The autoregressive component represents short-term autocorrelated
+#' deviations from the level and seasonal structure. For AR models of order
+#' greater than one, \code{"sum"} is useful for visualizing the combined AR
+#' contribution, while \code{"individual"} exposes each lag separately.
+#' See \code{\link{get_level_ts}} for the distinction between smoothed and
+#' filtered estimates and the handling of the diffuse phase.
+#'
+#' @return
+#' A univariate \code{ts} object of the selected autoregressive estimate
+#' (in degrees Celsius) when \code{component} is \code{"sum"} or
+#' \code{"first"}. If \code{component = "individual"}, a multivariate
+#' \code{ts} object with columns \code{ar1}, \code{ar2}, and so on is
+#' returned. If \code{ci = TRUE}, the corresponding confidence interval
+#' columns are added. Filtered output has intentional \code{NA} values during
+#' the diffuse phase.
+#'
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' data(niigata_sst)
+#' res <- tempssm(niigata_sst)
+#' ar_ts <- get_ar_ts(res)
+#' ar_first <- get_ar_ts(res, component = "first")
+#' ar_individual <- get_ar_ts(res, component = "individual")
+#' }
+get_ar_ts <- function(res, component = c("sum", "first", "individual"),
+                      ci = FALSE, ci_level = 0.95,
+                      estimate = c("smoothed", "filtered")) {
+  .tempssm_check_accessor_input(res, "get_ar_ts")
+  component <- match.arg(component)
+  estimate <- .tempssm_match_estimate(estimate)
+  .tempssm_check_accessor_ci(ci, ci_level, "get_ar_ts")
+
+  if (!is.null(res$kfs) && !is.null(res$kfs$alphahat)) {
+    state_matrix <- res$kfs$alphahat
+    ar_states <- paste0("arima", seq_len(res$ar_order))
+    if (!all(ar_states %in% colnames(state_matrix))) {
+      stop(
+        "Autoregressive component not found in the smoothing results.",
+        call. = FALSE
+      )
+    }
+  } else {
+    stop(
+      "Autoregressive component not found in the smoothing results.",
+      call. = FALSE
+    )
+  }
+
+  if (identical(estimate, "filtered")) {
+    state_matrix <- res$kfs$att
+    if (!all(ar_states %in% colnames(state_matrix))) {
+      stop(
+        "Autoregressive component not found in the smoothing results.",
+        call. = FALSE
+      )
+    }
+  }
+
+  if (identical(component, "first")) {
+    return(.tempssm_extract_state_ts(
+      res = res,
+      state = "arima1",
+      output_name = "ar1",
+      ci = ci,
+      ci_level = ci_level,
+      estimate = estimate,
+      fun = "get_ar_ts",
+      missing_msg = paste0(
+        "First autoregressive component (AR1) not found ",
+        "in the smoothing results."
+      ),
+      ci_missing_msg = paste0(
+        "First Autoregressive (AR1) component not found ",
+        "in confidence intervals."
+      )
+    ))
+  }
+
+  if (identical(component, "sum")) {
+    values <- rowSums(state_matrix[, ar_states, drop = FALSE])
+    if (identical(estimate, "filtered")) {
+      values <- .tempssm_mask_diffuse(values, res)
+    }
+    if (!ci) {
+      return(ts(
+        values,
+        start = start(res$temp_data),
+        frequency = frequency(res$temp_data)
+      ))
+    }
+
+    ci_obj <- stats::confint(res$kfs, level = ci_level)
+    if (!all(ar_states %in% names(ci_obj))) {
+      stop(
+        "Autoregressive component not found in confidence intervals.",
+        call. = FALSE
+      )
+    }
+
+    lwr <- rowSums(vapply(ar_states, function(state) {
+      ci_obj[[state]][, "lwr"]
+    }, numeric(length(values))))
+    upr <- rowSums(vapply(ar_states, function(state) {
+      ci_obj[[state]][, "upr"]
+    }, numeric(length(values))))
+
+    values <- cbind(
+      ar = values,
+      lwr = lwr,
+      upr = upr
+    )
+    colnames(values)[1] <- "ar"
+    return(ts(
+      values,
+      start = start(res$temp_data),
+      frequency = frequency(res$temp_data)
+    ))
+  }
+
+  values <- state_matrix[, ar_states, drop = FALSE]
+  if (identical(estimate, "filtered")) {
+    values <- .tempssm_mask_diffuse(values, res)
+  }
+
+  colnames(values) <- paste0("ar", seq_len(ncol(values)))
+
+  if (!ci) {
+    return(ts(
+      values,
+      start = start(res$temp_data),
+      frequency = frequency(res$temp_data)
+    ))
+  }
+
+  ci_obj <- stats::confint(res$kfs, level = ci_level)
+  if (!all(ar_states %in% names(ci_obj))) {
+    stop(
+      "Autoregressive component not found in confidence intervals.",
+      call. = FALSE
+    )
+  }
+
+  ci_values <- lapply(ar_states, function(state) {
+    ci_obj[[state]][, c("lwr", "upr")]
+  })
+  names(ci_values) <- paste0("ar", seq_along(ar_states))
+
+  out <- list()
+  for (idx in seq_along(ar_states)) {
+    out[[idx]] <- cbind(
+      values[, idx, drop = FALSE],
+      lwr = ci_values[[idx]][, "lwr"],
+      upr = ci_values[[idx]][, "upr"]
+    )
+    colnames(out[[idx]]) <- c(paste0("ar", idx), paste0("ar", idx, "_lwr"), paste0("ar", idx, "_upr"))
+  }
+
+  combined <- do.call(cbind, out)
+  colnames(combined) <- c(
+    vapply(seq_along(ar_states), function(idx) paste0("ar", idx), character(1)),
+    vapply(seq_along(ar_states), function(idx) paste0("ar", idx, "_lwr"), character(1)),
+    vapply(seq_along(ar_states), function(idx) paste0("ar", idx, "_upr"), character(1))
+  )
+  ts(
+    combined,
+    start = start(res$temp_data),
+    frequency = frequency(res$temp_data)
+  )
+}
+
 #' Extract the first autoregressive component (AR1) as a time series
 #'
 #' @inheritParams get_level_ts
@@ -569,7 +751,7 @@ get_season_ts <- function(res, ci = FALSE, ci_level = 0.95,
 #' \code{ar1}, \code{lwr}, and \code{upr} is returned. Filtered output has
 #' intentional \code{NA} values during the diffuse phase.
 #'
-#' @export
+#' @noRd
 #'
 #' @examples
 #' \dontrun{
@@ -579,22 +761,12 @@ get_season_ts <- function(res, ci = FALSE, ci_level = 0.95,
 #' }
 get_ar1_ts <- function(res, ci = FALSE, ci_level = 0.95,
                        estimate = c("smoothed", "filtered")) {
-  .tempssm_extract_state_ts(
+  get_ar_ts(
     res = res,
-    state = "arima1",
-    output_name = "ar1",
+    component = "first",
     ci = ci,
     ci_level = ci_level,
-    estimate = estimate,
-    fun = "get_ar1_ts",
-    missing_msg = paste0(
-      "First autoregressive component (AR1) not found ",
-      "in the smoothing results."
-    ),
-    ci_missing_msg = paste0(
-      "First Autoregressive (AR1) component not found ",
-      "in confidence intervals."
-    )
+    estimate = estimate
   )
 }
 

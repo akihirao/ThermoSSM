@@ -135,7 +135,7 @@
     ci = ci,
     ci_level = ci_level,
     show_ci_in_title = FALSE,
-    fun = "autoplot_ar1"
+    fun = "autoplot_ar1_internal"
   )
 
   ar_states <- paste0("arima", seq_len(res$ar_order))
@@ -438,8 +438,9 @@ autoplot_season <- function(res,
 #' Plot the estimated autoregressive component from a tempssm model
 #'
 #' @description
-#' Create a \pkg{ggplot2} visualization of the estimated drift component
-#' obtained from a state space model fitted by \code{tempssm()}.
+#' Create a \pkg{ggplot2} visualization of the estimated autoregressive
+#' component(s) obtained from a state space model fitted by \code{tempssm()}.
+#' By default, the summed contribution of all autoregressive states is shown.
 #' A pointwise confidence interval is shown as a shaded ribbon.
 #'
 #' @inheritParams get_level_ts
@@ -453,7 +454,7 @@ autoplot_season <- function(res,
 #' The confidence interval is computed using
 #' \code{stats::confint()} applied to the Kalman filter and smoother
 #' results stored in \code{res$kfs}. The shaded ribbon represents
-#' pointwise confidence intervals for the level state.
+#' pointwise confidence intervals for the selected autoregressive component.
 #'
 #' @return
 #' A \code{ggplot} object, allowing further customization by adding
@@ -463,6 +464,69 @@ autoplot_season <- function(res,
 #' \code{\link{tempssm}}, \code{\link[stats]{confint}}
 #'
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' data(niigata_sst)
+#' res <- tempssm(niigata_sst)
+#'
+#' # Default: show the summed autoregressive component
+#' autoplot_ar(res)
+#'
+#' # Custom confidence level
+#' autoplot_ar(res, ci_level = 0.9)
+#' }
+autoplot_ar <- function(res,
+                        ci = TRUE,
+                        ci_level = 0.95,
+                        ylab = expression(Temp. ~ (degree * C)),
+                        show_ci_in_title = FALSE) {
+  title <- "Autoregressive component"
+
+  .tempssm_autoplot_component(
+    res = res,
+    ci = ci,
+    ci_level = ci_level,
+    ylab = ylab,
+    show_ci_in_title = show_ci_in_title,
+    fun = "autoplot_ar",
+    getter = .tempssm_extract_ar_component_ts,
+    value_name = "ar1",
+    title = title,
+    ci_title = title,
+    debug_name = "ar"
+  )
+}
+
+
+#' Plot the estimated first autoregressive component from a tempssm model
+#'
+#' @description
+#' Create a \pkg{ggplot2} visualization of the estimated first autoregressive
+#' component (AR1) from a state space model fitted by \code{tempssm()}.
+#' A pointwise confidence interval is shown as a shaded ribbon.
+#'
+#' @inheritParams get_level_ts
+#' @inheritParams autoplot_level
+#'
+#' @param ylab
+#' Label of y-axis. The default is a plotmath expression showing temperature
+#' in degrees Celsius.
+#'
+#' @details
+#' The confidence interval is computed using
+#' \code{stats::confint()} applied to the Kalman filter and smoother
+#' results stored in \code{res$kfs}. The shaded ribbon represents
+#' pointwise confidence intervals for the AR1 state.
+#'
+#' @return
+#' A \code{ggplot} object, allowing further customization by adding
+#' standard \pkg{ggplot2} layers.
+#'
+#' @seealso
+#' \code{\link{tempssm}}, \code{\link[stats]{confint}}
+#'
+#' @noRd
 #'
 #' @examples
 #' \dontrun{
@@ -480,24 +544,24 @@ autoplot_ar1 <- function(res,
                          ci_level = 0.95,
                          ylab = expression(Temp. ~ (degree * C)),
                          show_ci_in_title = FALSE) {
-  title <- "Autoregressive (1) component"
-  if (inherits(res, "tempssm") && !is.null(res$ar_order) && res$ar_order > 1L) {
-    title <- "Autoregressive component"
-  }
-
-  .tempssm_autoplot_component(
+  p <- autoplot_ar(
     res = res,
     ci = ci,
     ci_level = ci_level,
     ylab = ylab,
-    show_ci_in_title = show_ci_in_title,
-    fun = "autoplot_ar1",
-    getter = .tempssm_extract_ar_component_ts,
-    value_name = "ar1",
-    title = title,
-    ci_title = title,
-    debug_name = "ar1"
+    show_ci_in_title = show_ci_in_title
   )
+
+  title <- .tempssm_component_plot_title(
+    title = "Autoregressive (1) component",
+    ci_title = "Autoregressive (1) component",
+    ci = ci,
+    ci_level = ci_level,
+    show_ci_in_title = show_ci_in_title
+  )
+  p <- p + ggplot2::labs(title = title)
+
+  p
 }
 
 
