@@ -357,10 +357,8 @@ Accessor functions such as
 [`get_level_ts()`](https://akihirao.github.io/tempssm/reference/get_level_ts.md),
 [`get_drift_ts()`](https://akihirao.github.io/tempssm/reference/get_drift_ts.md),
 [`get_season_ts()`](https://akihirao.github.io/tempssm/reference/get_season_ts.md),
-and
-[`get_ar1_ts()`](https://akihirao.github.io/tempssm/reference/get_ar1_ts.md)
-return `ts` objects that preserve the time scale of the fitted model
-through their `start`, `end`, `frequency`, and
+and `get_ar1_ts()` return `ts` objects that preserve the time scale of
+the fitted model through their `start`, `end`, `frequency`, and
 [`time()`](https://rdrr.io/r/stats/time.html) attributes. Conversion
 utilities that aggregate calendar-daily `zoo` inputs return monthly `ts`
 objects with `frequency = 12`, while utilities that retrieve daily SST

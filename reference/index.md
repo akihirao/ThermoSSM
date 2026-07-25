@@ -8,7 +8,7 @@
 - [`autoplot(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/autoplot.tempssm.md)
   : Autoplot method for tempssm objects
 
-- [`autoplot_ar1()`](https://akihirao.github.io/tempssm/reference/autoplot_ar1.md)
+- [`autoplot_ar()`](https://akihirao.github.io/tempssm/reference/autoplot_ar.md)
   : Plot the estimated autoregressive component from a tempssm model
 
 - [`autoplot_drift()`](https://akihirao.github.io/tempssm/reference/autoplot_drift.md)
@@ -49,8 +49,8 @@
 - [`fuji_temp`](https://akihirao.github.io/tempssm/reference/fuji_temp.md)
   : Monthly mean air temperature at the summit of Mt. Fuji
 
-- [`get_ar1_ts()`](https://akihirao.github.io/tempssm/reference/get_ar1_ts.md)
-  : Extract the first autoregressive component (AR1) as a time series
+- [`get_ar_ts()`](https://akihirao.github.io/tempssm/reference/get_ar_ts.md)
+  : Extract autoregressive components as a time series
 
 - [`get_drift_ts()`](https://akihirao.github.io/tempssm/reference/get_drift_ts.md)
   : Extract the drift (slope) component as a time series

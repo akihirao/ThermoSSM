@@ -8,7 +8,7 @@
 <url><loc>https://akihirao.github.io/tempssm/news/index.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/AIC.tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/autoplot.tempssm.html</loc></url>
-<url><loc>https://akihirao.github.io/tempssm/reference/autoplot_ar1.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/autoplot_ar.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/autoplot_drift.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/autoplot_level.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/autoplot_season.html</loc></url>
@@ -20,7 +20,7 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/daily_zoo_to_monthly_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/diagnose_residuals.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/fuji_temp.html</loc></url>
-<url><loc>https://akihirao.github.io/tempssm/reference/get_ar1_ts.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/get_ar_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_drift_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_exo_coef.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_jma_sst_ts.html</loc></url>

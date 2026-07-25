@@ -1,14 +1,15 @@
 # Plot the estimated autoregressive component from a tempssm model
 
-Create a ggplot2 visualization of the estimated drift component obtained
-from a state space model fitted by
+Create a ggplot2 visualization of the estimated autoregressive
+component(s) obtained from a state space model fitted by
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md).
-A pointwise confidence interval is shown as a shaded ribbon.
+By default, the summed contribution of all autoregressive states is
+shown. A pointwise confidence interval is shown as a shaded ribbon.
 
 ## Usage
 
 ``` r
-autoplot_ar1(
+autoplot_ar(
   res,
   ci = TRUE,
   ci_level = 0.95,
@@ -52,7 +53,8 @@ ggplot2 layers.
 The confidence interval is computed using
 [`stats::confint()`](https://rdrr.io/r/stats/confint.html) applied to
 the Kalman filter and smoother results stored in `res$kfs`. The shaded
-ribbon represents pointwise confidence intervals for the level state.
+ribbon represents pointwise confidence intervals for the selected
+autoregressive component.
 
 ## See also
 
@@ -66,10 +68,10 @@ if (FALSE) { # \dontrun{
 data(niigata_sst)
 res <- tempssm(niigata_sst)
 
-# Default 95% confidence interval
-autoplot_ar1(res)
+# Default: show the summed autoregressive component
+autoplot_ar(res)
 
 # Custom confidence level
-autoplot_ar1(res, ci_level = 0.9)
+autoplot_ar(res, ci_level = 0.9)
 } # }
 ```

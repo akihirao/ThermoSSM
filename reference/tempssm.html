@@ -377,7 +377,7 @@ and state-name metadata. It is intentionally not converted back to the same
 class as the input series, because it represents a fitted statistical model
 rather than a transformed time series.</p>
 <p>Accessor functions such as <code><a href="get_level_ts.html">get_level_ts()</a></code>, <code><a href="get_drift_ts.html">get_drift_ts()</a></code>,
-<code><a href="get_season_ts.html">get_season_ts()</a></code>, and <code><a href="get_ar1_ts.html">get_ar1_ts()</a></code> return <code>ts</code> objects that preserve the
+<code><a href="get_season_ts.html">get_season_ts()</a></code>, and <code>get_ar1_ts()</code> return <code>ts</code> objects that preserve the
 time scale of the fitted model through their <code>start</code>, <code>end</code>, <code>frequency</code>,
 and <code><a href="https://rdrr.io/r/stats/time.html" class="external-link">time()</a></code> attributes. Conversion utilities that aggregate calendar-daily
 <code>zoo</code> inputs return monthly <code>ts</code> objects with <code>frequency = 12</code>, while
