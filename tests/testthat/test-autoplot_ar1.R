@@ -28,6 +28,20 @@ test_that("autoplot_ar1 uses compact unit label by default", {
 })
 
 
+test_that("autoplot_ar1 combines autoregressive states for higher-order AR models", {
+  res_ar2 <- tempssm(temp_ts_test, ar_order = 2)
+  p <- autoplot_ar1(res_ar2)
+
+  expect_s3_class(p, "ggplot")
+  expect_identical(p$labels$title, "Autoregressive component")
+  expect_equal(
+    p$data$value,
+    rowSums(res_ar2$kfs$alphahat[, c("arima1", "arima2")]),
+    tolerance = 1e-8
+  )
+})
+
+
 test_that("autoplot_ar1 checks inputs correctly", {
   expect_error(
     autoplot_ar1(NULL),

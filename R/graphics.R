@@ -122,6 +122,68 @@
 }
 
 
+#' Combine autoregressive states into a single plotted component
+#'
+#' @inheritParams .tempssm_check_component_plot_input
+#'
+#' @return A univariate or multivariate \code{ts} object.
+#' @noRd
+.tempssm_extract_ar_component_ts <- function(res, ci = FALSE,
+                                             ci_level = 0.95) {
+  .tempssm_check_component_plot_input(
+    res = res,
+    ci = ci,
+    ci_level = ci_level,
+    show_ci_in_title = FALSE,
+    fun = "autoplot_ar1"
+  )
+
+  ar_states <- paste0("arima", seq_len(res$ar_order))
+  if (is.null(res$kfs) || is.null(res$kfs$alphahat)) {
+    cli::cli_abort("Autoregressive component not found in the smoothing results.")
+  }
+
+  state_matrix <- res$kfs$alphahat
+  if (!is.matrix(state_matrix)) {
+    cli::cli_abort("Autoregressive smoothing results are not available.")
+  }
+
+  point <- rowSums(state_matrix[, ar_states, drop = FALSE])
+
+  if (!ci) {
+    return(ts(
+      point,
+      start = start(res$temp_data),
+      frequency = frequency(res$temp_data)
+    ))
+  }
+
+  ci_obj <- stats::confint(res$kfs, level = ci_level)
+  if (!all(ar_states %in% names(ci_obj))) {
+    cli::cli_abort("Autoregressive component not found in confidence intervals.")
+  }
+
+  lwr <- rowSums(vapply(ar_states, function(state) {
+    ci_obj[[state]][, "lwr"]
+  }, numeric(length(point))))
+  upr <- rowSums(vapply(ar_states, function(state) {
+    ci_obj[[state]][, "upr"]
+  }, numeric(length(point))))
+
+  values <- cbind(
+    ar1 = point,
+    lwr = lwr,
+    upr = upr
+  )
+
+  ts(
+    values,
+    start = start(res$temp_data),
+    frequency = frequency(res$temp_data)
+  )
+}
+
+
 #' Create a ggplot object for one tempssm component
 #'
 #' @inheritParams .tempssm_check_component_plot_input
@@ -418,6 +480,11 @@ autoplot_ar1 <- function(res,
                          ci_level = 0.95,
                          ylab = expression(Temp. ~ (degree * C)),
                          show_ci_in_title = FALSE) {
+  title <- "Autoregressive (1) component"
+  if (inherits(res, "tempssm") && !is.null(res$ar_order) && res$ar_order > 1L) {
+    title <- "Autoregressive component"
+  }
+
   .tempssm_autoplot_component(
     res = res,
     ci = ci,
@@ -425,10 +492,10 @@ autoplot_ar1 <- function(res,
     ylab = ylab,
     show_ci_in_title = show_ci_in_title,
     fun = "autoplot_ar1",
-    getter = get_ar1_ts,
+    getter = .tempssm_extract_ar_component_ts,
     value_name = "ar1",
-    title = "Autoregressive (1) component",
-    ci_title = "Autoregressive (1) component",
+    title = title,
+    ci_title = title,
     debug_name = "ar1"
   )
 }
