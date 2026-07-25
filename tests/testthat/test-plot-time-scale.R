@@ -31,7 +31,7 @@ test_that("component plotters do not emit scale-selection messages", {
     autoplot_level,
     autoplot_drift,
     autoplot_season,
-    autoplot_ar1
+    autoplot_ar
   )
 
   for (plotter in plotters) {

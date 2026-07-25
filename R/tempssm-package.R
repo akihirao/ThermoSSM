@@ -277,7 +277,7 @@ NULL
 #' rather than a transformed time series.
 #'
 #' Accessor functions such as `get_level_ts()`, `get_drift_ts()`,
-#' `get_season_ts()`, and `get_ar1_ts()` return `ts` objects that preserve the
+#' `get_season_ts()`, and `get_ar_ts()` return `ts` objects that preserve the
 #' time scale of the fitted model through their `start`, `end`, `frequency`,
 #' and `time()` attributes. Conversion utilities that aggregate calendar-daily
 #' `zoo` inputs return monthly `ts` objects with `frequency = 12`, while

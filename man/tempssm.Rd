@@ -303,7 +303,7 @@ class as the input series, because it represents a fitted statistical model
 rather than a transformed time series.
 
 Accessor functions such as \code{get_level_ts()}, \code{get_drift_ts()},
-\code{get_season_ts()}, and \code{get_ar1_ts()} return \code{ts} objects that preserve the
+\code{get_season_ts()}, and \code{get_ar_ts()} return \code{ts} objects that preserve the
 time scale of the fitted model through their \code{start}, \code{end}, \code{frequency},
 and \code{time()} attributes. Conversion utilities that aggregate calendar-daily
 \code{zoo} inputs return monthly \code{ts} objects with \code{frequency = 12}, while

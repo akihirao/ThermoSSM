@@ -1,5 +1,5 @@
 test_that("autoplot.tempssm returns ggplot for each component", {
-  components <- c("level", "drift", "season", "ar1")
+  components <- c("level", "drift", "season", "ar")
 
   for (component in components) {
     p <- autoplot(
@@ -38,7 +38,7 @@ test_that("autoplot.tempssm returns faceted ggplot for all components", {
   expect_identical(p$facet$params$ncol, 2L)
   expect_identical(
     unique(p$data$component_id),
-    c("level", "drift", "season", "ar1")
+    c("level", "drift", "season", "ar")
   )
   expect_identical(nlevels(p$data$component), 4L)
 })
@@ -68,6 +68,25 @@ test_that("faceted component labels include component-specific units", {
   expect_true(any(grepl("Level component", labels, fixed = TRUE)))
   expect_true(any(grepl("Drift component", labels, fixed = TRUE)))
   expect_true(any(grepl("C/year", labels, fixed = TRUE)))
+  expect_true("Autoregressive component (\u00b0C)" %in% labels)
+})
+
+
+test_that("default AR panel sums all states for higher-order models", {
+  res_ar2 <- tempssm(temp_ts_test, ar_order = 2)
+  p <- autoplot(res_ar2, ci = FALSE)
+  ar_data <- p$data[p$data$component_id == "ar", ]
+
+  expect_equal(
+    ar_data$value,
+    rowSums(res_ar2$kfs$alphahat[, c("arima1", "arima2")]),
+    tolerance = 1e-8
+  )
+  expect_true(all(grepl(
+    "Autoregressive component",
+    as.character(ar_data$component),
+    fixed = TRUE
+  )))
 })
 
 
@@ -111,6 +130,10 @@ test_that("autoplot.tempssm validates selected components", {
   )
   expect_error(
     autoplot(res_tempssm, component = "unknown"),
+    "one to four unique component names"
+  )
+  expect_error(
+    autoplot(res_tempssm, component = "ar1"),
     "one to four unique component names"
   )
 })

@@ -18,7 +18,7 @@
 \item{object}{An object returned by \code{tempssm()}.}
 
 \item{component}{Character vector specifying one to four components to plot.
-One of \code{"level"}, \code{"drift"}, \code{"season"}, or \code{"ar1"}.
+One of \code{"level"}, \code{"drift"}, \code{"season"}, or \code{"ar"}.
 Values must be unique and are displayed in the supplied order. If
 \code{NULL} (default), all four components are plotted.}
 
