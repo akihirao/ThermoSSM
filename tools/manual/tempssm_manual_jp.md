@@ -328,7 +328,7 @@ plot(res_ar1)
 plt_level <- autoplot(res_ar1, component = c("level"))
 plt_drift <- autoplot(res_ar1, component = c("drift"))
 plt_season <- autoplot(res_ar1, component = c("season"))
-plt_ar1 <- autoplot(res_ar1, component = c("ar1"))
+plt_ar <- autoplot(res_ar1, component = c("ar"))
 ```
 
 ### モデル診断

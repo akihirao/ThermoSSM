@@ -342,7 +342,7 @@ component, specify the `component` argument in `autoplot()` as follows.
 plt_level <- autoplot(res_ar1, component = c("level"))
 plt_drift <- autoplot(res_ar1, component = c("drift"))
 plt_season <- autoplot(res_ar1, component = c("season"))
-plt_ar1 <- autoplot(res_ar1, component = c("ar1"))
+plt_ar <- autoplot(res_ar1, component = c("ar"))
 ```
 
 ### Model Diagnostics
