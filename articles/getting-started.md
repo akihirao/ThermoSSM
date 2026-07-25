@@ -336,7 +336,7 @@ underlying trend behavior to be examined more clearly.
 plot(res)
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-6-1.png)
+![](getting-started_files/figure-html/unnamed-chunk-7-1.png)
 
 The level component shows a persistent upward trend in sea surface
 temperature over the study period, while the drift component indicates a
@@ -369,7 +369,7 @@ temporal dependence and departures from the Gaussian error assumption.
 plot_tempssm_residual_diagnostics(res)
 ```
 
-![](getting-started_files/figure-html/unnamed-chunk-7-1.png)
+![](getting-started_files/figure-html/unnamed-chunk-8-1.png)
 
 In the model diagnostic plot, the upper panel shows the residual time
 series, the lower-left panel shows the residual autocorrelation plot
