@@ -29,8 +29,8 @@ autoplot(
 - component:
 
   Character vector specifying one to four components to plot. One of
-  `"level"`, `"drift"`, `"season"`, or `"ar1"`. Values must be unique
-  and are displayed in the supplied order. If `NULL` (default), all four
+  `"level"`, `"drift"`, `"season"`, or `"ar"`. Values must be unique and
+  are displayed in the supplied order. If `NULL` (default), all four
   components are plotted.
 
 - ci:
