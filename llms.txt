@@ -73,7 +73,7 @@ A short tutorial is available in the package vignette:
 
 The model specification is described separately:
 
-<https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.Rmd>
+<https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.pdf>
 
 A comprehensive reference manual (English) is available here:
 
@@ -82,10 +82,6 @@ A comprehensive reference manual (English) is available here:
 For Japanese users, a detailed manual is also provided:
 
 <https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual_jp.pdf>
-
-The Japanese model specification source is available here:
-
-<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_model_jp.Rmd>
 
 ## Basic Usage
 
