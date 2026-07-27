@@ -1,7 +1,10 @@
 # tempssm
 
-`tempssm` provides a practical R interface for state-space analysis of
-temperature time series. The package focuses on linear Gaussian
+`tempssm` is an R package for analyzing temperature time series
+collected in the field, such as air and water temperatures. It provides
+a practical way to understand how long-term trends, seasonal patterns,
+autoregressive behavior, and external drivers shape observed changes
+over time. The package facilitates the application of linear Gaussian
 state-space models estimated by Kalman filtering and smoothing, using
 the `KFAS` package as the computational backend (Helske, 2017).
 
@@ -48,7 +51,7 @@ for broader temperature time-series analysis.
 
 # Install from Github
 # install.packages("pak")
-pak::pack("akihirao/tempssm")
+pak::pak("akihirao/tempssm")
 
 # Alternative
 # install.packages("devtools")
@@ -67,7 +70,7 @@ A comprehensive reference manual (English) is available here:
 
 For Japanese users, a detailed manual is also provided:
 
-<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf>
+<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual_jp.pdf>
 
 ## Basic Usage
 

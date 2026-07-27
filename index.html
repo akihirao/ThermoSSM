@@ -55,7 +55,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="tempssm">tempssm<a class="anchor" aria-label="anchor" href="#tempssm"></a>
 </h1></div>
-<p><code>tempssm</code> provides a practical R interface for state-space analysis of temperature time series. The package focuses on linear Gaussian state-space models estimated by Kalman filtering and smoothing, using the <code>KFAS</code> package as the computational backend (Helske, 2017).</p>
+<p><code>tempssm</code> is an R package for analyzing temperature time series collected in the field, such as air and water temperatures. It provides a practical way to understand how long-term trends, seasonal patterns, autoregressive behavior, and external drivers shape observed changes over time. The package facilitates the application of linear Gaussian state-space models estimated by Kalman filtering and smoothing, using the <code>KFAS</code> package as the computational backend (Helske, 2017).</p>
 <div class="section level2">
 <h2 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h2>
@@ -83,7 +83,7 @@
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install from Github</span></span>
 <span><span class="co"># install.packages("pak")</span></span>
-<span><span class="fu">pak</span><span class="fu">::</span><span class="fu">pack</span><span class="op">(</span><span class="st">"akihirao/tempssm"</span><span class="op">)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"akihirao/tempssm"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Alternative</span></span>
 <span><span class="co"># install.packages("devtools")</span></span>
@@ -97,7 +97,7 @@
 <p>A comprehensive reference manual (English) is available here:</p>
 <p><a href="https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf" class="external-link uri">https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf</a></p>
 <p>For Japanese users, a detailed manual is also provided:</p>
-<p><a href="https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf" class="external-link uri">https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf</a></p>
+<p><a href="https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual_jp.pdf" class="external-link uri">https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual_jp.pdf</a></p>
 </div>
 <div class="section level2">
 <h2 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
