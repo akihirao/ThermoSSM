@@ -1,0 +1,178 @@
+---
+title: "tempssm モデル仕様"
+subtitle: "Version `r packageVersion('tempssm')`"
+author: "平尾章・馬場真哉・市野川桃子"
+date: "`r Sys.Date()`"
+output:
+#  pdf_document:
+#    latex_engine: lualatex
+#    toc: true
+  rmarkdown::html_vignette: default
+#  md_document:
+#    variant: gfm+tex_math_dollars
+header-includes:
+  - \usepackage{luatexja}
+  - \usepackage{luatexja-fontspec}
+  - \setmainjfont{Hiragino Mincho ProN}
+  - \setsansjfont{Hiragino Sans}
+  - \setmonojfont{Hiragino Sans}
+vignette: >
+  %\VignetteIndexEntry{tempssm モデル仕様}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 概要
+
+この文書では、`tempssm` に実装されている線形ガウス状態空間モデルの定式化を
+説明します。本パッケージは温度時系列を対象とし、観測された変動を、長期トレンド、
+季節変動、自己回帰的依存性、および任意の外生効果の組み合わせとして表現します。
+
+モデル推定では、計算バックエンドとして `KFAS` パッケージを用います。
+主要関数 `tempssm()` は、フィルタリング推定値と平滑化推定値の両方を返します。
+特に断らない限り、パッケージの要約、診断、プロットで示される結果は、
+平滑化推定値に基づいています。
+
+# 状態空間モデル
+
+本パッケージでは、長期トレンド、季節変動、自己回帰成分を明示的に含む温度時系列を
+記述するために、基本構造時系列モデル（Basic Structural Time Series Model; BSTSM）
+を拡張したモデルを考えます。観測方程式は次のように表されます。
+
+$$
+y_t = \alpha_t + v_t. \tag{1}
+$$
+
+ここで、$t$ は時点、$y_t$ は観測された温度、$\alpha_t$ は潜在状態、$v_t$ は
+観測誤差を表します。
+
+潜在状態は次のように分解されます。
+
+$$
+\alpha_t = \mu_t + s_t + r_t + E_t. \tag{2}
+$$
+
+ここで、$\mu_t$ は長期トレンド成分、$s_t$ は季節成分、$r_t$ は定常的な
+自己回帰成分、$E_t$ は外生変数の寄与を表します。
+
+# 長期トレンド成分
+
+レベル成分は、次の 2 次の確率過程に従います。
+
+$$
+\mu_t = 2\mu_{t-1} - \mu_{t-2} + \zeta_t,
+\qquad \zeta_t \sim \mathcal{N}(0, \sigma_\zeta^2). \tag{3}
+$$
+
+ここで、$\zeta_t$ は長期トレンド成分の過程誤差です。この定式化により、
+長期的な水準とその変化率が時間とともに変化することを許容します。
+
+# 季節成分
+
+季節成分は、総和ゼロ制約をもつモデルとして表されます。
+
+$$
+s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
+\qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
+$$
+
+ここで、$\omega_t$ は季節成分の過程誤差、$f$ は季節周期を表します。例えば、
+月別データでは $f = 12$ です。この定式化により季節効果が識別可能となり、
+異なる時間分解能をもつ時系列に対応したモデルを構築できます。
+
+1つの完全な季節周期にわたって総和ゼロ制約を課すことで、季節成分は長期的な
+ドリフトを導入することなく、基礎となる長期トレンドからの反復的な偏差を捉えます。
+季節成分を含まないモデルでは、季節項 $s_t$ はゼロとし、状態方程式から
+省略されます。
+
+# 自己回帰成分
+
+自己回帰成分は、$l$ 次の自己回帰（AR）過程に従います。
+
+$$
+r_t = \phi_1 r_{t-1} + \phi_2 r_{t-2} + \cdots +
+\phi_l r_{t-l} + \tau_t,
+\qquad \tau_t \sim \mathcal{N}(0, \sigma_\tau^2). \tag{5}
+$$
+
+ここで、$\tau_t$ は自己回帰成分の過程誤差を表します。過程誤差項
+（$\zeta_t$、$\omega_t$、および $\tau_t$）は互いに独立で、正規分布に従うと
+仮定します。
+
+自己回帰成分は、長期トレンドや季節構造を考慮した後に残る短期的な系列依存性を
+吸収することを主な目的としています。応用解析では、低次の AR 構造を出発点とし、
+残差診断や予測性能を確認しながら、必要に応じて高次のモデルを検討することが
+有用です。
+
+# 外生成分
+
+外生成分は次のように定義されます。
+
+$$
+E_t = \beta_1 x_{1,t} + \beta_2 x_{2,t} + \cdots + \beta_m x_{m,t}. \tag{6}
+$$
+
+外生項 $E_t$ は外部要因の影響を表します。外部要因には、大規模な気候指数、
+地域的な環境変数、あるいは観測された温度時系列に関連する物理的根拠をもつ
+予測変数などが含まれます。各外生変数は、時間に依存しない回帰係数
+（$\beta_1, \beta_2, \ldots, \beta_m$）を通じて線形にモデルへ組み込まれ、
+その寄与の大きさと方向を潜在状態成分と同時に推定できます。
+
+外生変数を含むモデルで観測期間後の予測を行うには、将来の外生変数値、または
+それらに対する明示的な仮定が必要です。
+
+# 推定パラメータ数
+
+観測データにモデルを適用する際、推定されるパラメータの総数（$k$）は、
+自己回帰成分の次数と、モデルに含まれる外生変数の数に依存します。
+
+例えば、2次の自己回帰成分をもち、外生共変量を含まないモデルでは、
+観測誤差分散、長期トレンド・季節・自己回帰成分に対応する過程誤差分散、
+および 1 次・2 次の自己回帰係数（$\phi_1$ と $\phi_2$）の計 6 個の
+パラメータが推定されます。
+
+一般に、$l$ 次の自己回帰成分と $m$ 個の外生変数をもつ場合、パラメータの総数は
+
+$$
+k = 4 + l + m
+$$
+
+です。
+
+# パラメータ推定
+
+パラメータ推定手順の中核的な実装は、Baba et al. (2024) によって提供された
+補足コードに基づいています。パラメータ推定は、Helske (2017) が推奨する
+2段階の最適化戦略によって行われます。
+
+第 1 段階では、ユーザー指定の初期値を用いて Nelder-Mead 法
+（Nelder & Mead, 1965）によりモデルパラメータを推定します。得られた推定値を、
+第 2 段階の BFGS アルゴリズム（Shanno, 1970）による最適化の初期値として
+用います。
+
+`tempssm()` は、デフォルトでは KFAS の周辺尤度 (marginal likelihood) を用いて
+パラメータ推定を行います。一方で、`marginal = FALSE` を明示すれば、散漫尤度
+(diffuse likelihood) も利用できます。選択された尤度タイプは推定済みの
+`tempssm` オブジェクトに保存され、`logLik()` や `summary()` などの
+下流メソッドでも一貫して用いられます。
+
+# 参考文献
+
+Baba, S., Ishii, H., and Yoshiyama, T. (2024).
+Estimating sea temperature trends using a linear Gaussian state-space model
+in Jogashima, Kanagawa, Japan.
+*Bulletin of the Japanese Society of Fisheries Oceanography*,
+88(3), 190-199.
+（日本語、英語要旨あり。）
+https://doi.org/10.34423/jsfo.88.3_190
+
+Baba, S. (2024).
+線形ガウス状態空間モデルを用いた海水温トレンド推定のための補足コードおよび
+テストデータ。
+GitHub リポジトリ:
+https://github.com/logics-of-blue/sea-temperature-trend-jogashima
+
+Helske, J. (2017).
+KFAS: R における指数型分布族状態空間モデル。
+*Journal of Statistical Software*, 78(10), 1-39.
+https://doi.org/10.18637/jss.v078.i10

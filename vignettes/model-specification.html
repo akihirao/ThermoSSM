@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa" />
+
+<meta name="date" content="2026-07-27" />
+
+<title>Model specification in tempssm</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Model specification in tempssm</h1>
+<h3 class="subtitle">Version 0.3.0</h3>
+<h4 class="author">Akira S. Hirao, Shinya Baba, and Momoko
+Ichinokawa</h4>
+<h4 class="date">2026-07-27</h4>
+
+
+
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>This vignette describes the linear Gaussian state-space model
+implemented in <code>tempssm</code>. The package is designed for
+temperature time series and represents observed variation as a
+combination of long-term trend, seasonal variation, autoregressive
+dependence, and optional exogenous effects.</p>
+<p>The model is estimated with the <code>KFAS</code> package as the
+computational backend. The main fitting function,
+<code>tempssm()</code>, returns both filtering and smoothing estimates.
+Unless otherwise stated, summaries, diagnostics, and plots shown by the
+package are based on smoothed state estimates.</p>
+</div>
+<div id="state-space-model" class="section level1">
+<h1>State-Space Model</h1>
+<p>We consider an extended version of the Basic Structural Time Series
+Model (BSTSM) to describe temperature time series with explicit
+long-term trend, seasonal variability, and autoregressive structure. The
+observation equation is given by</p>
+<p><span class="math display">\[
+y_t = \alpha_t + v_t. \tag{1}
+\]</span></p>
+<p>Here, <span class="math inline">\(t\)</span> denotes the time index,
+<span class="math inline">\(y_t\)</span> is the observed temperature,
+<span class="math inline">\(\alpha_t\)</span> is the latent state, and
+<span class="math inline">\(v_t\)</span> is the observation error.</p>
+<p>The latent state is decomposed as</p>
+<p><span class="math display">\[
+\alpha_t = \mu_t + s_t + r_t + E_t. \tag{2}
+\]</span></p>
+<p>Here, <span class="math inline">\(\mu_t\)</span> is the long-term
+trend component, <span class="math inline">\(s_t\)</span> is the
+seasonal component, <span class="math inline">\(r_t\)</span> is a
+stationary autoregressive component, and <span class="math inline">\(E_t\)</span> is the contribution of exogenous
+variables.</p>
+</div>
+<div id="long-term-trend" class="section level1">
+<h1>Long-Term Trend</h1>
+<p>The level component follows a second-order stochastic process:</p>
+<p><span class="math display">\[
+\mu_t = 2\mu_{t-1} - \mu_{t-2} + \zeta_t,
+\qquad \zeta_t \sim \mathcal{N}(0, \sigma_\zeta^2). \tag{3}
+\]</span></p>
+<p>Here, <span class="math inline">\(\zeta_t\)</span> is the process
+error of the long-term trend component. This formulation allows the
+long-term level and its rate of change to vary over time.</p>
+</div>
+<div id="seasonal-component" class="section level1">
+<h1>Seasonal Component</h1>
+<p>The seasonal component is modeled with a sum-to-zero constraint:</p>
+<p><span class="math display">\[
+s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
+\qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
+\]</span></p>
+<p>Here, <span class="math inline">\(\omega_t\)</span> is the process
+error of the seasonal component and <span class="math inline">\(f\)</span> denotes the seasonal frequency, for
+example <span class="math inline">\(f = 12\)</span> for monthly data.
+This formulation makes seasonal effects identifiable and enables models
+to be constructed for time series with different temporal
+resolutions.</p>
+<p>By imposing the sum-to-zero constraint over one complete seasonal
+cycle, the seasonal component captures recurring deviations from the
+underlying long-term trend without introducing long-term drift. In
+models without a seasonal component, the seasonal term <span class="math inline">\(s_t\)</span> is set to zero and omitted from the
+state equation.</p>
+</div>
+<div id="autoregressive-component" class="section level1">
+<h1>Autoregressive Component</h1>
+<p>The autoregressive component follows an <span class="math inline">\(l\)</span>th-order autoregressive (AR)
+process:</p>
+<p><span class="math display">\[
+r_t = \phi_1 r_{t-1} + \phi_2 r_{t-2} + \cdots +
+\phi_l r_{t-l} + \tau_t,
+\qquad \tau_t \sim \mathcal{N}(0, \sigma_\tau^2). \tag{5}
+\]</span></p>
+<p>Here, <span class="math inline">\(\tau_t\)</span> denotes the process
+error of the autoregressive component. The process error terms (<span class="math inline">\(\zeta_t\)</span>, <span class="math inline">\(\omega_t\)</span>, and <span class="math inline">\(\tau_t\)</span>) are assumed to be mutually
+independent and normally distributed.</p>
+<p>The autoregressive component is mainly intended to absorb remaining
+short-term serial dependence after accounting for the long-term trend
+and seasonal structure. In applied analyses, low-order AR structures are
+often useful as starting points, and higher orders should be considered
+together with residual diagnostics and prediction performance.</p>
+</div>
+<div id="exogenous-component" class="section level1">
+<h1>Exogenous Component</h1>
+<p>The exogenous component is defined as</p>
+<p><span class="math display">\[
+E_t = \beta_1 x_{1,t} + \beta_2 x_{2,t} + \cdots + \beta_m x_{m,t}.
+\tag{6}
+\]</span></p>
+<p>The exogenous term <span class="math inline">\(E_t\)</span>
+represents the influence of external factors. These may include
+large-scale climate indices, regional environmental variables, or other
+physically motivated predictors relevant to the observed temperature
+time series. Each exogenous variable enters the model linearly through a
+time-invariant regression coefficient (<span class="math inline">\(\beta_1, \beta_2, \ldots, \beta_m\)</span>),
+allowing the magnitude and direction of its contribution to be estimated
+jointly with the latent state components.</p>
+<p>For models with exogenous variables, prediction beyond the observed
+response period requires future exogenous values or an explicit
+assumption about those values.</p>
+</div>
+<div id="number-of-estimated-parameters" class="section level1">
+<h1>Number of Estimated Parameters</h1>
+<p>When applying the model to observational data, the total number of
+parameters to be estimated (<span class="math inline">\(k\)</span>)
+depends on the order of the autoregressive component and the number of
+exogenous variables included in the model.</p>
+<p>For example, in a model with a second-order autoregressive component
+and no exogenous covariates, six parameters are estimated: the
+observation error variance, the process error variances associated with
+the long-term trend, seasonal, and autoregressive components, and the
+first- and second-order autoregressive coefficients (<span class="math inline">\(\phi_1\)</span> and <span class="math inline">\(\phi_2\)</span>).</p>
+<p>In the general case with an <span class="math inline">\(l\)</span>th-order autoregressive component and
+<span class="math inline">\(m\)</span> exogenous variables, the total
+number of parameters is</p>
+<p><span class="math display">\[
+k = 4 + l + m.
+\]</span></p>
+</div>
+<div id="parameter-estimation" class="section level1">
+<h1>Parameter Estimation</h1>
+<p>The core implementation of the parameter estimation procedure is
+based on the supplementary code provided by Baba et al. (2024).
+Parameter estimation is performed using a two-step optimization strategy
+recommended by Helske (2017).</p>
+<p>In the first step, model parameters are estimated using the
+Nelder-Mead method (Nelder &amp; Mead, 1965) with user-specified initial
+values. The resulting estimates are then used as initial values in a
+second optimization step based on the BFGS algorithm (Shanno, 1970).</p>
+<p>By default, <code>tempssm()</code> uses the marginal likelihood
+implemented in KFAS for parameter estimation. The diffuse likelihood
+remains available by explicitly setting <code>marginal = FALSE</code>.
+The selected likelihood type is stored in the fitted
+<code>tempssm</code> object and is used consistently by downstream
+methods such as <code>logLik()</code> and <code>summary()</code>.</p>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<p>Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea
+temperature trends using a linear Gaussian state-space model in
+Jogashima, Kanagawa, Japan. <em>Bulletin of the Japanese Society of
+Fisheries Oceanography</em>, 88(3), 190-199. <a href="https://doi.org/10.34423/jsfo.88.3_190" class="uri">https://doi.org/10.34423/jsfo.88.3_190</a></p>
+<p>Baba, S. (2024). Supplementary code and test data for estimating sea
+temperature trends using a linear Gaussian state-space model. GitHub
+repository: <a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
+<p>Helske, J. (2017). KFAS: Exponential Family State Space Models in R.
+<em>Journal of Statistical Software</em>, 78(10), 1-39. <a href="https://doi.org/10.18637/jss.v078.i10" class="uri">https://doi.org/10.18637/jss.v078.i10</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa" />
 
-<meta name="date" content="2026-07-25" />
+<meta name="date" content="2026-07-27" />
 
 <title>tempssm: State-space modeling for temperature time series in R</title>
 
@@ -344,16 +344,28 @@ temperature time series in R</h1>
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">Akira S. Hirao, Shinya Baba, and Momoko
 Ichinokawa</h4>
-<h4 class="date">2026-07-25</h4>
+<h4 class="date">2026-07-27</h4>
 
 
 
 <div id="summary" class="section level1">
 <h1>Summary</h1>
-<p>R package <strong>tempssm</strong> provides tools for state-space
-analysis of temperature time series, focusing on linear Gaussian
-state-space models estimated via Kalman filtering and smoothing as
-implemented in the KFAS package (Helske, 2017).</p>
+<p><code>tempssm</code> is an R package for analyzing environmental
+temperature time series, including air and water temperature
+observations. It provides a practical framework for assessing how
+long-term trend, seasonal variation, autoregressive dependence, and
+optional exogenous effects contribute to observed temporal variation.
+The package facilitates the application of linear Gaussian state-space
+models estimated by Kalman filtering and smoothing, using the
+<code>KFAS</code> package as the computational backend (Helske,
+2017).</p>
+<p>The core modeling functions in <code>tempssm</code> expect input
+temperature series and optional exogenous covariates to be supplied as
+regularly spaced R <code>ts</code> objects (see the
+<code>stats::ts</code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).
+The package also provides utility functions for converting common
+tabular and observational data formats into <code>ts</code> objects
+before model fitting.</p>
 <div id="key-features" class="section level3">
 <h3>Key features</h3>
 <ul>
@@ -362,8 +374,8 @@ frequencies; currently validated primarily on monthly data</li>
 <li>Estimates latent states using linear Gaussian state-space models
 combined with Kalman filtering and smoothing</li>
 <li>Models temperature dynamics as a sum of interpretable latent
-components, including a long-term trend, seasonal cycle, autoregressive
-structure, and optional exogenous effects</li>
+components, including long-term trend, seasonal variation,
+autoregressive dependence, and optional exogenous effects</li>
 <li>Allows users to specify an arbitrary order of the autoregressive
 component (default: AR(1))</li>
 <li>Implements time-series cross-validation for model evaluation</li>
@@ -392,97 +404,31 @@ supplementary code is publicly available at:</p>
 the workflow into a reusable R package interface with input validation,
 documented S3 methods, tests, diagnostics, cross-validation utilities,
 and examples for broader temperature time-series analysis.</p>
-<p>The next section describes the state-space model used by
-<code>tempssm</code> and clarifies how the trend, seasonal,
-autoregressive, and exogenous components are represented.</p>
+<p>The next section gives a brief model overview. A separate model
+specification vignette describes the mathematical formulation in more
+detail.</p>
 </div>
-<div id="state-space-model-in-tempssm" class="section level1">
-<h1>State-Space Model in <strong>tempssm</strong></h1>
-<p>We consider an extended version of the Basic Structural Time Series
-Model (BSTSM) to describe temperature time series with explicit
-long-term trend, seasonal variability, and auto-regressive component.
-The observation equation is given by <span class="math display">\[
-y_t = \alpha_t + v_t. \tag{1}
-\]</span> where <span class="math inline">\(t\)</span> denotes the time
-index, <span class="math inline">\(y_t\)</span> is the observed
-temperature, <span class="math inline">\(\alpha_t\)</span> is the latent
-state, and <span class="math inline">\(v_t\)</span> is the observation
-error.</p>
-<p>The latent state is decomposed as <span class="math display">\[
-\alpha_t = \mu_t + s_t + r_t + E_t. \tag{2}
-\]</span> where <span class="math inline">\(\mu_t\)</span> is the level
-(trend), <span class="math inline">\(s_t\)</span> the seasonal
-component, <span class="math inline">\(r_t\)</span> a stationary
-autoregressive component, and <span class="math inline">\(E_t\)</span>
-the contribution of exogenous variables.</p>
-<p>The level component follows a second-order stochastic process: <span class="math display">\[
-\mu_t = 2\mu_{t-1} - \mu_{t-2} + \zeta_t,
-\qquad \zeta_t \sim \mathcal{N}(0, \sigma_\zeta^2). \tag{3}
-\]</span> where <span class="math inline">\(\zeta_t\)</span> is the
-process error of the level component.</p>
-<p>The seasonal component is modeled with a sum-to-zero constraint:
-<span class="math display">\[
-s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
-\qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
-\]</span> where <span class="math inline">\(\omega_t\)</span> is the
-process error of the seasonal component and <span class="math inline">\(f\)</span> denotes the seasonal frequency (e.g.,
-<span class="math inline">\(f=12\)</span> for monthly data). This
-formulation ensures that seasonal effects are identifiable and
-comparable across different temporal resolutions. By enforcing the
-sum-to-zero constraint over one full seasonal cycle, the seasonal
-component captures recurring deviations from the underlying trend
-without introducing long-term drift. In models without a seasonal
-component, the seasonal term <span class="math inline">\(s_t\)</span> is
-set to zero and omitted from the satate equation.</p>
-<p>The autoregressive component follows an <span class="math inline">\(l\)</span>th-order autoregressive (AR) process:
-<span class="math display">\[
-r_t = \phi_1 r_{t-1} + \phi_2 r_{t-2} + \cdots + \phi_l r_{t-l} +
-\tau_t,
-\qquad \tau_t \sim \mathcal{N}(0, \sigma_\tau^2). \tag{5}
-\]</span> Here, <span class="math inline">\(\tau_t\)</span> denotes the
-process error of the autoregressive component. The process error terms
-(<span class="math inline">\(\zeta_t\)</span>, <span class="math inline">\(\omega_t\)</span>, and <span class="math inline">\(\tau_t\)</span>) are assumed to be mutually
-independent and normally distributed.</p>
-<p>The exogenous component is defined as <span class="math display">\[
-E_t = \beta_1 x_{1,t} + \beta_2 x_{2,t} + \cdots + \beta_m x_{m,t}.
-\tag{6}
-\]</span> The exogenous term <span class="math inline">\(E_t\)</span>
-represents the influence of external factors, which may include
-large-scale climate indices, regional environmental variables, or other
-physically motivated predictors relevant to the observed temperature
-time series. Each exogenous variable enters the model linearly through a
-time-invariant regression coefficient (<span class="math inline">\(\beta_1, \beta_2, \ldots, \beta_m\)</span>),
-allowing both the magnitude and direction of its contribution to be
-estimated jointly with the latent state components.</p>
-<p>When applying the model to observational data, the total number of
-parameters to be estimated (<span class="math inline">\(k\)</span>)
-depends on the order of autoregressive component and the number of
-exogenous variables included. For example, in a model with a
-second-order autoregressive component and no exogenous covariates, six
-parameters are estimated: the observation error variance, the process
-error variances associated with the level, seasonal, and autoregressive
-components, and the first- and second-order autoregressive coefficients
-(<span class="math inline">\(\phi_1\)</span> and <span class="math inline">\(\phi_2\)</span>). In the general case with an
-<span class="math inline">\(l\)</span>-order autoregressive component
-and <span class="math inline">\(m\)</span> exogenous variables, a total
-number of parameters is <span class="math inline">\(k = 4 + l +
-m\)</span>.</p>
-<p>The core implementation of parameter estimation procedure is based on
-the supplementary code provided by Baba et al. (2024). Parameter
-estimation is performed using a two-step optimization strategy
-recommended by Helske (2017). In the first step, model parameters are
-estimated using the Nelder-Mead method (Nelder &amp; Mead, 1965) with
-user-specified initial values. The resulting estimates are then used as
-initial values in a second optimization step based on the BFGS algorithm
-(Shanno, 1970). The main model-fitting function, <code>tempssm()</code>,
-returns both filtering and smoothing estimates. Unless otherwise stated,
-all results presented in this vignette are based on the smoothed
+<div id="model-overview" class="section level1">
+<h1>Model Overview</h1>
+<p><code>tempssm</code> represents temperature variation with a linear
+Gaussian state-space model composed of interpretable latent components:
+a long-term trend, seasonal variation, autoregressive dependence, and
+optional exogenous effects. The model is estimated with
+<code>KFAS</code>, and <code>tempssm()</code> returns both filtering and
+smoothing estimates. Unless otherwise stated, the summaries,
+diagnostics, and plots in this vignette use smoothed state
 estimates.</p>
+<p>The full mathematical specification, including the observation
+equation, state decomposition, seasonal constraint, autoregressive
+component, exogenous component, parameter count, and estimation
+procedure, is described in the separate model specification vignette. In
+an installed package, it can be opened with
+<code>vignette(&quot;model-specification&quot;, package = &quot;tempssm&quot;)</code>.</p>
 </div>
 <div id="how-to-use" class="section level1">
 <h1>How to use</h1>
-<div id="set-ennvironment" class="section level2">
-<h2>Set Ennvironment</h2>
+<div id="set-environment" class="section level2">
+<h2>Set Environment</h2>
 <p>Load the following libraries for executing ‘How to use’.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="do">## Set libraries</span></span>
 <span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tempssm)</span></code></pre></div>
@@ -491,7 +437,7 @@ estimates.</p>
 <h2>Input Data Format</h2>
 <p>Input data for <strong>tempssm</strong> must be supplied as an R
 <code>ts</code> object, which represents a regularly spaced time series
-(see <code>?stats::ts</code> or <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html" class="uri">https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html</a>).</p>
+(see <code>?stats::ts</code> or <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).</p>
 <p>To support data preparation, the package includes utility functions
 that convert external observational data into <code>ts</code> objects
 suitable for model fitting (see Appendix).</p>
