@@ -1,24 +1,31 @@
 # tempssm
 
-`tempssm` is an R package for analyzing temperature time series
-collected in the field, such as air and water temperatures. It provides
-a practical way to understand how long-term trends, seasonal patterns,
-autoregressive behavior, and external drivers shape observed changes
-over time. The package facilitates the application of linear Gaussian
-state-space models estimated by Kalman filtering and smoothing, using
-the `KFAS` package as the computational backend (Helske, 2017).
+`tempssm` is an R package for analyzing environmental temperature time
+series, including air and water temperature observations. It provides a
+practical framework for assessing how long-term trend, seasonal
+variation, autoregressive dependence, and optional exogenous effects
+contribute to observed temporal variation. The package facilitates the
+application of linear Gaussian state-space models estimated by Kalman
+filtering and smoothing, using the `KFAS` package as the computational
+backend (Helske, 2017).
 
 ## Key Features
 
 - Fits linear Gaussian state-space models to temperature time series.
 - Represents temperature dynamics using interpretable latent components:
-  level, seasonal variation, autoregressive structure, and optional
-  exogenous effects.
+  long-term trend, seasonal variation, autoregressive dependence, and
+  optional exogenous effects.
 - Supports arbitrary integer seasonal frequencies, while the current
   examples and validation focus primarily on monthly temperature data.
 - Allows the autoregressive order to be specified by the user.
 - Provides S3 methods for summaries, diagnostics, accessors, and plots.
 - Includes time-series cross-validation tools for model evaluation.
+
+Core modeling functions expect regularly spaced R `ts` objects as inputs
+(see the [`stats::ts`](https://rdrr.io/r/stats/ts.html) documentation:
+<https://search.r-project.org/R/refmans/stats/html/ts.html>). Utility
+functions are included to help convert common tabular or observational
+data into `ts` objects before fitting.
 
 ## Prior Art and Scope
 
@@ -64,6 +71,10 @@ A short tutorial is available in the package vignette:
 
 <https://github.com/akihirao/tempssm/blob/main/vignettes/getting-started.pdf>
 
+The model specification is described separately:
+
+<https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.Rmd>
+
 A comprehensive reference manual (English) is available here:
 
 <https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf>
@@ -71,6 +82,10 @@ A comprehensive reference manual (English) is available here:
 For Japanese users, a detailed manual is also provided:
 
 <https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual_jp.pdf>
+
+The Japanese model specification source is available here:
+
+<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_model_jp.Rmd>
 
 ## Basic Usage
 

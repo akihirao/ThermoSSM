@@ -34,6 +34,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/getting-started.html">tempssm: State-space modeling for temperature time series in R</a></li>
+    <li><a class="dropdown-item" href="../articles/model-specification.html">Model specification in tempssm</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -72,10 +73,22 @@ Shinya Baba, and Momoko Ichinokawa</h4>
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p>R package <strong>tempssm</strong> provides tools for state-space
-analysis of temperature time series, focusing on linear Gaussian
-state-space models estimated via Kalman filtering and smoothing as
-implemented in the KFAS package (Helske, 2017).</p>
+<p><code>tempssm</code> is an R package for analyzing environmental
+temperature time series, including air and water temperature
+observations. It provides a practical framework for assessing how
+long-term trend, seasonal variation, autoregressive dependence, and
+optional exogenous effects contribute to observed temporal variation.
+The package facilitates the application of linear Gaussian state-space
+models estimated by Kalman filtering and smoothing, using the
+<code>KFAS</code> package as the computational backend (Helske,
+2017).</p>
+<p>The core modeling functions in <code>tempssm</code> expect input
+temperature series and optional exogenous covariates to be supplied as
+regularly spaced R <code>ts</code> objects (see the
+<code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">stats::ts</a></code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).
+The package also provides utility functions for converting common
+tabular and observational data formats into <code>ts</code> objects
+before model fitting.</p>
 <div class="section level4">
 <h4 id="key-features">Key features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h4>
@@ -85,8 +98,8 @@ frequencies; currently validated primarily on monthly data</li>
 <li>Estimates latent states using linear Gaussian state-space models
 combined with Kalman filtering and smoothing</li>
 <li>Models temperature dynamics as a sum of interpretable latent
-components, including a long-term trend, seasonal cycle, autoregressive
-structure, and optional exogenous effects</li>
+components, including long-term trend, seasonal variation,
+autoregressive dependence, and optional exogenous effects</li>
 <li>Allows users to specify an arbitrary order of the autoregressive
 component (default: AR(1))</li>
 <li>Implements time-series cross-validation for model evaluation</li>
@@ -116,128 +129,33 @@ supplementary code is publicly available at:</p>
 the workflow into a reusable R package interface with input validation,
 documented S3 methods, tests, diagnostics, cross-validation utilities,
 and examples for broader temperature time-series analysis.</p>
-<p>The next section describes the state-space model used by
-<code>tempssm</code> and clarifies how the trend, seasonal,
-autoregressive, and exogenous components are represented.</p>
+<p>The next section gives a brief model overview. A separate model
+specification vignette describes the mathematical formulation in more
+detail.</p>
 </div>
 <div class="section level2">
-<h2 id="state-space-model-in-tempssm">State-Space Model in <strong>tempssm</strong><a class="anchor" aria-label="anchor" href="#state-space-model-in-tempssm"></a>
+<h2 id="model-overview">Model Overview<a class="anchor" aria-label="anchor" href="#model-overview"></a>
 </h2>
-<p>We consider an extended version of the Basic Structural Time Series
-Model (BSTSM) to describe temperature time series with explicit
-long-term trend, seasonal variability, and auto-regressive component.
-The observation equation is given by
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>t</mi></msub><mo>=</mo><msub><mi>α</mi><mi>t</mi></msub><mo>+</mo><msub><mi>v</mi><mi>t</mi></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
-y_t = \alpha_t + v_t. \tag{1}
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
-denotes the time index,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>y</mi><mi>t</mi></msub><annotation encoding="application/x-tex">y_t</annotation></semantics></math>
-is the observed temperature,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>α</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\alpha_t</annotation></semantics></math>
-is the latent state, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>v</mi><mi>t</mi></msub><annotation encoding="application/x-tex">v_t</annotation></semantics></math>
-is the observation error.</p>
-<p>The latent state is decomposed as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>α</mi><mi>t</mi></msub><mo>=</mo><msub><mi>μ</mi><mi>t</mi></msub><mo>+</mo><msub><mi>s</mi><mi>t</mi></msub><mo>+</mo><msub><mi>r</mi><mi>t</mi></msub><mo>+</mo><msub><mi>E</mi><mi>t</mi></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\alpha_t = \mu_t + s_t + r_t + E_t. \tag{2}
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>μ</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\mu_t</annotation></semantics></math>
-is the level (trend),
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mi>t</mi></msub><annotation encoding="application/x-tex">s_t</annotation></semantics></math>
-the seasonal component,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>r</mi><mi>t</mi></msub><annotation encoding="application/x-tex">r_t</annotation></semantics></math>
-a stationary autoregressive component, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mi>t</mi></msub><annotation encoding="application/x-tex">E_t</annotation></semantics></math>
-the contribution of exogenous variables.</p>
-<p>The level component follows a second-order stochastic process:
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>μ</mi><mi>t</mi></msub><mo>=</mo><mn>2</mn><msub><mi>μ</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>−</mo><msub><mi>μ</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub><mo>+</mo><msub><mi>ζ</mi><mi>t</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ζ</mi><mi>t</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>ζ</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\mu_t = 2\mu_{t-1} - \mu_{t-2} + \zeta_t,
-\qquad \zeta_t \sim \mathcal{N}(0, \sigma_\zeta^2). \tag{3}
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ζ</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\zeta_t</annotation></semantics></math>
-is the process error of the level component.</p>
-<p>The seasonal component is modeled with a sum-to-zero constraint:
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><mi>−</mi><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mi>t</mi><mo>−</mo><mi>f</mi></mrow><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>s</mi><mi>i</mi></msub><mo>+</mo><msub><mi>ω</mi><mi>t</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ω</mi><mi>t</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>ω</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
-s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
-\qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
-</annotation></semantics></math> where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ω</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\omega_t</annotation></semantics></math>
-is the process error of the seasonal component and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math>
-denotes the seasonal frequency (e.g.,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mo>=</mo><mn>12</mn></mrow><annotation encoding="application/x-tex">f=12</annotation></semantics></math>
-for monthly data). This formulation ensures that seasonal effects are
-identifiable and comparable across different temporal resolutions. By
-enforcing the sum-to-zero constraint over one full seasonal cycle, the
-seasonal component captures recurring deviations from the underlying
-trend without introducing long-term drift. In models without a seasonal
-component, the seasonal term
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mi>t</mi></msub><annotation encoding="application/x-tex">s_t</annotation></semantics></math>
-is set to zero and omitted from the satate equation.</p>
-<p>The autoregressive component follows an
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>l</mi><annotation encoding="application/x-tex">l</annotation></semantics></math>th-order
-autoregressive (AR) process:
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>t</mi></msub><mo>=</mo><msub><mi>ϕ</mi><mn>1</mn></msub><msub><mi>r</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>+</mo><msub><mi>ϕ</mi><mn>2</mn></msub><msub><mi>r</mi><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>ϕ</mi><mi>l</mi></msub><msub><mi>r</mi><mrow><mi>t</mi><mo>−</mo><mi>l</mi></mrow></msub><mo>+</mo><msub><mi>τ</mi><mi>t</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>τ</mi><mi>t</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>τ</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
-r_t = \phi_1 r_{t-1} + \phi_2 r_{t-2} + \cdots + \phi_l r_{t-l} + \tau_t,
-\qquad \tau_t \sim \mathcal{N}(0, \sigma_\tau^2). \tag{5}
-</annotation></semantics></math> Here,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>τ</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\tau_t</annotation></semantics></math>
-denotes the process error of the autoregressive component. The process
-error terms
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ζ</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\zeta_t</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ω</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\omega_t</annotation></semantics></math>,
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>τ</mi><mi>t</mi></msub><annotation encoding="application/x-tex">\tau_t</annotation></semantics></math>)
-are assumed to be mutually independent and normally distributed.</p>
-<p>The exogenous component is defined as
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>t</mi></msub><mo>=</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mrow><mn>1</mn><mo>,</mo><mi>t</mi></mrow></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><msub><mi>x</mi><mrow><mn>2</mn><mo>,</mo><mi>t</mi></mrow></msub><mo>+</mo><mi>⋯</mi><mo>+</mo><msub><mi>β</mi><mi>m</mi></msub><msub><mi>x</mi><mrow><mi>m</mi><mo>,</mo><mi>t</mi></mrow></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
-E_t = \beta_1 x_{1,t} + \beta_2 x_{2,t} + \cdots + \beta_m x_{m,t}. \tag{6}
-</annotation></semantics></math> The exogenous term
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>E</mi><mi>t</mi></msub><annotation encoding="application/x-tex">E_t</annotation></semantics></math>
-represents the influence of external factors, which may include
-large-scale climate indices, regional environmental variables, or other
-physically motivated predictors relevant to the observed temperature
-time series. Each exogenous variable enters the model linearly through a
-time-invariant regression coefficient
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>,</mo><msub><mi>β</mi><mn>2</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>β</mi><mi>m</mi></msub></mrow><annotation encoding="application/x-tex">\beta_1, \beta_2, \ldots, \beta_m</annotation></semantics></math>),
-allowing both the magnitude and direction of its contribution to be
-estimated jointly with the latent state components.</p>
-<p>When applying the model to observational data, the total number of
-parameters to be estimated
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>k</mi><annotation encoding="application/x-tex">k</annotation></semantics></math>)
-depends on the order of autoregressive component and the number of
-exogenous variables included. For example, in a model with a
-second-order autoregressive component and no exogenous covariates, six
-parameters are estimated: the observation error variance, the process
-error variances associated with the level, seasonal, and autoregressive
-components, and the first- and second-order autoregressive coefficients
-(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\phi_1</annotation></semantics></math>
-and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mn>2</mn></msub><annotation encoding="application/x-tex">\phi_2</annotation></semantics></math>).
-In the general case with an
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>l</mi><annotation encoding="application/x-tex">l</annotation></semantics></math>-order
-autoregressive component and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>m</mi><annotation encoding="application/x-tex">m</annotation></semantics></math>
-exogenous variables, a total number of parameters is
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi><mo>=</mo><mn>4</mn><mo>+</mo><mi>l</mi><mo>+</mo><mi>m</mi></mrow><annotation encoding="application/x-tex">k = 4 + l + m</annotation></semantics></math>.</p>
-<p>The core implementation of parameter estimation procedure is based on
-the supplementary code provided by Baba et al. (2024). Parameter
-estimation is performed using a two-step optimization strategy
-recommended by Helske (2017). In the first step, model parameters are
-estimated using the Nelder-Mead method (Nelder &amp; Mead, 1965) with
-user-specified initial values. The resulting estimates are then used as
-initial values in a second optimization step based on the BFGS algorithm
-(Shanno, 1970). The main model-fitting function, <code><a href="../reference/tempssm.html">tempssm()</a></code>,
-returns both filtering and smoothing estimates. Unless otherwise stated,
-all results presented in this vignette are based on the smoothed
+<p><code>tempssm</code> represents temperature variation with a linear
+Gaussian state-space model composed of interpretable latent components:
+a long-term trend, seasonal variation, autoregressive dependence, and
+optional exogenous effects. The model is estimated with
+<code>KFAS</code>, and <code><a href="../reference/tempssm.html">tempssm()</a></code> returns both filtering and
+smoothing estimates. Unless otherwise stated, the summaries,
+diagnostics, and plots in this vignette use smoothed state
 estimates.</p>
+<p>The full mathematical specification, including the observation
+equation, state decomposition, seasonal constraint, autoregressive
+component, exogenous component, parameter count, and estimation
+procedure, is described in the separate model specification vignette. In
+an installed package, it can be opened with
+<code><a href="../articles/model-specification.html">vignette("model-specification", package = "tempssm")</a></code>.</p>
 </div>
 <div class="section level2">
 <h2 id="how-to-use">How to use<a class="anchor" aria-label="anchor" href="#how-to-use"></a>
 </h2>
 <div class="section level3">
-<h3 id="set-ennvironment">Set Ennvironment<a class="anchor" aria-label="anchor" href="#set-ennvironment"></a>
+<h3 id="set-environment">Set Environment<a class="anchor" aria-label="anchor" href="#set-environment"></a>
 </h3>
 <p>Load the following libraries for executing ‘How to use’.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -249,7 +167,7 @@ estimates.</p>
 </h3>
 <p>Input data for <strong>tempssm</strong> must be supplied as an R
 <code>ts</code> object, which represents a regularly spaced time series
-(see <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">?stats::ts</a></code> or <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html" class="external-link uri">https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html</a>).</p>
+(see <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">?stats::ts</a></code> or <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).</p>
 <p>To support data preparation, the package includes utility functions
 that convert external observational data into <code>ts</code> objects
 suitable for model fitting (see Appendix).</p>
