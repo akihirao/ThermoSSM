@@ -138,6 +138,9 @@
 - [`summary(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/summary.tempssm.md)
   : Summary method for tempssm objects
 
+- [`temp_MtFuji`](https://akihirao.github.io/tempssm/reference/temp_MtFuji.md)
+  : Monthly mean air temperature at the summit of Mt. Fuji
+
 - [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
   : tempssm: State space models for temperature time series
 

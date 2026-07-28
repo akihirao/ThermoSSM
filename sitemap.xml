@@ -1,6 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://akihirao.github.io/tempssm/404.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/CONTRIBUTING.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/articles/getting-started-jogashima.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/articles/getting-started.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/articles/index.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/articles/model-specification.html</loc></url>
@@ -51,6 +52,7 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/sst_jogashima.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/sst_niigata.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/summary.tempssm.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/temp_MtFuji.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/trim_prediction_intervals.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/trim_ts_overlap.html</loc></url>

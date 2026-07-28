@@ -65,8 +65,8 @@ Shinya Baba, and Momoko Ichinokawa</h4>
             
             <h4 data-toc-skip class="date">2026-07-28</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/akihirao/tempssm/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
-      <div class="d-none name"><code>getting-started.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/akihirao/tempssm/blob/main/vignettes/getting-started-jogashima.Rmd" class="external-link"><code>vignettes/getting-started-jogashima.Rmd</code></a></small>
+      <div class="d-none name"><code>getting-started-jogashima.Rmd</code></div>
     </div>
 
     
@@ -173,12 +173,12 @@ short-term predictions.</p>
 <div class="section level2">
 <h2 id="example-dataset">Example Dataset<a class="anchor" aria-label="anchor" href="#example-dataset"></a>
 </h2>
-<p>This tutorial uses <code>temp_MtFuji</code>, a long-term monthly air
-temperature time series observed at the summit of Mt. Fuji, Japan.</p>
+<p>A sample sea surface temperature (SST) dataset is included in the
+package.</p>
 <ul>
 <li>
-<strong>Dataset</strong>: Monthly mean air temperature at the summit
-of Mt. Fuji, Japan</li>
+<strong>Dataset</strong>: Simulated monthly sea surface temperature
+(SST) off Jogashima, Miura City, Kanagawa Prefecture, Japan</li>
 <li>
 <strong>Format</strong>: Univariate <code>ts</code> object</li>
 <li>
@@ -186,53 +186,61 @@ of Mt. Fuji, Japan</li>
 <li>
 <strong>Unit</strong>: Degrees Celsius</li>
 <li>
-<strong>Period</strong>: July 1932 to June 2026</li>
+<strong>Period</strong>: January 1998 to February 2023</li>
 </ul>
-<p>The data were obtained from the Japan Meteorological Agency (JMA).
-Values with JMA quality flags below 8, where 8 indicates a normal value
-with no quality problem, are treated as missing values.</p>
+<p>This dataset is a simulated monthly SST time series based on the
+state-space model analysis of sea temperature off Jogashima reported by
+Baba et al. (2024). It is distributed with the supplementary materials
+and prototype code for the motivating study:</p>
+<p><a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="external-link uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span> <span class="co"># load a ts object of temperature at Mt. Fuji</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##        Jul   Aug   Sep   Oct   Nov   Dec</span></span>
-<span><span class="co">## 1932   5.5   5.7   1.8  -4.6  -9.5 -12.9</span></span></code></pre>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span> <span class="co"># load a ts object of SST off Jogashima</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##        Jan   Feb   Mar   Apr   May   Jun</span></span>
+<span><span class="co">## 1998 16.19 13.82 16.44 16.49 19.70 21.83</span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.     NAs </span></span>
-<span><span class="co">##  -25.20  -14.60   -5.80   -6.36    2.00    8.30      11</span></span></code></pre>
-<p>This dataset contains missing observations. <code><a href="../reference/tempssm.html">tempssm()</a></code>
-can retain missing values in the response temperature series and treat
-them as unobserved responses during Kalman filtering and smoothing.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##       Temp      </span></span>
+<span><span class="co">##  Min.   :11.17  </span></span>
+<span><span class="co">##  1st Qu.:16.22  </span></span>
+<span><span class="co">##  Median :18.39  </span></span>
+<span><span class="co">##  Mean   :18.23  </span></span>
+<span><span class="co">##  3rd Qu.:20.11  </span></span>
+<span><span class="co">##  Max.   :26.10</span></span></code></pre>
+<p>This simulated dataset contains no missing observations. In general,
+<code><a href="../reference/tempssm.html">tempssm()</a></code> can retain missing values in the response
+temperature series and treat them as unobserved responses during Kalman
+filtering and smoothing.</p>
 </div>
 <div class="section level2">
 <h2 id="plot-the-time-series">Plot the Time Series<a class="anchor" aria-label="anchor" href="#plot-the-time-series"></a>
 </h2>
-<p>We begin by visualizing the monthly air temperature time series to
-examine its overall structure, including apparent trends, seasonal
-variability, and whether missing observations are present.</p>
+<p>We begin by visualizing the monthly SST time series to examine its
+overall structure, including apparent trends, seasonal variability, and
+whether missing observations are present.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plt_fuji_temp</span> <span class="op">&lt;-</span> <span class="fu">forecast</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span> <span class="op">+</span></span>
+<code class="sourceCode R"><span><span class="va">plt_jogashima_sst</span> <span class="op">&lt;-</span> <span class="fu">forecast</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">Temperature</span> <span class="op">~</span> <span class="op">(</span><span class="va">degree</span> <span class="op">*</span> <span class="va">C</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    x <span class="op">=</span> <span class="st">"Time (year)"</span></span>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Monthly air temperature at the summit of Mt. Fuji"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Simulated monthly SST off Jogashima, Japan"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">plt_fuji_temp</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="700"></p>
-<p>The overall mean air temperature is approximately -6.4 °C, and a
-clear annual seasonal pattern is visible. The series contains 11 missing
-observations. Although the observed temperature appears to increase
-gradually over the long term, year-to-year variation and strong
-seasonality make the underlying trend difficult to assess from the raw
-time series alone.</p>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">plt_jogashima_sst</span><span class="op">)</span></span></code></pre></div>
+<p><img src="getting-started-jogashima_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="700"></p>
+<p>The overall mean SST is approximately 18.2 °C, and a clear seasonal
+pattern is visible. The series contains no missing observations. SST
+appears to decline gradually from the beginning of the series to around
+2010 and then increase thereafter. However, year-to-year variability is
+also evident, making it difficult to identify a clear long-term pattern
+from the raw time series alone.</p>
 </div>
 <div class="section level2">
 <h2 id="fit-a-state-space-model">Fit a State-Space Model<a class="anchor" aria-label="anchor" href="#fit-a-state-space-model"></a>
 </h2>
 <p>When a <code>ts</code> object containing temperature time-series data
-(here, <code>temp_MtFuji</code>) is passed to the core function
+(here, <code>sst_jogashima</code>) is passed to the core function
 <code><a href="../reference/tempssm.html">tempssm()</a></code>, model construction and parameter estimation are
 performed together. The returned S3 object of class <code>tempssm</code>
 (here, <code>res</code>) stores the filtering and smoothing estimates,
@@ -240,29 +248,29 @@ as well as the constructed model and input data. By default,
 <code><a href="../reference/tempssm.html">tempssm()</a></code> fits a first-order autoregressive model.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># model with first-order autoregressive component</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span> <span class="co"># AR(1), the default model</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span> <span class="co"># AR(1), the default model</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## tempssm summary</span></span>
 <span><span class="co">## -----------------</span></span>
 <span><span class="co">## Call:</span></span>
-<span><span class="co">## tempssm(temp_data = temp_MtFuji)</span></span>
+<span><span class="co">## tempssm(temp_data = sst_jogashima)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model fit:</span></span>
 <span><span class="co">##   Likelihood type: marginal </span></span>
-<span><span class="co">##   Log-likelihood : -2055.83 </span></span>
+<span><span class="co">##   Log-likelihood : -198.19 </span></span>
 <span><span class="co">##   k              : 5 </span></span>
 <span><span class="co">##   Diffuse states : 13 </span></span>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.4919418 </span></span>
-<span><span class="co">##   State (Q trend): 1.146228e-08 </span></span>
-<span><span class="co">##   State (Q season): 4.153711e-24 </span></span>
-<span><span class="co">##   State (Q ar): 1.901346 </span></span>
+<span><span class="co">##   Observation (H): 0.07496413 </span></span>
+<span><span class="co">##   State (Q trend): 4.937123e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001763536 </span></span>
+<span><span class="co">##   State (Q ar): 0.1202156 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.2564485</span></span></code></pre>
+<span><span class="co">##   Coefficient of AR1: 0.7579371</span></span></code></pre>
 <p>First, confirm from the summary output that the model has converged
 (<code>Converged: TRUE</code>). The summary also reports the
 log-likelihood, parameter count (<code>k</code>), likelihood type, and
@@ -286,17 +294,19 @@ underlying trend behavior to be examined more clearly.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># plot all components at once</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
-<p>The level component summarizes gradual changes in the underlying
-temperature level after removing the dominant seasonal pattern. In this
-example, the estimated long-term level indicates a gradual increase in
-summit temperature over the study period. The drift component is
-positive on average but small relative to the seasonal variation. The
-seasonal component captures the recurring annual cycle, while the
-autoregressive component represents shorter-term departures from the
-trend and seasonal pattern. The shaded gray areas represent 95%
-confidence intervals for the estimated latent states, illustrating the
-uncertainty associated with each estimated component.</p>
+<p><img src="getting-started-jogashima_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
+<p>The level component suggests a long-term pattern that changes around
+2008: the underlying SST level decreases during the first part of the
+series and then increases during the latter part. The drift component
+shows a corresponding pattern, with mostly negative values before around
+2008 and positive values thereafter. The seasonal component captures the
+recurring annual cycle, while the autoregressive component represents
+shorter-term departures from the trend and seasonal pattern. The shaded
+gray areas represent 95% confidence intervals for the estimated latent
+states, illustrating the uncertainty associated with each estimated
+component. Because this is a simulated dataset, these component plots
+should be interpreted as an illustration of the model output rather than
+as direct estimates from the original observational record.</p>
 <p>The standard plotting interface is <code>plot(res)</code>. The
 explicit helper <code>plot_tempssm_components(res)</code> produces the
 same component plot and can be useful in scripts where a descriptive
@@ -319,12 +329,12 @@ assumption.</p>
 <code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span><span class="va">lb_lag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/time.html" class="external-link">frequency</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">temp_data</span><span class="op">)</span></span>
 <span><span class="fu">forecast</span><span class="fu">::</span><span class="fu"><a href="https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html" class="external-link">checkresiduals</a></span><span class="op">(</span><span class="va">r</span>, lag <span class="op">=</span> <span class="va">lb_lag</span>, test <span class="op">=</span> <span class="st">"LB"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="getting-started-jogashima_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">##  Ljung-Box test</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## data:  Residuals</span></span>
-<span><span class="co">## Q* = 4.4043, df = 12, p-value = 0.975</span></span>
+<span><span class="co">## Q* = 9.6827, df = 12, p-value = 0.6438</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model df: 0.   Total lags used: 12</span></span></code></pre>
 <p>Here, <code><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals()</a></code> explicitly extracts the
@@ -351,27 +361,27 @@ extracted as ts objects as follows.</p>
 <code class="sourceCode R"><span><span class="co"># Smoothing estimates</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">alpha_hat</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">##              level        slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
-<span><span class="co">## Jul 1932 -6.816007 0.0005640189  11.386172   7.235620   2.725050  -2.300199</span></span>
-<span><span class="co">## Aug 1932 -6.815443 0.0005640232  12.425581  11.386172   7.235620   2.725050</span></span>
-<span><span class="co">## Sep 1932 -6.814879 0.0005640323   9.370378  12.425581  11.386172   7.235620</span></span>
-<span><span class="co">## Oct 1932 -6.814315 0.0005640433   3.464614   9.370378  12.425581  11.386172</span></span>
-<span><span class="co">## Nov 1932 -6.813751 0.0005640506  -2.878391   3.464614   9.370378  12.425581</span></span>
-<span><span class="co">## Dec 1932 -6.813187 0.0005640533  -9.076789  -2.878391   3.464614   9.370378</span></span>
+<pre><code><span><span class="co">##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
+<span><span class="co">## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553991</span></span>
+<span><span class="co">## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451</span></span>
+<span><span class="co">## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344</span></span>
+<span><span class="co">## Apr 1998 18.60118 -0.01911004 -2.0508949 -2.8244535 -5.0256252 -2.0428374</span></span>
+<span><span class="co">## May 1998 18.58207 -0.01914416  0.2882283 -2.0508949 -2.8244535 -5.0256252</span></span>
+<span><span class="co">## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535</span></span>
 <span><span class="co">##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10</span></span>
-<span><span class="co">## Jul 1932  -8.183394 -11.668060 -12.500582  -9.076789  -2.878391    3.464614</span></span>
-<span><span class="co">## Aug 1932  -2.300199  -8.183394 -11.668060 -12.500582  -9.076789   -2.878391</span></span>
-<span><span class="co">## Sep 1932   2.725050  -2.300199  -8.183394 -11.668060 -12.500582   -9.076789</span></span>
-<span><span class="co">## Oct 1932   7.235620   2.725050  -2.300199  -8.183394 -11.668060  -12.500582</span></span>
-<span><span class="co">## Nov 1932  11.386172   7.235620   2.725050  -2.300199  -8.183394  -11.668060</span></span>
-<span><span class="co">## Dec 1932  12.425581  11.386172   7.235620   2.725050  -2.300199   -8.183394</span></span>
-<span><span class="co">##          sea_dummy11      arima1</span></span>
-<span><span class="co">## Jul 1932    9.370378  0.74270050</span></span>
-<span><span class="co">## Aug 1932    3.464614  0.07576104</span></span>
-<span><span class="co">## Sep 1932   -2.878391 -0.64035911</span></span>
-<span><span class="co">## Oct 1932   -9.076789 -1.00172106</span></span>
-<span><span class="co">## Nov 1932  -12.500582  0.22370692</span></span>
-<span><span class="co">## Dec 1932  -11.668060  2.40713410</span></span></code></pre>
+<span><span class="co">## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949</span></span>
+<span><span class="co">## Feb 1998  0.9553991  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283</span></span>
+<span><span class="co">## Mar 1998  0.5642451  0.9553991  1.6282639  4.9410126  2.4937014   1.9925949</span></span>
+<span><span class="co">## Apr 1998 -0.9196344  0.5642451  0.9553991  1.6282639  4.9410126   2.4937014</span></span>
+<span><span class="co">## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553991  1.6282639   4.9410126</span></span>
+<span><span class="co">## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553991   1.6282639</span></span>
+<span><span class="co">##          sea_dummy11     arima1</span></span>
+<span><span class="co">## Jan 1998  -2.8244535 -0.2178663</span></span>
+<span><span class="co">## Feb 1998  -2.0508949  0.1519894</span></span>
+<span><span class="co">## Mar 1998   0.2882283  0.4187225</span></span>
+<span><span class="co">## Apr 1998   1.9925949  0.2408083</span></span>
+<span><span class="co">## May 1998   2.4937014  0.7185730</span></span>
+<span><span class="co">## Jun 1998   4.9410126  1.0167732</span></span></code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 　Smoothing estimate of level component</span></span>
 <span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
@@ -382,9 +392,8 @@ extracted as ts objects as follows.</p>
 <span><span class="co"># Average drift rate per year across the full period</span></span>
 <span><span class="va">mean_drift_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drift_ts</span><span class="op">)</span></span>
 <span><span class="va">mean_drift_year</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.01830289</span></span></code></pre>
-<p>Average annual change in air temperature is approximately 0.02
-°C.</p>
+<pre><code><span><span class="co">## [1] 0.08777083</span></span></code></pre>
+<p>Average annual increase in SST is approximately 0.09 °C.</p>
 </div>
 <div class="section level2">
 <h2 id="make-short-term-predictions">Make Short-Term Predictions<a class="anchor" aria-label="anchor" href="#make-short-term-predictions"></a>
@@ -398,19 +407,19 @@ autoregressive components.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span><span class="va">pred_1</span></span></code></pre></div>
-<pre><code><span><span class="co">##           Jul</span></span>
-<span><span class="co">## 2026 6.276348</span></span></code></pre>
+<pre><code><span><span class="co">##           Mar</span></span>
+<span><span class="co">## 2023 18.33035</span></span></code></pre>
 <p>Predictions for multiple future time points can be requested by
 setting the <code>n.ahead</code> argument.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res</span>, n.ahead <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="va">pred_12</span></span></code></pre></div>
-<pre><code><span><span class="co">##             Jan        Feb        Mar        Apr        May        Jun</span></span>
-<span><span class="co">## 2026                                                                  </span></span>
-<span><span class="co">## 2027 -17.573777 -16.737527 -13.249136  -7.362216  -2.333244   2.181051</span></span>
-<span><span class="co">##             Jul        Aug        Sep        Oct        Nov        Dec</span></span>
-<span><span class="co">## 2026   6.276348   7.330106   4.281351  -1.619989  -7.959092 -14.153719</span></span>
-<span><span class="co">## 2027</span></span></code></pre>
+<pre><code><span><span class="co">##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug</span></span>
+<span><span class="co">## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694</span></span>
+<span><span class="co">## 2024 19.09319 16.16926                                                      </span></span>
+<span><span class="co">##           Sep      Oct      Nov      Dec</span></span>
+<span><span class="co">## 2023 22.69098 22.00902 21.74806 20.19190</span></span>
+<span><span class="co">## 2024</span></span></code></pre>
 <p>These predictions should be interpreted as model-based extrapolations
 rather than definitive forecasts. Uncertainty generally increases as the
 prediction horizon becomes longer, and long-horizon predictions can be
