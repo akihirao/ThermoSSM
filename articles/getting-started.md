@@ -197,14 +197,14 @@ summary(res)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.4919418 
+    ##   Observation (H): 0.4919424 
     ##   State (Q trend): 1.146228e-08 
-    ##   State (Q season): 4.153711e-24 
-    ##   State (Q ar): 1.901346 
+    ##   State (Q season): 4.153675e-24 
+    ##   State (Q ar): 1.901345 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.2564485
+    ##   Coefficient of AR1: 0.2564486
 
 First, confirm from the summary output that the model has converged
 (`Converged: TRUE`). The summary also reports the log-likelihood,
@@ -285,11 +285,13 @@ model.
 [`forecast::checkresiduals()`](https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html)
 then displays the residual time series, residual autocorrelation plot
 (ACF plot), and residual frequency distribution, together with a
-Ljung-Box test. The lag is set to the seasonal frequency of the input
-data; for monthly data, this uses lag 12. These plots and the test
-result should be checked for any notable residual patterns. In this
-example, the Ljung-Box test indicated no significant residual
-autocorrelation up to lag 12 (P \> 0.05).
+Ljung-Box test. In the diagnostic figure, the residual time series
+appears in the upper panel, the ACF plot in the lower-left panel, and
+the residual frequency distribution in the lower-right panel. The lag is
+set to the seasonal frequency of the input data; for monthly data, this
+uses lag 12. These plots and the test result should be checked for any
+notable residual patterns. In this example, the Ljung-Box test indicated
+no significant residual autocorrelation up to lag 12 (P \> 0.05).
 
 For tabular residual diagnostic summaries, see
 [`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
@@ -301,8 +303,11 @@ residual diagnostic plot.
 
 ## Extract Components
 
-The long-term trend component and its rate of change (drift) can be
-extracted as ts objects as follows.
+The fitted object stores the smoothed latent states in
+`res$kfs$alphahat`. Each column corresponds to one state component in
+the state-space model, such as the level, drift, seasonal states, and
+autoregressive state. Looking at the first few rows is useful for
+understanding how the model output is organized.
 
 ``` r
 
@@ -312,7 +317,7 @@ head(alpha_hat)
 ```
 
     ##              level        slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jul 1932 -6.816007 0.0005640189  11.386172   7.235620   2.725050  -2.300199
+    ## Jul 1932 -6.816007 0.0005640188  11.386172   7.235620   2.725050  -2.300199
     ## Aug 1932 -6.815443 0.0005640232  12.425581  11.386172   7.235620   2.725050
     ## Sep 1932 -6.814879 0.0005640323   9.370378  12.425581  11.386172   7.235620
     ## Oct 1932 -6.814315 0.0005640433   3.464614   9.370378  12.425581  11.386172
@@ -326,19 +331,24 @@ head(alpha_hat)
     ## Nov 1932  11.386172   7.235620   2.725050  -2.300199  -8.183394  -11.668060
     ## Dec 1932  12.425581  11.386172   7.235620   2.725050  -2.300199   -8.183394
     ##          sea_dummy11      arima1
-    ## Jul 1932    9.370378  0.74270050
-    ## Aug 1932    3.464614  0.07576104
-    ## Sep 1932   -2.878391 -0.64035911
-    ## Oct 1932   -9.076789 -1.00172106
-    ## Nov 1932  -12.500582  0.22370692
-    ## Dec 1932  -11.668060  2.40713410
+    ## Jul 1932    9.370378  0.74270026
+    ## Aug 1932    3.464614  0.07576101
+    ## Sep 1932   -2.878391 -0.64035897
+    ## Oct 1932   -9.076789 -1.00172074
+    ## Nov 1932  -12.500582  0.22370697
+    ## Dec 1932  -11.668060  2.40713337
+
+For routine use, helper functions provide a simpler way to extract
+individual components as `ts` objects with the original time index. The
+level component represents the estimated long-term temperature level,
+while the drift component represents its rate of change per year.
 
 ``` r
 
-# 　Smoothing estimate of level component
+# Smoothing estimate of level component
 level_ts <- get_level_ts(res)
 
-# 　Smoothing estimate of drift component
+# Smoothing estimate of drift component
 drift_ts <- get_drift_ts(res)
 
 # Average drift rate per year across the full period
@@ -348,7 +358,10 @@ mean_drift_year
 
     ## [1] 0.01830289
 
-Average annual change in air temperature is approximately 0.02 °C.
+Average annual change in air temperature is approximately 0.02 °C. This
+value is the mean of the estimated drift component over the full
+observation period, and can be read as a model-based summary of the
+average long-term rate of temperature change.
 
 ## Make Short-Term Predictions
 

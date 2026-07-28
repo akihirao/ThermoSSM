@@ -92,17 +92,15 @@ For Japanese users, a detailed manual is also provided:
 
 ### Load the Package and Example Data
 
-This example uses `temp_MtFuji`, a long-term monthly air temperature
-time series observed at the summit of Mt. Fuji, Japan. The series
-contains missing observations, which
-[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
-can retain as unobserved responses during Kalman filtering and
-smoothing.
+This example uses `sst_niigata`, a monthly sea surface temperature (SST)
+time series off Niigata, Japan. The series is provided as a `ts` object
+and can be passed directly to
+[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md).
 
 ``` r
 
 library(tempssm)
-data(temp_MtFuji)
+data(sst_niigata)
 ```
 
 ### Fit a State-Space Model
@@ -113,7 +111,7 @@ fits a linear Gaussian state-space model to a temperature time series.
 
 ``` r
 
-res <- tempssm(temp_MtFuji)
+res <- tempssm(sst_niigata)
 ```
 
 The returned object is an S3 object of class `"tempssm"`. Results can be
@@ -133,9 +131,9 @@ The panels show the estimated model components; gray ribbons indicate
 pointwise 95% confidence intervals.
 
 In this example, the estimated level component suggests a gradual
-long-term increase in summit temperature. The seasonal component
-captures the strong annual cycle, while the autoregressive component
-represents shorter-term departures from the trend and seasonal pattern.
+long-term increase in SST. The seasonal component captures the recurring
+annual cycle, while the autoregressive component represents shorter-term
+departures from the trend and seasonal pattern.
 
 For scripted workflows,
 [`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md)

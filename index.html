@@ -114,17 +114,17 @@
 <div class="section level3">
 <h3 id="load-the-package-and-example-data">Load the Package and Example Data<a class="anchor" aria-label="anchor" href="#load-the-package-and-example-data"></a>
 </h3>
-<p>This example uses <code>temp_MtFuji</code>, a long-term monthly air temperature time series observed at the summit of Mt. Fuji, Japan. The series contains missing observations, which <code><a href="reference/tempssm.html">tempssm()</a></code> can retain as unobserved responses during Kalman filtering and smoothing.</p>
+<p>This example uses <code>sst_niigata</code>, a monthly sea surface temperature (SST) time series off Niigata, Japan. The series is provided as a <code>ts</code> object and can be passed directly to <code><a href="reference/tempssm.html">tempssm()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/akihirao/tempssm" class="external-link">tempssm</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sst_niigata</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="fit-a-state-space-model">Fit a State-Space Model<a class="anchor" aria-label="anchor" href="#fit-a-state-space-model"></a>
 </h3>
 <p>The function <code><a href="reference/tempssm.html">tempssm()</a></code> fits a linear Gaussian state-space model to a temperature time series.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">temp_MtFuji</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_niigata</span><span class="op">)</span></span></code></pre></div>
 <p>The returned object is an S3 object of class <code>"tempssm"</code>. Results can be inspected with standard methods.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
@@ -133,7 +133,7 @@
 <img src="reference/figures/myfig.png" alt="Example output from plot(res)"><div class="figcaption">Example output from plot(res)</div>
 </div>
 <p>The panels show the estimated model components; gray ribbons indicate pointwise 95% confidence intervals.</p>
-<p>In this example, the estimated level component suggests a gradual long-term increase in summit temperature. The seasonal component captures the strong annual cycle, while the autoregressive component represents shorter-term departures from the trend and seasonal pattern.</p>
+<p>In this example, the estimated level component suggests a gradual long-term increase in SST. The seasonal component captures the recurring annual cycle, while the autoregressive component represents shorter-term departures from the trend and seasonal pattern.</p>
 <p>For scripted workflows, <code><a href="reference/plot_tempssm_components.html">plot_tempssm_components()</a></code> returns the same component plot as a <code>ggplot</code> object; <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">ggplot2::autoplot()</a></code> is also available.</p>
 </div>
 <div class="section level3">

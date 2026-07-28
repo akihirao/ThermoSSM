@@ -255,14 +255,14 @@ as well as the constructed model and input data. By default,
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.4919418 </span></span>
+<span><span class="co">##   Observation (H): 0.4919424 </span></span>
 <span><span class="co">##   State (Q trend): 1.146228e-08 </span></span>
-<span><span class="co">##   State (Q season): 4.153711e-24 </span></span>
-<span><span class="co">##   State (Q ar): 1.901346 </span></span>
+<span><span class="co">##   State (Q season): 4.153675e-24 </span></span>
+<span><span class="co">##   State (Q ar): 1.901345 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.2564485</span></span></code></pre>
+<span><span class="co">##   Coefficient of AR1: 0.2564486</span></span></code></pre>
 <p>First, confirm from the summary output that the model has converged
 (<code>Converged: TRUE</code>). The summary also reports the
 log-likelihood, parameter count (<code>k</code>), likelihood type, and
@@ -331,11 +331,14 @@ assumption.</p>
 standardized recursive residuals from the fitted model.
 <code><a href="https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html" class="external-link">forecast::checkresiduals()</a></code> then displays the residual time
 series, residual autocorrelation plot (ACF plot), and residual frequency
-distribution, together with a Ljung-Box test. The lag is set to the
-seasonal frequency of the input data; for monthly data, this uses lag
-12. These plots and the test result should be checked for any notable
-residual patterns. In this example, the Ljung-Box test indicated no
-significant residual autocorrelation up to lag 12 (P &gt; 0.05).</p>
+distribution, together with a Ljung-Box test. In the diagnostic figure,
+the residual time series appears in the upper panel, the ACF plot in the
+lower-left panel, and the residual frequency distribution in the
+lower-right panel. The lag is set to the seasonal frequency of the input
+data; for monthly data, this uses lag 12. These plots and the test
+result should be checked for any notable residual patterns. In this
+example, the Ljung-Box test indicated no significant residual
+autocorrelation up to lag 12 (P &gt; 0.05).</p>
 <p>For tabular residual diagnostic summaries, see
 <code><a href="../reference/diagnose_residuals.html">diagnose_residuals()</a></code> in the detailed manual.</p>
 <p>For repeated checks across many fitted models, the convenience
@@ -345,14 +348,17 @@ same type of residual diagnostic plot.</p>
 <div class="section level2">
 <h2 id="extract-components">Extract Components<a class="anchor" aria-label="anchor" href="#extract-components"></a>
 </h2>
-<p>The long-term trend component and its rate of change (drift) can be
-extracted as ts objects as follows.</p>
+<p>The fitted object stores the smoothed latent states in
+<code>res$kfs$alphahat</code>. Each column corresponds to one state
+component in the state-space model, such as the level, drift, seasonal
+states, and autoregressive state. Looking at the first few rows is
+useful for understanding how the model output is organized.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Smoothing estimates</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">alpha_hat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##              level        slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
-<span><span class="co">## Jul 1932 -6.816007 0.0005640189  11.386172   7.235620   2.725050  -2.300199</span></span>
+<span><span class="co">## Jul 1932 -6.816007 0.0005640188  11.386172   7.235620   2.725050  -2.300199</span></span>
 <span><span class="co">## Aug 1932 -6.815443 0.0005640232  12.425581  11.386172   7.235620   2.725050</span></span>
 <span><span class="co">## Sep 1932 -6.814879 0.0005640323   9.370378  12.425581  11.386172   7.235620</span></span>
 <span><span class="co">## Oct 1932 -6.814315 0.0005640433   3.464614   9.370378  12.425581  11.386172</span></span>
@@ -366,25 +372,32 @@ extracted as ts objects as follows.</p>
 <span><span class="co">## Nov 1932  11.386172   7.235620   2.725050  -2.300199  -8.183394  -11.668060</span></span>
 <span><span class="co">## Dec 1932  12.425581  11.386172   7.235620   2.725050  -2.300199   -8.183394</span></span>
 <span><span class="co">##          sea_dummy11      arima1</span></span>
-<span><span class="co">## Jul 1932    9.370378  0.74270050</span></span>
-<span><span class="co">## Aug 1932    3.464614  0.07576104</span></span>
-<span><span class="co">## Sep 1932   -2.878391 -0.64035911</span></span>
-<span><span class="co">## Oct 1932   -9.076789 -1.00172106</span></span>
-<span><span class="co">## Nov 1932  -12.500582  0.22370692</span></span>
-<span><span class="co">## Dec 1932  -11.668060  2.40713410</span></span></code></pre>
+<span><span class="co">## Jul 1932    9.370378  0.74270026</span></span>
+<span><span class="co">## Aug 1932    3.464614  0.07576101</span></span>
+<span><span class="co">## Sep 1932   -2.878391 -0.64035897</span></span>
+<span><span class="co">## Oct 1932   -9.076789 -1.00172074</span></span>
+<span><span class="co">## Nov 1932  -12.500582  0.22370697</span></span>
+<span><span class="co">## Dec 1932  -11.668060  2.40713337</span></span></code></pre>
+<p>For routine use, helper functions provide a simpler way to extract
+individual components as <code>ts</code> objects with the original time
+index. The level component represents the estimated long-term
+temperature level, while the drift component represents its rate of
+change per year.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 　Smoothing estimate of level component</span></span>
+<code class="sourceCode R"><span><span class="co"># Smoothing estimate of level component</span></span>
 <span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 　Smoothing estimate of drift component</span></span>
+<span><span class="co"># Smoothing estimate of drift component</span></span>
 <span><span class="va">drift_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_drift_ts.html">get_drift_ts</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Average drift rate per year across the full period</span></span>
 <span><span class="va">mean_drift_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drift_ts</span><span class="op">)</span></span>
 <span><span class="va">mean_drift_year</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 0.01830289</span></span></code></pre>
-<p>Average annual change in air temperature is approximately 0.02
-°C.</p>
+<p>Average annual change in air temperature is approximately 0.02 °C.
+This value is the mean of the estimated drift component over the full
+observation period, and can be read as a model-based summary of the
+average long-term rate of temperature change.</p>
 </div>
 <div class="section level2">
 <h2 id="make-short-term-predictions">Make Short-Term Predictions<a class="anchor" aria-label="anchor" href="#make-short-term-predictions"></a>
