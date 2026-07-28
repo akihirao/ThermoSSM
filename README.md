@@ -126,20 +126,26 @@ pointwise 95% confidence intervals.
 In this example, the estimated level component suggests a gradual increase
 in SST, with an average annual increase of approximately 0.05 °C.
 
-The ggplot2-style interface is also available:
+The explicit helper `plot_tempssm_components()` produces the same component
+plot and can be useful in scripts where a descriptive function name is
+preferred. The ggplot2-style S3 interface `ggplot2::autoplot()` is also
+available:
 
 ```r
-p <- autoplot(res)
+p <- plot_tempssm_components(res)
 p
 
 # Select and customize component panels
-p_selected <- autoplot(res, component = c("level", "drift"))
+p_selected <- plot_tempssm_components(res, component = c("level", "drift"))
 p_selected + ggplot2::theme_bw()
+
+# ggplot2-style S3 interface
+p_auto <- ggplot2::autoplot(res)
 ```
 
-By default, `plot(res)` and `autoplot(res)` produce the same four-component
-plot. `autoplot(res)` returns a faceted `ggplot` object that can be modified
-with standard ggplot2 layers.
+By default, `plot(res)`, `plot_tempssm_components(res)`, and
+`ggplot2::autoplot(res)` produce the same four-component plot. The returned
+faceted `ggplot` object can be modified with standard ggplot2 layers.
 
 ### Use Your Own Data
 

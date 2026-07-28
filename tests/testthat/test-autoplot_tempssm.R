@@ -110,6 +110,17 @@ test_that("plot.tempssm returns the faceted ggplot invisibly", {
 })
 
 
+test_that("plot_tempssm_components returns the same component ggplot", {
+  p <- plot_tempssm_components(res_tempssm, component = "level", ci = FALSE)
+  combined <- plot_tempssm_components(res_tempssm, ci = FALSE)
+
+  expect_s3_class(p, "ggplot")
+  expect_identical(p$labels$title, "Level component")
+  expect_s3_class(combined, "ggplot")
+  expect_identical(nlevels(combined$data$component), 4L)
+})
+
+
 test_that("autoplot.tempssm accepts a manual facet layout", {
   p <- autoplot(res_tempssm, ci = FALSE, nrow = 4, ncol = 1)
 

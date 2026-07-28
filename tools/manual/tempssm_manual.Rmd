@@ -88,10 +88,11 @@ diagnostics, and plots based on smoothed state estimates.
 
 The detailed mathematical formulation is separated from this tutorial-style
 manual to reduce duplication and improve maintainability. See the package
-vignette `model-specification` for the observation equation, state equations,
+model specification document for the observation equation, state equations,
 seasonal constraint, autoregressive and exogenous components, parameter count,
-and estimation procedure. In an installed package, it can be opened with
-`vignette("model-specification", package = "tempssm")`.
+and estimation procedure. It is available as a PDF in the package repository:
+
+<https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.pdf>
 
 # How to Use
 

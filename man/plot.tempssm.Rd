@@ -9,15 +9,15 @@
 \arguments{
 \item{x}{An object returned by \code{tempssm()}.}
 
-\item{...}{Additional arguments passed to \code{autoplot.tempssm()}.}
+\item{...}{Additional arguments passed to \code{plot_tempssm_components()}.}
 }
 \value{
 Invisibly returns the plotted \code{ggplot} object.
 }
 \description{
 Default base R plot method for objects fitted by \code{tempssm()}.
-This method delegates to \code{autoplot.tempssm()} so that \code{plot(res)}
-displays the same component plots as \code{autoplot(res)}.
+This method delegates to \code{plot_tempssm_components()} so that
+\code{plot(res)} displays the same component plots as the explicit helper.
 }
 \examples{
 \dontrun{
