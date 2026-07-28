@@ -96,79 +96,70 @@ predictions.
 
 # Example Dataset
 
-A sample sea surface temperature (SST) dataset is included in the
-package.
+This tutorial uses `temp_MtFuji`, a long-term monthly air temperature
+time series observed at the summit of Mt. Fuji, Japan.
 
-- **Dataset**: Simulated monthly sea surface temperature (SST) off
-  Jogashima, Miura City, Kanagawa Prefecture, Japan
+- **Dataset**: Monthly mean air temperature at the summit of Mt. Fuji,
+  Japan
 - **Format**: Univariate `ts` object
 - **Frequency**: 12 (monthly)
 - **Unit**: Degrees Celsius
-- **Period**: January 1998 to February 2023
+- **Period**: July 1932 to June 2026
 
-This dataset is a simulated monthly SST time series based on the
-state-space model analysis of sea temperature off Jogashima reported by
-Baba et al. (2024). It is distributed with the supplementary materials
-and prototype code for the motivating study:
-
-<https://github.com/logics-of-blue/sea-temperature-trend-jogashima>
+The data were obtained from the Japan Meteorological Agency (JMA).
+Values with JMA quality flags below 8, where 8 indicates a normal value
+with no quality problem, are treated as missing values.
 
 ``` r
-data(sst_jogashima) # load a ts object of SST off Jogashima
-head(sst_jogashima)
+data(temp_MtFuji) # load a ts object of temperature at Mt. Fuji
+head(temp_MtFuji)
 ```
 
-    ##        Jan   Feb   Mar   Apr   May   Jun
-    ## 1998 16.19 13.82 16.44 16.49 19.70 21.83
+    ##        Jul   Aug   Sep   Oct   Nov   Dec
+    ## 1932   5.5   5.7   1.8  -4.6  -9.5 -12.9
 
 ``` r
-summary(sst_jogashima)
+summary(temp_MtFuji)
 ```
 
-    ##       Temp      
-    ##  Min.   :11.17  
-    ##  1st Qu.:16.22  
-    ##  Median :18.39  
-    ##  Mean   :18.23  
-    ##  3rd Qu.:20.11  
-    ##  Max.   :26.10
+    ##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.     NAs 
+    ##  -25.20  -14.60   -5.80   -6.36    2.00    8.30      11
 
-This simulated dataset contains no missing observations. In general,
-`tempssm()` can retain missing values in the response temperature series
-and treat them as unobserved responses during Kalman filtering and
-smoothing.
+This dataset contains missing observations. `tempssm()` can retain
+missing values in the response temperature series and treat them as
+unobserved responses during Kalman filtering and smoothing.
 
 # Plot the Time Series
 
-We begin by visualizing the monthly SST time series to examine its
-overall structure, including apparent trends, seasonal variability, and
-whether missing observations are present.
+We begin by visualizing the monthly air temperature time series to
+examine its overall structure, including apparent trends, seasonal
+variability, and whether missing observations are present.
 
 ``` r
-plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
+plt_fuji_temp <- forecast::autoplot(temp_MtFuji) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
   ) +
-  ggplot2::ggtitle("Simulated monthly SST off Jogashima, Japan") +
+  ggplot2::ggtitle("Monthly air temperature at the summit of Mt. Fuji") +
   ggplot2::theme_classic()
 
-plot(plt_jogashima_sst)
+plot(plt_fuji_temp)
 ```
 
 ![](getting-started_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-The overall mean SST is approximately 18.2 °C, and a clear seasonal
-pattern is visible. The series contains no missing observations. SST
-appears to decline gradually from the beginning of the series to around
-2010 and then increase thereafter. However, year-to-year variability is
-also evident, making it difficult to identify a clear long-term pattern
-from the raw time series alone.
+The overall mean air temperature is approximately -6.4 °C, and a clear
+annual seasonal pattern is visible. The series contains 11 missing
+observations. Although the observed temperature appears to increase
+gradually over the long term, year-to-year variation and strong
+seasonality make the underlying trend difficult to assess from the raw
+time series alone.
 
 # Fit a State-Space Model
 
 When a `ts` object containing temperature time-series data (here,
-`sst_jogashima`) is passed to the core function `tempssm()`, model
+`temp_MtFuji`) is passed to the core function `tempssm()`, model
 construction and parameter estimation are performed together. The
 returned S3 object of class `tempssm` (here, `res`) stores the filtering
 and smoothing estimates, as well as the constructed model and input
@@ -176,31 +167,31 @@ data. By default, `tempssm()` fits a first-order autoregressive model.
 
 ``` r
 # model with first-order autoregressive component
-res <- tempssm(sst_jogashima) # AR(1), the default model
+res <- tempssm(temp_MtFuji) # AR(1), the default model
 summary(res)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_jogashima)
+    ## tempssm(temp_data = temp_MtFuji)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -198.19 
+    ##   Log-likelihood : -2055.83 
     ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496416 
-    ##   State (Q trend): 4.937122e-06 
-    ##   State (Q season): 0.0001763538 
-    ##   State (Q ar): 0.1202156 
+    ##   Observation (H): 0.4919416 
+    ##   State (Q trend): 1.146231e-08 
+    ##   State (Q season): 4.153786e-24 
+    ##   State (Q ar): 1.901346 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.7579372
+    ##   Coefficient of AR1: 0.2564485
 
 First, confirm from the summary output that the model has converged
 (`Converged: TRUE`). The summary also reports the log-likelihood,
@@ -228,18 +219,16 @@ plot(res)
 
 ![](getting-started_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-The level component suggests a long-term pattern that changes around
-2008: the underlying SST level decreases during the first part of the
-series and then increases during the latter part. The drift component
-shows a corresponding pattern, with mostly negative values before around
-2008 and positive values thereafter. The seasonal component captures the
-recurring annual cycle, while the autoregressive component represents
-shorter-term departures from the trend and seasonal pattern. The shaded
-gray areas represent 95% confidence intervals for the estimated latent
-states, illustrating the uncertainty associated with each estimated
-component. Because this is a simulated dataset, these component plots
-should be interpreted as an illustration of the model output rather than
-as direct estimates from the original observational record.
+The level component summarizes gradual changes in the underlying
+temperature level after removing the dominant seasonal pattern. In this
+example, the estimated long-term level indicates a gradual increase in
+summit temperature over the study period. The drift component is
+positive on average but small relative to the seasonal variation. The
+seasonal component captures the recurring annual cycle, while the
+autoregressive component represents shorter-term departures from the
+trend and seasonal pattern. The shaded gray areas represent 95%
+confidence intervals for the estimated latent states, illustrating the
+uncertainty associated with each estimated component.
 
 The standard plotting interface is `plot(res)`. The explicit helper
 `plot_tempssm_components(res)` produces the same component plot and can
@@ -270,7 +259,7 @@ forecast::checkresiduals(r, lag = lb_lag, test = "LB")
     ##  Ljung-Box test
     ## 
     ## data:  Residuals
-    ## Q* = 9.6827, df = 12, p-value = 0.6438
+    ## Q* = 4.4043, df = 12, p-value = 0.975
     ## 
     ## Model df: 0.   Total lags used: 12
 
@@ -278,11 +267,13 @@ Here, `get_tempssm_residuals()` explicitly extracts the standardized
 recursive residuals from the fitted model. `forecast::checkresiduals()`
 then displays the residual time series, residual autocorrelation plot
 (ACF plot), and residual frequency distribution, together with a
-Ljung-Box test. The lag is set to the seasonal frequency of the input
-data; for monthly data, this uses lag 12. These plots and the test
-result should be checked for any notable residual patterns. In this
-example, the Ljung-Box test indicated no significant residual
-autocorrelation up to lag 12 (P \> 0.05).
+Ljung-Box test. In the diagnostic figure, the residual time series
+appears in the upper panel, the ACF plot in the lower-left panel, and
+the residual frequency distribution in the lower-right panel. The lag is
+set to the seasonal frequency of the input data; for monthly data, this
+uses lag 12. These plots and the test result should be checked for any
+notable residual patterns. In this example, the Ljung-Box test indicated
+no significant residual autocorrelation up to lag 12 (P \> 0.05).
 
 For tabular residual diagnostic summaries, see `diagnose_residuals()` in
 the detailed manual.
@@ -293,8 +284,11 @@ residual diagnostic plot.
 
 # Extract Components
 
-The long-term trend component and its rate of change (drift) can be
-extracted as ts objects as follows.
+The fitted object stores the smoothed latent states in
+`res$kfs$alphahat`. Each column corresponds to one state component in
+the state-space model, such as the level, drift, seasonal states, and
+autoregressive state. Looking at the first few rows is useful for
+understanding how the model output is organized.
 
 ``` r
 # Smoothing estimates
@@ -302,33 +296,38 @@ alpha_hat <- res$kfs$alphahat
 head(alpha_hat)
 ```
 
-    ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553992
-    ## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451
-    ## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344
-    ## Apr 1998 18.60118 -0.01911003 -2.0508949 -2.8244535 -5.0256252 -2.0428374
-    ## May 1998 18.58207 -0.01914415  0.2882283 -2.0508949 -2.8244535 -5.0256252
-    ## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535
+    ##              level        slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
+    ## Jul 1932 -6.816007 0.0005640191  11.386172   7.235620   2.725050  -2.300199
+    ## Aug 1932 -6.815443 0.0005640234  12.425581  11.386172   7.235620   2.725050
+    ## Sep 1932 -6.814879 0.0005640325   9.370378  12.425581  11.386172   7.235620
+    ## Oct 1932 -6.814315 0.0005640435   3.464614   9.370378  12.425581  11.386172
+    ## Nov 1932 -6.813751 0.0005640508  -2.878391   3.464614   9.370378  12.425581
+    ## Dec 1932 -6.813187 0.0005640535  -9.076789  -2.878391   3.464614   9.370378
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
-    ## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949
-    ## Feb 1998  0.9553992  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283
-    ## Mar 1998  0.5642451  0.9553992  1.6282639  4.9410126  2.4937014   1.9925949
-    ## Apr 1998 -0.9196344  0.5642451  0.9553992  1.6282639  4.9410126   2.4937014
-    ## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553992  1.6282639   4.9410126
-    ## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553992   1.6282639
-    ##          sea_dummy11     arima1
-    ## Jan 1998  -2.8244535 -0.2178662
-    ## Feb 1998  -2.0508949  0.1519895
-    ## Mar 1998   0.2882283  0.4187224
-    ## Apr 1998   1.9925949  0.2408084
-    ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167731
+    ## Jul 1932  -8.183394 -11.668060 -12.500582  -9.076789  -2.878391    3.464614
+    ## Aug 1932  -2.300199  -8.183394 -11.668060 -12.500582  -9.076789   -2.878391
+    ## Sep 1932   2.725050  -2.300199  -8.183394 -11.668060 -12.500582   -9.076789
+    ## Oct 1932   7.235620   2.725050  -2.300199  -8.183394 -11.668060  -12.500582
+    ## Nov 1932  11.386172   7.235620   2.725050  -2.300199  -8.183394  -11.668060
+    ## Dec 1932  12.425581  11.386172   7.235620   2.725050  -2.300199   -8.183394
+    ##          sea_dummy11      arima1
+    ## Jul 1932    9.370378  0.74270058
+    ## Aug 1932    3.464614  0.07576107
+    ## Sep 1932   -2.878391 -0.64035913
+    ## Oct 1932   -9.076789 -1.00172111
+    ## Nov 1932  -12.500582  0.22370694
+    ## Dec 1932  -11.668060  2.40713430
+
+For routine use, helper functions provide a simpler way to extract
+individual components as `ts` objects with the original time index. The
+level component represents the estimated long-term temperature level,
+while the drift component represents its rate of change per year.
 
 ``` r
-# 　Smoothing estimate of level component
+# Smoothing estimate of level component
 level_ts <- get_level_ts(res)
 
-# 　Smoothing estimate of drift component
+# Smoothing estimate of drift component
 drift_ts <- get_drift_ts(res)
 
 # Average drift rate per year across the full period
@@ -336,9 +335,12 @@ mean_drift_year <- mean(drift_ts)
 mean_drift_year
 ```
 
-    ## [1] 0.08777084
+    ## [1] 0.0183029
 
-Average annual increase in SST is approximately 0.09 °C.
+Average annual change in air temperature is approximately 0.02 °C. This
+value is the mean of the estimated drift component over the full
+observation period, and can be read as a model-based summary of the
+average long-term rate of temperature change.
 
 # Make Short-Term Predictions
 
@@ -353,8 +355,8 @@ pred_1 <- predict(res)
 pred_1
 ```
 
-    ##           Mar
-    ## 2023 18.33035
+    ##           Jul
+    ## 2026 6.276348
 
 Predictions for multiple future time points can be requested by setting
 the `n.ahead` argument.
@@ -364,12 +366,12 @@ pred_12 <- predict(res, n.ahead = 12)
 pred_12
 ```
 
-    ##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug
-    ## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694
-    ## 2024 19.09319 16.16926                                                      
-    ##           Sep      Oct      Nov      Dec
-    ## 2023 22.69098 22.00902 21.74806 20.19190
-    ## 2024
+    ##             Jan        Feb        Mar        Apr        May        Jun
+    ## 2026                                                                  
+    ## 2027 -17.573776 -16.737527 -13.249136  -7.362216  -2.333243   2.181051
+    ##             Jul        Aug        Sep        Oct        Nov        Dec
+    ## 2026   6.276348   7.330106   4.281351  -1.619989  -7.959091 -14.153719
+    ## 2027
 
 These predictions should be interpreted as model-based extrapolations
 rather than definitive forecasts. Uncertainty generally increases as the
