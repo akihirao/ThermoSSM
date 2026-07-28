@@ -270,14 +270,14 @@ model.</p>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.005985633 </span></span>
-<span><span class="co">##   State (Q trend): 1.268116e-07 </span></span>
-<span><span class="co">##   State (Q season): 0.001346144 </span></span>
-<span><span class="co">##   State (Q ar): 0.4097882 </span></span>
+<span><span class="co">##   Observation (H): 0.005985637 </span></span>
+<span><span class="co">##   State (Q trend): 1.268117e-07 </span></span>
+<span><span class="co">##   State (Q season): 0.001346139 </span></span>
+<span><span class="co">##   State (Q ar): 0.4097883 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.7443</span></span></code></pre>
+<span><span class="co">##   Coefficient of AR1: 0.7442999</span></span></code></pre>
 <p>First, confirm from the summary output that the model has converged
 (<code>Converged: TRUE</code>). The summary also reports the
 log-likelihood, parameter count, likelihood type, and number of diffuse
@@ -358,26 +358,26 @@ extracted as ts objects as follows.</p>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">alpha_hat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##            level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
-<span><span class="co">## Jan 2002 16.3944 0.005600277  -6.624678  -3.337435  0.6067452  4.7593085</span></span>
-<span><span class="co">## Feb 2002 16.4000 0.005600418  -7.676822  -6.624678 -3.3374347  0.6067452</span></span>
-<span><span class="co">## Mar 2002 16.4056 0.005600413  -7.346316  -7.676822 -6.6246785 -3.3374347</span></span>
-<span><span class="co">## Apr 2002 16.4112 0.005600308  -5.476554  -7.346316 -7.6768221 -6.6246785</span></span>
-<span><span class="co">## May 2002 16.4168 0.005600332  -2.217000  -5.476554 -7.3463159 -7.6768221</span></span>
-<span><span class="co">## Jun 2002 16.4224 0.005600464   2.468022  -2.217000 -5.4765542 -7.3463159</span></span>
+<span><span class="co">## Jan 2002 16.3944 0.005600278  -6.624678  -3.337435  0.6067452  4.7593086</span></span>
+<span><span class="co">## Feb 2002 16.4000 0.005600419  -7.676822  -6.624678 -3.3374348  0.6067452</span></span>
+<span><span class="co">## Mar 2002 16.4056 0.005600414  -7.346316  -7.676822 -6.6246785 -3.3374348</span></span>
+<span><span class="co">## Apr 2002 16.4112 0.005600309  -5.476554  -7.346316 -7.6768221 -6.6246785</span></span>
+<span><span class="co">## May 2002 16.4168 0.005600333  -2.217000  -5.476554 -7.3463157 -7.6768221</span></span>
+<span><span class="co">## Jun 2002 16.4224 0.005600466   2.468021  -2.217000 -5.4765544 -7.3463157</span></span>
 <span><span class="co">##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10</span></span>
-<span><span class="co">## Jan 2002  8.5280154  9.9007962  6.4159187  2.4680217  -2.217000   -5.476554</span></span>
-<span><span class="co">## Feb 2002  4.7593085  8.5280154  9.9007962  6.4159187   2.468022   -2.217000</span></span>
-<span><span class="co">## Mar 2002  0.6067452  4.7593085  8.5280154  9.9007962   6.415919    2.468022</span></span>
-<span><span class="co">## Apr 2002 -3.3374347  0.6067452  4.7593085  8.5280154   9.900796    6.415919</span></span>
-<span><span class="co">## May 2002 -6.6246785 -3.3374347  0.6067452  4.7593085   8.528015    9.900796</span></span>
-<span><span class="co">## Jun 2002 -7.6768221 -6.6246785 -3.3374347  0.6067452   4.759308    8.528015</span></span>
+<span><span class="co">## Jan 2002  8.5280152  9.9007961  6.4159191  2.4680213  -2.217000   -5.476554</span></span>
+<span><span class="co">## Feb 2002  4.7593086  8.5280152  9.9007961  6.4159191   2.468021   -2.217000</span></span>
+<span><span class="co">## Mar 2002  0.6067452  4.7593086  8.5280152  9.9007961   6.415919    2.468021</span></span>
+<span><span class="co">## Apr 2002 -3.3374348  0.6067452  4.7593086  8.5280152   9.900796    6.415919</span></span>
+<span><span class="co">## May 2002 -6.6246785 -3.3374348  0.6067452  4.7593086   8.528015    9.900796</span></span>
+<span><span class="co">## Jun 2002 -7.6768221 -6.6246785 -3.3374348  0.6067452   4.759309    8.528015</span></span>
 <span><span class="co">##          sea_dummy11       arima1</span></span>
-<span><span class="co">## Jan 2002   -7.346316  0.175231565</span></span>
-<span><span class="co">## Feb 2002   -5.476554 -0.377441338</span></span>
-<span><span class="co">## Mar 2002   -2.217000  0.286840281</span></span>
-<span><span class="co">## Apr 2002    2.468022  0.767966035</span></span>
-<span><span class="co">## May 2002    6.415919  0.330187003</span></span>
-<span><span class="co">## Jun 2002    9.900796  0.009041978</span></span></code></pre>
+<span><span class="co">## Jan 2002   -7.346316  0.175231631</span></span>
+<span><span class="co">## Feb 2002   -5.476554 -0.377441280</span></span>
+<span><span class="co">## Mar 2002   -2.217000  0.286840201</span></span>
+<span><span class="co">## Apr 2002    2.468021  0.767966301</span></span>
+<span><span class="co">## May 2002    6.415919  0.330186811</span></span>
+<span><span class="co">## Jun 2002    9.900796  0.009042377</span></span></code></pre>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 　Smoothing estimate of level component</span></span>
 <span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>

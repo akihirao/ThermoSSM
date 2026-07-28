@@ -9,7 +9,7 @@ temperature time series.
 ## Usage
 
 ``` r
-niigata_sst
+sst_niigata
 ```
 
 ## Format
@@ -35,7 +35,8 @@ as `NA`.
 ## Examples
 
 ``` r
-data(niigata_sst)
-plot(niigata_sst)
-
+data(sst_niigata)
+#> Warning: data set ‘sst_niigata’ not found
+plot(sst_niigata)
+#> Error: object 'sst_niigata' not found
 ```

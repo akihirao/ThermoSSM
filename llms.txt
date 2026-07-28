@@ -333,6 +333,12 @@ Helske, J. (2017). KFAS: Exponential family state space models in R.
 - [`split_multi_ts()`](https://akihirao.github.io/tempssm/reference/split_multi_ts.md)
   : Split a multivariate ts object into univariate ts objects
 
+- [`sst_jogashima`](https://akihirao.github.io/tempssm/reference/sst_jogashima.md)
+  : Simulated monthly sea surface temperature off Jogashima, Japan
+
+- [`sst_niigata`](https://akihirao.github.io/tempssm/reference/sst_niigata.md)
+  : Monthly mean sea surface temperature off Niigata, Japan
+
 - [`summary(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/summary.tempssm.md)
   : Summary method for tempssm objects
 
