@@ -131,12 +131,12 @@ considered? Defaults to <code>TRUE</code>.</p></dd>
 
 <dt id="arg-na-action">na_action<a class="anchor" aria-label="anchor" href="#arg-na-action"></a></dt>
 <dd><p>Character scalar specifying how explicit missing
-observations in <code>temp_data</code> should be handled. Use <code>"inform"</code>
-to issue an informational message and proceed, <code>"warn"</code> to issue a
-warning and proceed, <code>"error"</code> to stop, or <code>"allow"</code> to proceed
-silently. The default is <code>"inform"</code>. Missing values in
-<code>exo_data</code> are always rejected; exogenous covariates must be completed
-before model fitting.</p></dd>
+observations in the input temperature series should be handled. Use
+<code>"inform"</code> to issue an informational message and proceed,
+<code>"warn"</code> to issue a warning and proceed, <code>"error"</code> to stop, or
+<code>"allow"</code> to proceed silently. The default is <code>"inform"</code>.
+Missing values in <code>exo_data</code> are always rejected; exogenous
+covariates must be completed before model fitting.</p></dd>
 
 
 <dt id="arg-marginal">marginal<a class="anchor" aria-label="anchor" href="#arg-marginal"></a></dt>
@@ -419,8 +419,8 @@ progress, including optimization and Kalman filtering stages. Use
 and takes precedence over the R option. Warnings and errors, including
 non-convergence warnings, are never suppressed by these verbosity settings.
 The <code>na_action</code> argument independently controls the condition issued
-for missing observations in <code>temp_data</code>; use <code>"allow"</code> to handle
-those observations silently.</p>
+for missing observations in the input temperature series; use
+<code>"allow"</code> to handle those observations silently.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

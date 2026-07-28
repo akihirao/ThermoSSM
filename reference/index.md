@@ -135,6 +135,9 @@
 - [`sst_niigata`](https://akihirao.github.io/tempssm/reference/sst_niigata.md)
   : Monthly mean sea surface temperature off Niigata, Japan
 
+- [`sst_yamaguchi`](https://akihirao.github.io/tempssm/reference/sst_yamaguchi.md)
+  : Monthly mean sea surface temperature off Yamaguchi Prefecture
+
 - [`summary(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/summary.tempssm.md)
   : Summary method for tempssm objects
 

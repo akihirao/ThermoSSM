@@ -64,8 +64,8 @@ ts_train_test_split(
 
 - na_action:
 
-  Character scalar specifying how explicit missing observations in
-  `temp_data` should be handled. Use `"inform"` to issue an
+  Character scalar specifying how explicit missing observations in the
+  input temperature series should be handled. Use `"inform"` to issue an
   informational message and proceed, `"warn"` to issue a warning and
   proceed, `"error"` to stop, or `"allow"` to proceed silently. The
   default is `"inform"`. Missing values in `exo_data` are always

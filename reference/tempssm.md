@@ -73,8 +73,8 @@ tempssm(
 
 - na_action:
 
-  Character scalar specifying how explicit missing observations in
-  `temp_data` should be handled. Use `"inform"` to issue an
+  Character scalar specifying how explicit missing observations in the
+  input temperature series should be handled. Use `"inform"` to issue an
   informational message and proceed, `"warn"` to issue a warning and
   proceed, `"error"` to stop, or `"allow"` to proceed silently. The
   default is `"inform"`. Missing values in `exo_data` are always
@@ -399,8 +399,8 @@ The `TEMPSSM_VERBOSITY` environment variable accepts the same values and
 takes precedence over the R option. Warnings and errors, including
 non-convergence warnings, are never suppressed by these verbosity
 settings. The `na_action` argument independently controls the condition
-issued for missing observations in `temp_data`; use `"allow"` to handle
-those observations silently.
+issued for missing observations in the input temperature series; use
+`"allow"` to handle those observations silently.
 
 ## References
 
