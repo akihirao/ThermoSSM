@@ -23,7 +23,7 @@
 #' monthly means.
 #'
 #' @examples
-#' data(niigata_sst)
-#' plot(niigata_sst)
+#' data(sst_niigata)
+#' plot(sst_niigata)
 #'
-"niigata_sst"
+"sst_niigata"
