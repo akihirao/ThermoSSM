@@ -9,7 +9,7 @@ The package facilitates the application of linear Gaussian state-space
 models estimated by Kalman filtering and smoothing, using the `KFAS`
 package as the computational backend (Helske, 2017).
 
-### Key features
+# Key Features
 
 - Designed for environmental temperature time series with arbitrary
   seasonal frequencies; currently validated primarily on monthly data
@@ -73,146 +73,147 @@ use smoothed state estimates.
 The full mathematical specification, including the observation equation,
 state decomposition, seasonal constraint, autoregressive component,
 exogenous component, parameter count, and estimation procedure, is
-described in the separate model specification vignette. In an installed
-package, it can be opened with
-`vignette("model-specification", package = "tempssm")`.
+described in the separate model specification document, available as a
+PDF in the package repository:
 
-# How to use
+<https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.pdf>
 
-## Set Environment
+# Setup
 
-Load the following libraries for executing ‘How to use’.
+Load `tempssm` before running the examples below.
 
 ``` r
 ## Set libraries
 library(tempssm)
 ```
 
-## Practice: Applying State-Space Model to a Univariate Temperature Time Series
-
-### Objective
-
 The objective of this practice is to demonstrate the basic application
 of a linear Gaussian state-space model to a univariate temperature time
-series. This example serves as an introduction to the modeling framework
-and highlights the role of autoregressive dynamics without the inclusion
-of exogenous variables.
+series. This example introduces the basic workflow for fitting a
+`tempssm` model, inspecting the summary output, plotting latent
+components, checking residual diagnostics, and making short-term
+predictions.
 
-### Loading the Dataset
+# Example Dataset
 
 A sample sea surface temperature (SST) dataset is included in the
 package.
 
-- **Dataset**: Monthly sea surface temperature (SST) off Niigata, Japan\
-- **Unit**: Degrees Celsius\
-- **Period**: February 2002 to December 2023
+- **Dataset**: Simulated monthly sea surface temperature (SST) off
+  Jogashima, Miura City, Kanagawa Prefecture, Japan
+- **Format**: Univariate `ts` object
+- **Frequency**: 12 (monthly)
+- **Unit**: Degrees Celsius
+- **Period**: January 1998 to February 2023
 
-This dataset is derived from observations archived at Japan
-Oceanographic Data Center (JODC), Hydrographic and Oceanographic
-Department, Japan Coast Guard. Original daily SST data were obtained
-from <https://www.jodc.go.jp/jodcweb/JDOSS/index.html> and aggregated
-into monthly means.
+This dataset is a simulated monthly SST time series based on the
+state-space model analysis of sea temperature off Jogashima reported by
+Baba et al. (2024). It is distributed with the supplementary materials
+and prototype code for the motivating study:
 
-``` r
-data(niigata_sst) # load a ts object of SST off Niigata
-head(niigata_sst)
-```
-
-    ##            Jan       Feb       Mar       Apr       May       Jun
-    ## 2002  9.951613  8.332143  9.348387 11.713333 14.529032 18.906667
+<https://github.com/logics-of-blue/sea-temperature-trend-jogashima>
 
 ``` r
-summary(niigata_sst)
+data(sst_jogashima) # load a ts object of SST off Jogashima
+head(sst_jogashima)
 ```
 
-    ##       Temp       
-    ##  Min.   : 7.707  
-    ##  1st Qu.:11.217  
-    ##  Median :16.345  
-    ##  Mean   :17.033  
-    ##  3rd Qu.:22.787  
-    ##  Max.   :28.897  
-    ##  NAs    :2
+    ##        Jan   Feb   Mar   Apr   May   Jun
+    ## 1998 16.19 13.82 16.44 16.49 19.70 21.83
 
-The dataset includes two missing observations. Even if missing
-observations was in your dataset included, there are retained and
-handled explicitly within the state-space modeling framework.
+``` r
+summary(sst_jogashima)
+```
 
-### Plotting the Monthly SST Time Series
+    ##       Temp      
+    ##  Min.   :11.17  
+    ##  1st Qu.:16.22  
+    ##  Median :18.39  
+    ##  Mean   :18.23  
+    ##  3rd Qu.:20.11  
+    ##  Max.   :26.10
+
+This simulated dataset contains no missing observations. In general,
+`tempssm()` can retain missing values in the response temperature series
+and treat them as unobserved responses during Kalman filtering and
+smoothing.
+
+# Plot the Time Series
 
 We begin by visualizing the monthly SST time series to examine its
 overall structure, including apparent trends, seasonal variability, and
-missing observations.
+whether missing observations are present.
 
 ``` r
-plt_niigata_sst <- forecast::autoplot(niigata_sst) +
+plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
   ) +
-  ggplot2::ggtitle("Monthly SST off Niigata, Japan") +
+  ggplot2::ggtitle("Simulated monthly SST off Jogashima, Japan") +
   ggplot2::theme_classic()
 
-plot(plt_niigata_sst)
+plot(plt_jogashima_sst)
 ```
 
 ![](getting-started_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-The overall mean SST is approximately 17 °C, and a clear seasonal
-pattern is visible. The series contains two missing observations, in
-September 2005 and February 2006. Although SST appears to be higher near
-the end of the series than near the beginning, year-to-year variability
-is also evident, making the long-term trend difficult to assess from the
-raw time series alone.
+The overall mean SST is approximately 18.2 °C, and a clear seasonal
+pattern is visible. The series contains no missing observations. SST
+appears to decline gradually from the beginning of the series to around
+2010 and then increase thereafter. However, year-to-year variability is
+also evident, making it difficult to identify a clear long-term pattern
+from the raw time series alone.
 
-### Applying a Linear Gaussian State-Space Model
+# Fit a State-Space Model
 
-When a ts object containing temperature time-series data (here,
-`niigata_sst`) is passed to the core function tempssm(), model
+When a `ts` object containing temperature time-series data (here,
+`sst_jogashima`) is passed to the core function `tempssm()`, model
 construction and parameter estimation are performed together. The
-returned S3 object of class tempssm (here, `res`) stores the filtering
+returned S3 object of class `tempssm` (here, `res`) stores the filtering
 and smoothing estimates, as well as the constructed model and input
-data. By default, tempssm() fits a first-order autoregressive model.
+data. By default, `tempssm()` fits a first-order autoregressive model.
 
 ``` r
 # model with first-order autoregressive component
-res <- tempssm(niigata_sst) # AR(1), the default model
+res <- tempssm(sst_jogashima) # AR(1), the default model
 summary(res)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = niigata_sst)
+    ## tempssm(temp_data = sst_jogashima)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -249.8 
+    ##   Log-likelihood : -198.19 
     ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.005985637 
-    ##   State (Q trend): 1.268117e-07 
-    ##   State (Q season): 0.001346138 
-    ##   State (Q ar): 0.4097883 
+    ##   Observation (H): 0.07496416 
+    ##   State (Q trend): 4.937122e-06 
+    ##   State (Q season): 0.0001763538 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.7442999
+    ##   Coefficient of AR1: 0.7579372
 
 First, confirm from the summary output that the model has converged
 (`Converged: TRUE`). The summary also reports the log-likelihood,
-parameter count, likelihood type, and number of diffuse initial states.
-The estimated parameters include variance terms for the observation
-error (`H`), long-term trend (`Q trend`), seasonal component
-(`Q season`), and autoregressive component (`Q ar`), as well as the
-autoregressive coefficient (`AR1` in the default model). See the
-detailed manual for extracting and using these quantities directly; its
-location is listed at the end of this quick tutorial.
+parameter count (`k`), likelihood type, and number of diffuse initial
+states. The estimated parameters include the observation error variance
+(`H`) and the process error variances for the long-term trend
+(`Q trend`), seasonal component (`Q season`), and autoregressive
+component (`Q ar`), as well as the autoregressive coefficient (`AR1` in
+the default model). See the detailed manual for extracting and using
+these quantities directly; its location is listed at the end of this
+quick tutorial.
 
-### Plotting Level, Drift, Seasonal, and Auto-Regressive Components
+# Plot Model Components
 
 We visualize the estimated long-term evolution of temperature levels and
 their rates of change (drift) by extracting the corresponding latent
@@ -227,25 +228,29 @@ plot(res)
 
 ![](getting-started_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-The level component shows a persistent upward trend in sea surface
-temperature over the study period, while the drift component indicates a
-relatively stable positive rate of change. The shaded gray areas
-represent 95% confidence intervals for the estimated latent states,
-illustrating the uncertainty associated with each of estimated
-components.
+The level component suggests a long-term pattern that changes around
+2008: the underlying SST level decreases during the first part of the
+series and then increases during the latter part. The drift component
+shows a corresponding pattern, with mostly negative values before around
+2008 and positive values thereafter. The seasonal component captures the
+recurring annual cycle, while the autoregressive component represents
+shorter-term departures from the trend and seasonal pattern. The shaded
+gray areas represent 95% confidence intervals for the estimated latent
+states, illustrating the uncertainty associated with each estimated
+component. Because this is a simulated dataset, these component plots
+should be interpreted as an illustration of the model output rather than
+as direct estimates from the original observational record.
 
-Although the observed time series contains missing values, the
-state-space framework allows latent states to be estimated for the
-entire time span, including unobserved periods.
+The standard plotting interface is `plot(res)`. The explicit helper
+`plot_tempssm_components(res)` produces the same component plot and can
+be useful in scripts where a descriptive function name is preferred. The
+ggplot2-style S3 interface `ggplot2::autoplot(res)` is also available.
+These interfaces return a faceted `ggplot` object, so selected
+components can be stored and customized with standard ggplot2 layers,
+for example,
+`plot_tempssm_components(res, component = c("level", "drift")) + ggplot2::theme_bw()`.
 
-The standard plotting interface is `plot(res)`. The ggplot2-style
-interface `autoplot(res)` is also available and produces the same
-component plot by default. It returns a faceted `ggplot` object, so
-selected components can be stored and customized with standard ggplot2
-layers, for example,
-`autoplot(res, component = c("level", "drift")) + ggplot2::theme_bw()`.
-
-### Simple Model Diagnostics
+# Check Residual Diagnostics
 
 The package provides diagnostic tools for checking whether the fitted
 model has left notable structure in the residuals. In particular,
@@ -254,34 +259,39 @@ distributions, and Ljung-Box tests can be used to assess remaining
 temporal dependence and departures from the Gaussian error assumption.
 
 ``` r
-plot_tempssm_residual_diagnostics(res)
+r <- get_tempssm_residuals(res)
+lb_lag <- frequency(res$temp_data)
+forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ```
 
 ![](getting-started_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-In the model diagnostic plot, the upper panel shows the residual time
-series, the lower-left panel shows the residual autocorrelation plot
-(ACF plot), and the lower-right panel shows the residual frequency
-distribution. These plots should be checked for any notable residual
-patterns.
+    ## 
+    ##  Ljung-Box test
+    ## 
+    ## data:  Residuals
+    ## Q* = 9.6827, df = 12, p-value = 0.6438
+    ## 
+    ## Model df: 0.   Total lags used: 12
 
-``` r
-diag <- diagnose_residuals(res)
-print(diag)
-```
+Here, `get_tempssm_residuals()` explicitly extracts the standardized
+recursive residuals from the fitted model. `forecast::checkresiduals()`
+then displays the residual time series, residual autocorrelation plot
+(ACF plot), and residual frequency distribution, together with a
+Ljung-Box test. The lag is set to the seasonal frequency of the input
+data; for monthly data, this uses lag 12. These plots and the test
+result should be checked for any notable residual patterns. In this
+example, the Ljung-Box test indicated no significant residual
+autocorrelation up to lag 12 (P \> 0.05).
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    10.7     12     0.558     3.06
+For tabular residual diagnostic summaries, see `diagnose_residuals()` in
+the detailed manual.
 
-The `lb_stat`, `lb_lag`, and `lb_pvalue` columns correspond to the
-Ljung-Box test statistic, the lag used in the test, and its P-value,
-respectively. For monthly time series, `diagnose_residuals()` uses lag
-12 by default. In this example, the Ljung-Box test indicated no
-significant residual autocorrelation up to lag 12 (P \> 0.05).
+For repeated checks across many fitted models, the convenience wrapper
+`plot_tempssm_residual_diagnostics(res)` provides the same type of
+residual diagnostic plot.
 
-### Estimated Parameters and Latent-State Components
+# Extract Components
 
 The long-term trend component and its rate of change (drift) can be
 extracted as ts objects as follows.
@@ -292,27 +302,27 @@ alpha_hat <- res$kfs$alphahat
 head(alpha_hat)
 ```
 
-    ##            level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 2002 16.3944 0.005600279  -6.624679  -3.337435  0.6067453  4.7593086
-    ## Feb 2002 16.4000 0.005600420  -7.676822  -6.624679 -3.3374348  0.6067453
-    ## Mar 2002 16.4056 0.005600414  -7.346316  -7.676822 -6.6246785 -3.3374348
-    ## Apr 2002 16.4112 0.005600310  -5.476554  -7.346316 -7.6768220 -6.6246785
-    ## May 2002 16.4168 0.005600334  -2.217000  -5.476554 -7.3463157 -7.6768220
-    ## Jun 2002 16.4224 0.005600466   2.468021  -2.217000 -5.4765545 -7.3463157
+    ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
+    ## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553992
+    ## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451
+    ## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344
+    ## Apr 1998 18.60118 -0.01911003 -2.0508949 -2.8244535 -5.0256252 -2.0428374
+    ## May 1998 18.58207 -0.01914415  0.2882283 -2.0508949 -2.8244535 -5.0256252
+    ## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
-    ## Jan 2002  8.5280151  9.9007960  6.4159192  2.4680212  -2.217000   -5.476554
-    ## Feb 2002  4.7593086  8.5280151  9.9007960  6.4159192   2.468021   -2.217000
-    ## Mar 2002  0.6067453  4.7593086  8.5280151  9.9007960   6.415919    2.468021
-    ## Apr 2002 -3.3374348  0.6067453  4.7593086  8.5280151   9.900796    6.415919
-    ## May 2002 -6.6246785 -3.3374348  0.6067453  4.7593086   8.528015    9.900796
-    ## Jun 2002 -7.6768220 -6.6246785 -3.3374348  0.6067453   4.759309    8.528015
-    ##          sea_dummy11      arima1
-    ## Jan 2002   -7.346316  0.17523167
-    ## Feb 2002   -5.476554 -0.37744125
-    ## Mar 2002   -2.217000  0.28684018
-    ## Apr 2002    2.468021  0.76796641
-    ## May 2002    6.415919  0.33018674
-    ## Jun 2002    9.900796  0.00904254
+    ## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949
+    ## Feb 1998  0.9553992  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283
+    ## Mar 1998  0.5642451  0.9553992  1.6282639  4.9410126  2.4937014   1.9925949
+    ## Apr 1998 -0.9196344  0.5642451  0.9553992  1.6282639  4.9410126   2.4937014
+    ## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553992  1.6282639   4.9410126
+    ## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553992   1.6282639
+    ##          sea_dummy11     arima1
+    ## Jan 1998  -2.8244535 -0.2178662
+    ## Feb 1998  -2.0508949  0.1519895
+    ## Mar 1998   0.2882283  0.4187224
+    ## Apr 1998   1.9925949  0.2408084
+    ## May 1998   2.4937014  0.7185730
+    ## Jun 1998   4.9410126  1.0167731
 
 ``` r
 # 　Smoothing estimate of level component
@@ -323,14 +333,14 @@ drift_ts <- get_drift_ts(res)
 
 # Average drift rate per year across the full period
 mean_drift_year <- mean(drift_ts)
-print(mean_drift_year)
+mean_drift_year
 ```
 
-    ## [1] 0.05259212
+    ## [1] 0.08777084
 
-Average annual increase in SST is approximately 0.05 °C.
+Average annual increase in SST is approximately 0.09 °C.
 
-### Short-Term Prediction
+# Make Short-Term Predictions
 
 A fitted `tempssm` object can also be passed to `predict()` to obtain
 short-term predictions. By default, `predict(res)` returns a
@@ -343,8 +353,8 @@ pred_1 <- predict(res)
 pred_1
 ```
 
-    ##           Jan
-    ## 2024 10.61997
+    ##           Mar
+    ## 2023 18.33035
 
 Predictions for multiple future time points can be requested by setting
 the `n.ahead` argument.
@@ -354,16 +364,20 @@ pred_12 <- predict(res, n.ahead = 12)
 pred_12
 ```
 
-    ##            Jan       Feb       Mar       Apr       May       Jun       Jul
-    ## 2024 10.619966  9.500226 10.198500 11.757055 15.414159 19.704126 24.218777
-    ##            Aug       Sep       Oct       Nov       Dec
-    ## 2024 27.331048 25.941035 22.395225 18.262379 14.141777
+    ##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug
+    ## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694
+    ## 2024 19.09319 16.16926                                                      
+    ##           Sep      Oct      Nov      Dec
+    ## 2023 22.69098 22.00902 21.74806 20.19190
+    ## 2024
 
 These predictions should be interpreted as model-based extrapolations
 rather than definitive forecasts. Uncertainty generally increases as the
 prediction horizon becomes longer, and long-horizon predictions can be
 sensitive to model assumptions about trend, seasonality, and
 autoregressive dependence.
+
+# Further Reading
 
 The examples above illustrate the basic univariate workflow for fitting,
 diagnosing, visualizing, and making short-term predictions from a

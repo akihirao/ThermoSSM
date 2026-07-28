@@ -50,6 +50,7 @@ test_that("package data used in examples and tests are exported", {
     "sst_jogashima",
     "sst_niigata",
     "soi",
+    "temp_MtFuji",
     "yamaguchi_sst"
   )
 

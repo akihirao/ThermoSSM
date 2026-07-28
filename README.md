@@ -90,12 +90,14 @@ For Japanese users, a detailed manual is also provided:
 
 ### Load the Package and Example Data
 
-This example uses monthly sea surface temperature (SST) data off Niigata,
-Japan, from February 2002 to December 2023.
+This example uses `temp_MtFuji`, a long-term monthly air temperature time
+series observed at the summit of Mt. Fuji, Japan. The series contains missing
+observations, which `tempssm()` can retain as unobserved responses during
+Kalman filtering and smoothing.
 
 ```r
 library(tempssm)
-data(niigata_sst)
+data(temp_MtFuji)
 ```
 
 ### Fit a State-Space Model
@@ -104,11 +106,8 @@ The function `tempssm()` fits a linear Gaussian state-space model to a
 temperature time series.
 
 ```r
-res <- tempssm(niigata_sst)
+res <- tempssm(temp_MtFuji)
 ```
-
-Parameter estimation uses the KFAS marginal likelihood by default. Set
-`marginal = FALSE` explicitly to use the diffuse likelihood instead.
 
 The returned object is an S3 object of class `"tempssm"`. Results can be
 inspected with standard methods.
@@ -123,40 +122,19 @@ plot(res)
 The panels show the estimated model components; gray ribbons indicate
 pointwise 95% confidence intervals.
 
-In this example, the estimated level component suggests a gradual increase
-in SST, with an average annual increase of approximately 0.05 °C.
+In this example, the estimated level component suggests a gradual long-term
+increase in summit temperature. The seasonal component captures the strong
+annual cycle, while the autoregressive component represents shorter-term
+departures from the trend and seasonal pattern.
 
-The explicit helper `plot_tempssm_components()` produces the same component
-plot and can be useful in scripts where a descriptive function name is
-preferred. The ggplot2-style S3 interface `ggplot2::autoplot()` is also
-available:
-
-```r
-p <- plot_tempssm_components(res)
-p
-
-# Select and customize component panels
-p_selected <- plot_tempssm_components(res, component = c("level", "drift"))
-p_selected + ggplot2::theme_bw()
-
-# ggplot2-style S3 interface
-p_auto <- ggplot2::autoplot(res)
-```
-
-By default, `plot(res)`, `plot_tempssm_components(res)`, and
-`ggplot2::autoplot(res)` produce the same four-component plot. The returned
-faceted `ggplot` object can be modified with standard ggplot2 layers.
+For scripted workflows, `plot_tempssm_components()` returns the same component
+plot as a `ggplot` object; `ggplot2::autoplot()` is also available.
 
 ### Use Your Own Data
 
-If you already have a `ts` object, pass it directly to `tempssm()`.
-
-```r
-res <- tempssm(my_ts)
-```
-
-For monthly temperature data stored in a CSV file, prepare columns named
-`Year`, `Month`, and `Temp`.
+Once your data are stored as a `ts` object in the desired temperature unit,
+pass it directly to `tempssm()`. For monthly temperature data stored in a CSV
+file, prepare columns named `Year`, `Month`, and `Temp`.
 
 ```text
 Year,Month,Temp
@@ -171,8 +149,8 @@ Use `NA` for missing temperature values, and keep the corresponding `Year` and
 `Month` entries. The CSV file should be comma-separated and UTF-8 encoded.
 
 ```r
-my_ts <- tempssm::read_monthly_temp_ts("temperature.csv")
-res <- tempssm(my_ts)
+temp_ts <- tempssm::read_monthly_temp_ts("temperature.csv")
+res_csv <- tempssm(temp_ts)
 ```
 
 `read_monthly_temp_ts()` uses base R's `ts()` representation internally. You

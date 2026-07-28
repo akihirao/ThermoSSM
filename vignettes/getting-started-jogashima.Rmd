@@ -110,72 +110,74 @@ residual diagnostics, and making short-term predictions.
 
 # Example Dataset
 
-This tutorial uses `temp_MtFuji`, a long-term monthly air temperature time
-series observed at the summit of Mt. Fuji, Japan.
+A sample sea surface temperature (SST) dataset is included in the package.
 
-- **Dataset**: Monthly mean air temperature at the summit of Mt. Fuji, Japan
+- **Dataset**: Simulated monthly sea surface temperature (SST) off Jogashima,
+  Miura City, Kanagawa Prefecture, Japan
 - **Format**: Univariate `ts` object
 - **Frequency**: 12 (monthly)
 - **Unit**: Degrees Celsius
-- **Period**: July 1932 to June 2026
+- **Period**: January 1998 to February 2023
 
-The data were obtained from the Japan Meteorological Agency (JMA). Values with
-JMA quality flags below 8, where 8 indicates a normal value with no quality
-problem, are treated as missing values.
+This dataset is a simulated monthly SST time series based on the state-space
+model analysis of sea temperature off Jogashima reported by Baba et al. (2024).
+It is distributed with the supplementary materials and prototype code for the
+motivating study:
+
+<https://github.com/logics-of-blue/sea-temperature-trend-jogashima>
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-data(temp_MtFuji) # load a ts object of temperature at Mt. Fuji
-head(temp_MtFuji)
-summary(temp_MtFuji)
+data(sst_jogashima) # load a ts object of SST off Jogashima
+head(sst_jogashima)
+summary(sst_jogashima)
 ```
 
-This dataset contains missing observations. `tempssm()` can retain missing
-values in the response temperature series and treat them as unobserved
-responses during Kalman filtering and smoothing.
+This simulated dataset contains no missing observations. In general,
+`tempssm()` can retain missing values in the response temperature series and
+treat them as unobserved responses during Kalman filtering and smoothing.
 
 # Plot the Time Series
 
-We begin by visualizing the monthly air temperature time series to examine its
-overall structure, including apparent trends, seasonal variability, and whether
-missing observations are present.
+We begin by visualizing the monthly SST time series to examine its
+overall structure, including apparent trends, seasonal variability,
+and whether missing observations are present.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plt_fuji_temp <- forecast::autoplot(temp_MtFuji) +
+plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
   ) +
-  ggplot2::ggtitle("Monthly air temperature at the summit of Mt. Fuji") +
+  ggplot2::ggtitle("Simulated monthly SST off Jogashima, Japan") +
   ggplot2::theme_classic()
 
-plot(plt_fuji_temp)
+plot(plt_jogashima_sst)
 ```
 
 ```{r echo = FALSE}
-fuji_temp_mean <- mean(temp_MtFuji, na.rm = TRUE)
-fuji_temp_missing <- sum(is.na(temp_MtFuji))
+sst_jogashima_mean <- mean(sst_jogashima, na.rm = TRUE)
 ```
 
-The overall mean air temperature is 
-approximately `r sprintf("%.1f", fuji_temp_mean)` °C, and a clear annual 
-seasonal pattern is visible. The series contains `r fuji_temp_missing` missing 
-observations. Although the observed temperature appears to increase gradually 
-over the long term, year-to-year variation and strong seasonality make 
-the underlying trend difficult to assess from the raw time series alone.
+The overall mean SST is approximately `r sprintf("%.1f", sst_jogashima_mean)`
+°C, and a clear seasonal pattern is visible. The series contains no missing
+observations. SST appears to decline gradually from the beginning of the series
+to around 2010 and then increase thereafter. However, year-to-year variability
+is also evident, making it difficult to identify a clear long-term pattern from
+the raw time series alone.
 
 # Fit a State-Space Model
 
-When a `ts` object containing temperature time-series data (here,
-`temp_MtFuji`) is passed to the core function `tempssm()`, model construction
-and parameter estimation are performed together. The returned S3 object of
-class `tempssm`
+When a `ts` object containing temperature time-series data
+(here, `sst_jogashima`) is passed to the core function `tempssm()`, model
+construction and parameter estimation are performed together. The returned S3
+object of class `tempssm`
 (here, `res`) stores the filtering and smoothing estimates, as well as the
 constructed model and input data. By default, `tempssm()` fits a first-order
 autoregressive model.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # model with first-order autoregressive component
-res <- tempssm(temp_MtFuji) # AR(1), the default model
+res <- tempssm(sst_jogashima) # AR(1), the default model
 summary(res)
 ```
 
@@ -202,15 +204,18 @@ behavior to be examined more clearly.
 plot(res)
 ```
 
-The level component summarizes gradual changes in the underlying temperature
-level after removing the dominant seasonal pattern. In this example, the
-estimated long-term level indicates a gradual increase in summit temperature
-over the study period. The drift component is positive on average but small
-relative to the seasonal variation. The seasonal component captures the
-recurring annual cycle, while the autoregressive component represents
-shorter-term departures from the trend and seasonal pattern. The shaded gray
-areas represent 95% confidence intervals for the estimated latent states,
+The level component suggests a long-term pattern that changes around 2008:
+the underlying SST level decreases during the first part of the series and
+then increases during the latter part. The drift component shows a
+corresponding pattern, with mostly negative values before around 2008 and
+positive values thereafter. The seasonal component captures the recurring
+annual cycle, while the autoregressive component represents shorter-term
+departures from the trend and seasonal pattern. The shaded gray areas
+represent 95% confidence intervals for the estimated latent states,
 illustrating the uncertainty associated with each estimated component.
+Because this is a simulated dataset, these component plots should be
+interpreted as an illustration of the model output rather than as direct
+estimates from the original observational record.
 
 The standard plotting interface is `plot(res)`. The explicit helper
 `plot_tempssm_components(res)` produces the same component plot and can be
@@ -273,7 +278,7 @@ mean_drift_year <- mean(drift_ts)
 mean_drift_year
 ```
  
-Average annual change in air temperature is approximately
+Average annual increase in SST is approximately
 `r sprintf("%.2f", mean_drift_year)` °C.
 
 # Make Short-Term Predictions
