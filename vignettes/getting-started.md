@@ -1,25 +1,18 @@
 # Summary
 
-`tempssm` is an R package for analyzing environmental temperature time
-series, including air and water temperature observations. It provides a
-practical framework for assessing how long-term trend, seasonal
-variation, autoregressive dependence, and optional exogenous effects
-contribute to observed temporal variation. The package facilitates the
-application of linear Gaussian state-space models estimated by Kalman
-filtering and smoothing, using the `KFAS` package as the computational
-backend (Helske, 2017).
-
-The core modeling functions in `tempssm` expect input temperature series
-and optional exogenous covariates to be supplied as regularly spaced R
-`ts` objects (see the `stats::ts` documentation:
-<https://search.r-project.org/R/refmans/stats/html/ts.html>). The
-package also provides utility functions for converting common tabular
-and observational data formats into `ts` objects before model fitting.
+`tempssm` is an R package for state-space modeling of environmental
+temperature time series, including air and water temperature
+observations. It provides a practical framework for assessing how
+long-term trend, seasonal variation, autoregressive dependence, and
+optional exogenous effects contribute to observed temporal variation.
+The package facilitates the application of linear Gaussian state-space
+models estimated by Kalman filtering and smoothing, using the `KFAS`
+package as the computational backend (Helske, 2017).
 
 ### Key features
 
-- Designed for temperature time series with arbitrary seasonal
-  frequencies; currently validated primarily on monthly data
+- Designed for environmental temperature time series with arbitrary
+  seasonal frequencies; currently validated primarily on monthly data
 - Estimates latent states using linear Gaussian state-space models
   combined with Kalman filtering and smoothing
 - Models temperature dynamics as a sum of interpretable latent
@@ -28,6 +21,15 @@ and observational data formats into `ts` objects before model fitting.
 - Allows users to specify an arbitrary order of the autoregressive
   component (default: AR(1))
 - Implements time-series cross-validation for model evaluation
+
+# Input Data Format
+
+The core modeling functions in `tempssm` expect input time series to be
+supplied as R `ts` objects. The `ts` class is base R’s standard format
+for regularly spaced time series (see the `stats::ts` documentation:
+<https://search.r-project.org/R/refmans/stats/html/ts.html>). The
+package also provides utility functions for converting common tabular
+and observational data formats into `ts` objects before model fitting.
 
 # Prior Art and Scope
 
@@ -85,16 +87,6 @@ Load the following libraries for executing ‘How to use’.
 ## Set libraries
 library(tempssm)
 ```
-
-## Input Data Format
-
-Input data for **tempssm** must be supplied as an R `ts` object, which
-represents a regularly spaced time series (see `?stats::ts` or
-<https://search.r-project.org/R/refmans/stats/html/ts.html>).
-
-To support data preparation, the package includes utility functions that
-convert external observational data into `ts` objects suitable for model
-fitting (see Appendix).
 
 ## Practice: Applying State-Space Model to a Univariate Temperature Time Series
 
@@ -210,40 +202,15 @@ summary(res)
     ##   Order of AR: 1 
     ##   Coefficient of AR1: 0.7442999
 
-From the summary output, confirm that the model has converged
-(Converged: TRUE). The output also reports statistics such as the number
-of parameters (k), the log-likelihood, the likelihood type, and the
-number of diffuse initial states. The parameter estimates include the
-observation error variance (H), the process error variance of the
-long-term trend component (Q trend), the process error variance of the
-seasonal component (Q season), the process error variance of the
-autoregressive component, and the first-order autoregressive coefficient
-(AR1).
-
-The log-likelihood and the associated number of estimated parameters can
-also be extracted directly from the fitted `tempssm` object using
-`logLik()`.
-
-``` r
-ll <- logLik(res)
-ll
-```
-
-    ## 'log Lik.' -249.7962 (df=5)
-
-``` r
-attr(ll, "df") # number of parameters
-```
-
-    ## [1] 5
-
-By default, `tempssm()` uses the KFAS marginal likelihood for parameter
-estimation. The selected likelihood type is retained for `logLik()` and
-`summary()`. The package intentionally does not compute AIC for
-`tempssm` objects. The log-likelihood and parameter count remain
-available through `logLik()` for users who need them for their own
-model-assessment workflows. The diffuse likelihood remains available by
-fitting the model with `marginal = FALSE`.
+First, confirm from the summary output that the model has converged
+(`Converged: TRUE`). The summary also reports the log-likelihood,
+parameter count, likelihood type, and number of diffuse initial states.
+The estimated parameters include variance terms for the observation
+error (`H`), long-term trend (`Q trend`), seasonal component
+(`Q season`), and autoregressive component (`Q ar`), as well as the
+autoregressive coefficient (`AR1` in the default model). See the
+detailed manual for extracting and using these quantities directly; its
+location is listed at the end of this quick tutorial.
 
 ### Plotting Level, Drift, Seasonal, and Auto-Regressive Components
 
@@ -258,7 +225,7 @@ underlying trend behavior to be examined more clearly.
 plot(res)
 ```
 
-![](getting-started_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](getting-started_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 The level component shows a persistent upward trend in sea surface
 temperature over the study period, while the drift component indicates a
@@ -290,7 +257,7 @@ temporal dependence and departures from the Gaussian error assumption.
 plot_tempssm_residual_diagnostics(res)
 ```
 
-![](getting-started_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](getting-started_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 In the model diagnostic plot, the upper panel shows the residual time
 series, the lower-left panel shows the residual autocorrelation plot

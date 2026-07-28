@@ -18,29 +18,36 @@ vignette: >
 
 # Summary
 
-`tempssm` provides a practical R interface for state-space analysis of
-temperature time series. The package focuses on linear Gaussian state-space
-models estimated by Kalman filtering and smoothing, using the `KFAS` package
-as the computational backend (Helske, 2017).
-
-The core modeling functions in `tempssm` expect input temperature series and
-optional exogenous covariates to be supplied as regularly spaced R `ts`
-objects (see the `stats::ts` documentation:
-<https://search.r-project.org/R/refmans/stats/html/ts.html>). The package also
-provides utility functions for converting common tabular and observational data
-formats into `ts` objects before model fitting.
+`tempssm` is an R package for state-space modeling of environmental
+temperature time series, including air and water temperature observations. It
+provides a practical framework for assessing how long-term trend, seasonal
+variation, autoregressive dependence, and optional exogenous effects contribute
+to observed temporal variation. The package facilitates the application of
+linear Gaussian state-space models estimated by Kalman filtering and smoothing,
+using the `KFAS` package as the computational backend (Helske, 2017).
 
 # Key Features
 
-- Fits linear Gaussian state-space models to temperature time series.
+- Fits linear Gaussian state-space models to environmental temperature time
+  series.
 - Represents temperature dynamics using interpretable latent components:
   long-term trend, seasonal variation, autoregressive dependence, and optional
   exogenous effects.
-- Supports arbitrary seasonal frequencies, while the current examples and
-  validation focus primarily on monthly temperature data.
-- Allows the autoregressive order to be specified by the user.
-- Provides S3 methods for summaries, diagnostics,and plots.
+- Supports arbitrary integer seasonal frequencies, while the current examples
+  and validation focus primarily on monthly temperature data.
+- Allows users to specify an arbitrary order of the autoregressive component
+  (default: AR(1))
+- Provides S3 methods for summaries, diagnostics, accessors, and plots.
 - Includes time-series cross-validation tools for model evaluation.
+
+# Input Data Format
+
+The core modeling functions in `tempssm` expect input time series to be
+supplied as R `ts` objects. The `ts` class is base R's standard format for
+regularly spaced time series (see the `stats::ts` documentation:
+<https://search.r-project.org/R/refmans/stats/html/ts.html>). The package also
+provides utility functions for converting common tabular and observational data
+formats into `ts` objects before model fitting.
 
 # Prior Art and Scope
 
@@ -106,16 +113,6 @@ library(ggplot2)
 
 library(patchwork)
 ```
-
-## Input Data Format
-
-Input data for **tempssm** must be supplied as an R `ts` object, which
-represents a regularly spaced time series (see `?stats::ts` or
-<https://search.r-project.org/R/refmans/stats/html/ts.html>).
-
-To support data preparation, the package includes utility functions that
-convert external observational data into `ts` objects (see Appendix).
-
 
 ## Exercise I: Applying a State-Space Model to a Univariate Temperature Time Series
 

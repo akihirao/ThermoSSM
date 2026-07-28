@@ -12,7 +12,7 @@
 
 <meta name="author" content="平尾章・馬場真哉・市野川桃子" />
 
-<meta name="date" content="2026-07-25" />
+<meta name="date" content="2026-07-28" />
 
 <title>tempssm 詳細マニュアル</title>
 
@@ -342,30 +342,44 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">tempssm 詳細マニュアル</h1>
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">平尾章・馬場真哉・市野川桃子</h4>
-<h4 class="date">2026-07-25</h4>
+<h4 class="date">2026-07-28</h4>
 
 
 
 <div id="概要" class="section level1">
 <h1>概要</h1>
 <p><code>tempssm</code>
-は、気温・水温などの温度時系列に対する状態空間解析を行うための R
-パッケージです。計算バックエンドとして、<code>KFAS</code>
-Rパッケージ（Helske,2017）
-を用い、カルマンフィルタリングおよび平滑化によって推定される線形ガウス
-状態空間モデルを適用します。</p>
+は、気温・水温など、環境中で観測される温度時系列に対して
+状態空間モデルを適用するための R
+パッケージです。長期トレンド、季節変動、
+自己回帰的依存性、および任意の外生効果が、観測された時間変動にどのように
+寄与しているかを評価するための実用的な枠組みを提供します。計算バックエンド
+として <code>KFAS</code> R パッケージ（Helske,
+2017）を用い、カルマンフィルタリング
+および平滑化によって推定される線形ガウス状態空間モデルを適用します。</p>
 </div>
 <div id="主な特徴" class="section level1">
 <h1>主な特徴</h1>
 <ul>
-<li>温度時系列に線形ガウス状態空間モデルを適用</li>
+<li>環境中で観測される温度時系列に線形ガウス状態空間モデルを適用</li>
 <li>温度の動態を潜在状態 (latent state) の次の各成分に分解して表現：
 長期トレンド、季節変動、自己回帰構造、および任意の外生効果</li>
-<li>任意の季節周期に対応（ただし実例と検証では、主として月別の温度データを対象）</li>
-<li>自己回帰成分の次数の任意指定が可能</li>
-<li>要約、モデル診断、プロットのための S3 メソッドを提供</li>
+<li>任意の整数季節周期に対応（ただし実例と検証では、主として月別の温度データを対象）</li>
+<li>自己回帰成分の次数をユーザーが指定可能（デフォルト: AR(1)）</li>
+<li>要約、モデル診断、アクセサ、プロットのための S3 メソッドを提供</li>
 <li>モデル評価のための時系列交差検証ツールを提供</li>
 </ul>
+</div>
+<div id="入力データ形式" class="section level1">
+<h1>入力データ形式</h1>
+<p><code>tempssm</code>
+のコアとなるモデル推定関数では、入力時系列データを R の <code>ts</code>
+オブジェクトとして与えることを前提としています。<code>ts</code>
+クラスは、 等間隔の時系列を扱うための base R の標準的な形式です（R
+公式の <code>stats::ts</code> ドキュメントを参照： <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>）。
+本パッケージには、表形式データや観測データをモデル適用前に
+<code>ts</code>
+オブジェクトへ変換するためのユーティリティ関数も含まれています。</p>
 </div>
 <div id="既存研究と本パッケージの範囲" class="section level1">
 <h1>既存研究と本パッケージの範囲</h1>
@@ -388,79 +402,25 @@ S3 メソッド、
 テスト、診断、交差検証ユーティリティ、およびより広範な温度時系列解析のための
 例を備えた、再利用可能な R パッケージインターフェースへとワークフローを
 拡張しています。</p>
-<p>次節では、<code>tempssm</code>
-で用いる状態空間モデルを説明し、長期トレンド、季節成分、
-自己回帰成分、外生成分がどのように表現されるかを整理します。</p>
+<p>次節では、モデルの概要のみを簡潔に整理します。数式を含む詳細な定式化は、
+英語版 vignette <code>model-specification</code> および日本語版の
+<code>tools/manual/tempssm_model_jp.Rmd</code> に分離しています。</p>
 </div>
-<div id="tempssm-における状態空間モデル" class="section level1">
-<h1><strong>tempssm</strong> における状態空間モデル</h1>
-<p>本パッケージでは、長期トレンド、季節変動、自己回帰成分を明示的に含む温度時系列を
-記述するために、基本構造時系列モデル（Basic Structural Time Series
-Model; BSTSM）
-を拡張したモデルを考えます。観測方程式は次のように表されます。 <span class="math display">\[
-y_t = \alpha_t + v_t. \tag{1}
-\]</span> ここで、<span class="math inline">\(t\)</span> は時点、<span class="math inline">\(y_t\)</span> は観測された温度、<span class="math inline">\(\alpha_t\)</span> は潜在状態、<span class="math inline">\(v_t\)</span> は 観測誤差を表します。</p>
-<p>潜在状態は次のように分解されます。 <span class="math display">\[
-\alpha_t = \mu_t + s_t + r_t + E_t. \tag{2}
-\]</span> ここで、<span class="math inline">\(\mu_t\)</span>
-は長期トレンド成分、<span class="math inline">\(s_t\)</span>
-は季節成分、<span class="math inline">\(r_t\)</span> は定常的な
-自己回帰成分、<span class="math inline">\(E_t\)</span>
-は外生変数の寄与を表します。</p>
-<p>レベル成分は、次の 2 次の確率過程に従います。 <span class="math display">\[
-\mu_t = 2\mu_{t-1} - \mu_{t-2} + \zeta_t, \qquad \zeta_t \sim
-\mathcal{N}(0, \sigma_\zeta^2). \tag{3}
-\]</span> ここで、<span class="math inline">\(\zeta_t\)</span>
-は長期トレンド成分の過程誤差です。</p>
-<p>季節成分は、総和ゼロ制約をもつモデルとして表されます。 <span class="math display">\[
-s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t, \qquad \omega_t \sim
-\mathcal{N}(0, \sigma_\omega^2). \tag{4}
-\]</span> ここで、<span class="math inline">\(\omega_t\)</span>
-は季節成分の過程誤差、<span class="math inline">\(f\)</span>
-は季節周期を表します（例えば 月別データでは <span class="math inline">\(f=12\)</span>）。この定式化により季節効果が識別可能となり、異なる
-時間分解能をもつ時系列に対応したモデルを構築できます。1つの完全な季節周期に
-わたって総和ゼロ制約を課すことで、季節成分は長期的なドリフトを導入することなく、
-基礎となる長期トレンドからの反復的な偏差を捉えます。季節成分を含まない
-モデルでは、季節項 <span class="math inline">\(s_t\)</span>
-はゼロとし、状態方程式から省略されます。</p>
-<p>自己回帰成分は、<span class="math inline">\(l\)</span>
-次の自己回帰（AR）過程に従います。 <span class="math display">\[
-r_t = \phi_1 r_{t-1} + \phi_2 r_{t-2} + \cdots + \phi_l r_{t-l} +
-\tau_t,
-\qquad \tau_t \sim \mathcal{N}(0, \sigma_\tau^2). \tag{5}
-\]</span> ここで、<span class="math inline">\(\tau_t\)</span>
-は自己回帰成分の過程誤差を表します。過程誤差項 （<span class="math inline">\(\zeta_t\)</span>、<span class="math inline">\(\omega_t\)</span>、および <span class="math inline">\(\tau_t\)</span>）は互いに独立で、正規分布に従うと
-仮定します。</p>
-<p>外生成分は次のように定義されます。 <span class="math display">\[
-E_t = \beta_1 x_{1,t} + \beta_2 x_{2,t} + \cdots + \beta_m x_{m,t}.
-\tag{6}
-\]</span> 外生項 <span class="math inline">\(E_t\)</span>
-は外部要因の影響を表します。外部要因には、大規模な気候指数、
-地域的な環境変数、あるいは観測された温度時系列に関連する物理的根拠をもつ
-予測変数などが含まれます。各外生変数は、時間に依存しない回帰係数 （<span class="math inline">\(\beta_1, \beta_2, \ldots,
-\beta_m\)</span>）を通じて線形にモデルへ組み込まれ、
-その寄与の大きさと方向を潜在状態成分と同時に推定できます。</p>
-<p>観測データにモデルを適用する際、推定されるパラメータの総数（<span class="math inline">\(k\)</span>）は、
-自己回帰成分の次数と、モデルに含まれる外生変数の数に依存します。例えば、
-2次の自己回帰成分をもち、外生共変量を含まないモデルでは、観測誤差分散、
-長期トレンド・季節・自己回帰成分に対応する過程誤差分散、および 1 次・2
-次の 自己回帰係数（<span class="math inline">\(\phi_1\)</span> と <span class="math inline">\(\phi_2\)</span>）の計 6
-個のパラメータが推定されます。 一般に、<span class="math inline">\(l\)</span> 次の自己回帰成分と <span class="math inline">\(m\)</span>
-個の外生変数をもつ場合、パラメータの総数は <span class="math inline">\(k
-= 4 + l + m\)</span> です。</p>
-<p>パラメータ推定手順の中核的な実装は、Baba et al. (2024)
-によって提供された 補足コードに基づいています。パラメータ推定は、Helske
-(2017) が推奨する 2段階の 最適化戦略によって行われます。第 1
-段階では、ユーザー指定の初期値を用いて Nelder-Mead 法（Nelder &amp;
-Mead, 1965）によりモデルパラメータを推定します。 得られた推定値を、第 2
-段階の BFGS アルゴリズム（Shanno, 1970）による最適化の
-初期値として用います。本パッケージの主要関数である
-<code>tempssm()</code> は、モデルの
-構築からパラメータ推定までを一挙に実施し、フィルタリング推定値と平滑化推定値の
-両方をて<code>tempssm</code>
-オブジェクトに返り値とし格納します。一方で、S3
-メソッドを介して示される要約、モデル診断、プロットで示す結果はすべて
+<div id="モデル概要" class="section level1">
+<h1>モデル概要</h1>
+<p><code>tempssm</code>
+は、線形ガウス状態空間モデルを用いて、温度時系列の変動を
+長期トレンド、季節変動、自己回帰的依存性、および任意の外生効果の和として
+表現します。計算バックエンドには <code>KFAS</code> を用い、推定済みの
+<code>tempssm</code>
+オブジェクトにはフィルタリング推定値と平滑化推定値の両方が格納されます。
+特に断らない限り、本マニュアルでは、要約統計、診断、プロットの解釈は
 平滑化推定値に基づいています。</p>
+<p>数式を含む詳細なモデル定式化は、重複を避け、保守性を高めるために
+本チュートリアル形式のマニュアルから分離しました。観測方程式、状態方程式、
+季節成分の制約、自己回帰成分、外生成分、推定パラメータ数、推定手順については、
+英語版 vignette <code>model-specification</code> および日本語版の
+<code>tools/manual/tempssm_model_jp.Rmd</code> を参照してください。</p>
 </div>
 <div id="使用方法" class="section level1">
 <h1>使用方法</h1>
@@ -480,17 +440,6 @@ Mead, 1965）によりモデルパラメータを推定します。 得られた
 <span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
 <span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span></code></pre></div>
-</div>
-<div id="入力データ形式" class="section level2">
-<h2>入力データ形式</h2>
-<p><strong>tempssm</strong> への入力データは、等間隔の時系列を表す R の
-<code>ts</code>
-オブジェクトとして与える必要があります（<code>?stats::ts</code> または
-<a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html" class="uri">https://stat.ethz.ch/R-manual/R-devel/library/stats/html/ts.html</a>
-を 参照してください）。</p>
-<p>データ準備を支援するため、本パッケージには、外部の観測データを
-<code>ts</code>
-オブジェクトへ変換するユーティリティ関数が含まれています（付録を参照）。</p>
 </div>
 <div id="演習-i-単変量の温度時系列への状態空間モデルの適用" class="section level2">
 <h2>演習 I: 単変量の温度時系列への状態空間モデルの適用</h2>
@@ -1393,9 +1342,11 @@ m）における月別気温観測値が含まれています。オリジナル�
 <pre><code>##        Jan Feb Mar Apr May Jun Jul   Aug   Sep   Oct   Nov   Dec
 ## 2010                                13.6   6.8   0.2  -6.8 -12.5
 ## 2011 -18.8</code></pre>
-<p><code>read_monthly_temp_ts()</code> 関数は、内部で base R の <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/ts"><code>ts()</code></a>
-関数を用いて時系列オブジェクトを作成します。より細かな制御が必要な場合は、
-手動で <code>ts</code> オブジェクトを作成することができます。</p>
+<p><code>read_monthly_temp_ts()</code> 関数は、内部で base R の
+<code>ts()</code> 関数を 用いて時系列オブジェクトを作成します。詳細は R
+公式の <code>stats::ts</code> ドキュメントを参照してください： <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>。
+より細かな制御が必要な場合は、手動で <code>ts</code>
+オブジェクトを作成することが できます。</p>
 </div>
 </div>
 </div>
