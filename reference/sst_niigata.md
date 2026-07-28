@@ -36,7 +36,6 @@ as `NA`.
 
 ``` r
 data(sst_niigata)
-#> Warning: data set ‘sst_niigata’ not found
 plot(sst_niigata)
-#> Error: object 'sst_niigata' not found
+
 ```

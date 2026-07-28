@@ -100,6 +100,9 @@
 - [`plot_temp_dev()`](https://akihirao.github.io/tempssm/reference/plot_temp_dev.md)
   : Plot temperature anomalies
 
+- [`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md)
+  : Plot component estimates for tempssm objects
+
 - [`plot_tempssm_residual_diagnostics()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_residual_diagnostics.md)
   : Plot residual diagnostics for tempssm models
 

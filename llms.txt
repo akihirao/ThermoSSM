@@ -135,21 +135,30 @@ In this example, the estimated level component suggests a gradual
 increase in SST, with an average annual increase of approximately 0.05
 °C.
 
-The ggplot2-style interface is also available:
+The explicit helper
+[`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md)
+produces the same component plot and can be useful in scripts where a
+descriptive function name is preferred. The ggplot2-style S3 interface
+[`ggplot2::autoplot()`](https://ggplot2.tidyverse.org/reference/autoplot.html)
+is also available:
 
 ``` r
 
-p <- autoplot(res)
+p <- plot_tempssm_components(res)
 p
 
 # Select and customize component panels
-p_selected <- autoplot(res, component = c("level", "drift"))
+p_selected <- plot_tempssm_components(res, component = c("level", "drift"))
 p_selected + ggplot2::theme_bw()
+
+# ggplot2-style S3 interface
+p_auto <- ggplot2::autoplot(res)
 ```
 
-By default, `plot(res)` and `autoplot(res)` produce the same
-four-component plot. `autoplot(res)` returns a faceted `ggplot` object
-that can be modified with standard ggplot2 layers.
+By default, `plot(res)`, `plot_tempssm_components(res)`, and
+`ggplot2::autoplot(res)` produce the same four-component plot. The
+returned faceted `ggplot` object can be modified with standard ggplot2
+layers.
 
 ### Use Your Own Data
 
@@ -306,6 +315,9 @@ Helske, J. (2017). KFAS: Exponential family state space models in R.
 
 - [`plot_temp_dev()`](https://akihirao.github.io/tempssm/reference/plot_temp_dev.md)
   : Plot temperature anomalies
+
+- [`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md)
+  : Plot component estimates for tempssm objects
 
 - [`plot_tempssm_residual_diagnostics()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_residual_diagnostics.md)
   : Plot residual diagnostics for tempssm models

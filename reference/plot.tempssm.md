@@ -3,9 +3,9 @@
 Default base R plot method for objects fitted by
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md).
 This method delegates to
-[`autoplot.tempssm()`](https://akihirao.github.io/tempssm/reference/autoplot.tempssm.md)
-so that `plot(res)` displays the same component plots as
-`autoplot(res)`.
+[`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md)
+so that `plot(res)` displays the same component plots as the explicit
+helper.
 
 ## Usage
 
@@ -24,7 +24,7 @@ plot(x, ...)
 - ...:
 
   Additional arguments passed to
-  [`autoplot.tempssm()`](https://akihirao.github.io/tempssm/reference/autoplot.tempssm.md).
+  [`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md).
 
 ## Value
 
