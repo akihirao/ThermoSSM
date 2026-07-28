@@ -592,12 +592,12 @@ NULL
 #'  If \code{NULL}, default value of 1e-16 is used.
 #'
 #' @param na_action Character scalar specifying how explicit missing
-#'   observations in \code{temp_data} should be handled. Use \code{"inform"}
-#'   to issue an informational message and proceed, \code{"warn"} to issue a
-#'   warning and proceed, \code{"error"} to stop, or \code{"allow"} to proceed
-#'   silently. The default is \code{"inform"}. Missing values in
-#'   \code{exo_data} are always rejected; exogenous covariates must be completed
-#'   before model fitting.
+#'   observations in the input temperature series should be handled. Use
+#'   \code{"inform"} to issue an informational message and proceed,
+#'   \code{"warn"} to issue a warning and proceed, \code{"error"} to stop, or
+#'   \code{"allow"} to proceed silently. The default is \code{"inform"}.
+#'   Missing values in \code{exo_data} are always rejected; exogenous
+#'   covariates must be completed before model fitting.
 #'
 #' @section Message control:
 #' Package messages are controlled by the global
@@ -612,8 +612,8 @@ NULL
 #' and takes precedence over the R option. Warnings and errors, including
 #' non-convergence warnings, are never suppressed by these verbosity settings.
 #' The \code{na_action} argument independently controls the condition issued
-#' for missing observations in \code{temp_data}; use \code{"allow"} to handle
-#' those observations silently.
+#' for missing observations in the input temperature series; use
+#' \code{"allow"} to handle those observations silently.
 #'
 #' @return An object of class \code{"tempssm"}, a named list containing:
 #' \describe{
@@ -1138,6 +1138,36 @@ tempssm <- function(temp_data,
 }
 
 
+#' Build a message for missing values in the response temperature series
+#'
+#' @param x A \code{ts} object containing the response temperature series.
+#'
+#' @return A named character vector for \pkg{cli} condition functions.
+#'
+#' @keywords internal
+#' @noRd
+.tempssm_missing_temp_message <- function(x) {
+  n_total <- length(as.numeric(x))
+  n_missing <- sum(is.na(x))
+  pct_missing <- 100 * n_missing / n_total
+
+  msg <- c(
+    "The input temperature series includes missing values.",
+    paste0(
+      "Series length: ", n_total,
+      "; missing values: ", n_missing,
+      " (", sprintf("%.1f", pct_missing), "%)."
+    ),
+    paste0(
+      "This is supported: missing responses are retained and treated as ",
+      "unobserved responses during Kalman filtering and smoothing."
+    )
+  )
+  names(msg) <- c("", "i", "i")
+  msg
+}
+
+
 #' Handle explicit missing values in a \code{ts} object
 #'
 #' @inheritParams .tempssm_check_ts_order
@@ -1160,17 +1190,18 @@ tempssm <- function(temp_data,
 
   if (identical(na_action, "error")) {
     cli::cli_abort(
-      "Missing values detected in {.arg {arg_name}}."
+      c(
+        "The input temperature series includes missing values.",
+        "x" = "{.arg na_action} is set to {.val error}.",
+        "i" = paste0(
+          "Remove or impute missing response values before fitting the ",
+          "model, or use another {.arg na_action} policy."
+        )
+      )
     )
   }
 
-  msg <- c(
-    "Missing values detected in {.arg {arg_name}}.",
-    "i" = paste0(
-      "They will be retained and treated as unobserved responses during ",
-      "Kalman filtering and smoothing."
-    )
-  )
+  msg <- .tempssm_missing_temp_message(x)
 
   if (identical(na_action, "inform")) {
     .tempssm_cli_inform(msg)

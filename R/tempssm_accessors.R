@@ -718,14 +718,30 @@ get_ar_ts <- function(res, component = c("sum", "first", "individual"),
       lwr = ci_values[[idx]][, "lwr"],
       upr = ci_values[[idx]][, "upr"]
     )
-    colnames(out[[idx]]) <- c(paste0("ar", idx), paste0("ar", idx, "_lwr"), paste0("ar", idx, "_upr"))
+    colnames(out[[idx]]) <- c(
+      paste0("ar", idx),
+      paste0("ar", idx, "_lwr"),
+      paste0("ar", idx, "_upr")
+    )
   }
 
   combined <- do.call(cbind, out)
   colnames(combined) <- c(
-    vapply(seq_along(ar_states), function(idx) paste0("ar", idx), character(1)),
-    vapply(seq_along(ar_states), function(idx) paste0("ar", idx, "_lwr"), character(1)),
-    vapply(seq_along(ar_states), function(idx) paste0("ar", idx, "_upr"), character(1))
+    vapply(
+      seq_along(ar_states),
+      function(idx) paste0("ar", idx),
+      character(1)
+    ),
+    vapply(
+      seq_along(ar_states),
+      function(idx) paste0("ar", idx, "_lwr"),
+      character(1)
+    ),
+    vapply(
+      seq_along(ar_states),
+      function(idx) paste0("ar", idx, "_upr"),
+      character(1)
+    )
   )
   ts(
     combined,
@@ -733,43 +749,6 @@ get_ar_ts <- function(res, component = c("sum", "first", "individual"),
     frequency = frequency(res$temp_data)
   )
 }
-
-#' Extract the first autoregressive component (AR1) as a time series
-#'
-#' @inheritParams get_level_ts
-#'
-#' @details
-#' The AR1 component represents short-term autocorrelated deviations
-#' from the level and seasonal structure.
-#' See \code{\link{get_level_ts}} for the distinction between smoothed and
-#' filtered estimates and the handling of the diffuse phase.
-#'
-#' @return
-#' A univariate \code{ts} object of the selected AR1 estimate
-#' (in degrees Celsius).
-#' If \code{ci = TRUE}, a multivariate \code{ts} object with columns
-#' \code{ar1}, \code{lwr}, and \code{upr} is returned. Filtered output has
-#' intentional \code{NA} values during the diffuse phase.
-#'
-#' @noRd
-#'
-#' @examples
-#' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
-#' ar1_ts <- get_ar1_ts(res)
-#' }
-get_ar1_ts <- function(res, ci = FALSE, ci_level = 0.95,
-                       estimate = c("smoothed", "filtered")) {
-  get_ar_ts(
-    res = res,
-    component = "first",
-    ci = ci,
-    ci_level = ci_level,
-    estimate = estimate
-  )
-}
-
 
 #' Extract estimated parameters in the fitted models
 #'

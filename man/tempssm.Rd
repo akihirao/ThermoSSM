@@ -54,12 +54,12 @@ If \code{NULL}, default value of 1e-16 is used.}
 considered? Defaults to \code{TRUE}.}
 
 \item{na_action}{Character scalar specifying how explicit missing
-observations in \code{temp_data} should be handled. Use \code{"inform"}
-to issue an informational message and proceed, \code{"warn"} to issue a
-warning and proceed, \code{"error"} to stop, or \code{"allow"} to proceed
-silently. The default is \code{"inform"}. Missing values in
-\code{exo_data} are always rejected; exogenous covariates must be completed
-before model fitting.}
+observations in the input temperature series should be handled. Use
+\code{"inform"} to issue an informational message and proceed,
+\code{"warn"} to issue a warning and proceed, \code{"error"} to stop, or
+\code{"allow"} to proceed silently. The default is \code{"inform"}.
+Missing values in \code{exo_data} are always rejected; exogenous
+covariates must be completed before model fitting.}
 
 \item{marginal}{Logical scalar specifying the likelihood used during
 parameter estimation. If \code{TRUE} (the default), KFAS uses the
@@ -343,8 +343,8 @@ The \code{TEMPSSM_VERBOSITY} environment variable accepts the same values
 and takes precedence over the R option. Warnings and errors, including
 non-convergence warnings, are never suppressed by these verbosity settings.
 The \code{na_action} argument independently controls the condition issued
-for missing observations in \code{temp_data}; use \code{"allow"} to handle
-those observations silently.
+for missing observations in the input temperature series; use
+\code{"allow"} to handle those observations silently.
 }
 
 \examples{

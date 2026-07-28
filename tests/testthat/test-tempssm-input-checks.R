@@ -246,7 +246,15 @@ test_that(".tempssm_prepare_model_inputs handles missing values by policy", {
 
   expect_message(
     prepared_inform <- .tempssm_prepare_model_inputs(temp_ts),
-    "Missing values detected"
+    "The input temperature series includes missing values"
+  )
+  expect_message(
+    .tempssm_prepare_model_inputs(temp_ts),
+    "Series length: 4; missing values: 1 \\(25.0%\\)"
+  )
+  expect_message(
+    .tempssm_prepare_model_inputs(temp_ts),
+    "This is supported"
   )
   expect_true(anyNA(prepared_inform$temp_data))
 
@@ -261,7 +269,7 @@ test_that(".tempssm_prepare_model_inputs handles missing values by policy", {
 
   expect_error(
     .tempssm_prepare_model_inputs(temp_ts, na_action = "error"),
-    "Missing values detected"
+    "The input temperature series includes missing values"
   )
 
   expect_silent(

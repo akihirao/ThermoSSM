@@ -23,15 +23,13 @@ expect_no_missing_or_undefined <- function(x) {
 }
 
 
-get_ar1_ts_internal <- function(...) {
-  getFromNamespace("get_ar1_ts", "tempssm")(...)
-}
-
 test_that("model accessors return complete finite values for complete fits", {
   expect_no_missing_or_undefined(get_level_ts(res_tempssm, ci = TRUE))
   expect_no_missing_or_undefined(get_drift_ts(res_tempssm, ci = TRUE))
   expect_no_missing_or_undefined(get_season_ts(res_tempssm, ci = TRUE))
-  expect_no_missing_or_undefined(get_ar1_ts_internal(res_tempssm, ci = TRUE))
+  expect_no_missing_or_undefined(
+    get_ar_ts(res_tempssm, component = "first", ci = TRUE)
+  )
   expect_no_missing_or_undefined(get_tempssm_residuals(res_tempssm))
   expect_no_missing_or_undefined(get_exo_coef(res_tempssm_exo))
 })

@@ -49,6 +49,7 @@ test_that("package data used in examples and tests are exported", {
     "pdo",
     "sst_jogashima",
     "sst_niigata",
+    "sst_yamaguchi",
     "soi",
     "temp_MtFuji",
     "yamaguchi_sst"

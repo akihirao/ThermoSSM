@@ -165,6 +165,6 @@ test_that("tempssm preserves positional na_action compatibility", {
       TRUE,
       "error"
     ),
-    "Missing values detected"
+    "The input temperature series includes missing values"
   )
 })

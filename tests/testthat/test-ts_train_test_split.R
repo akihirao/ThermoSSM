@@ -124,7 +124,7 @@ test_that("ts_train_test_split can error on missing values", {
 
   expect_error(
     ts_train_test_split(temp_ts, na_action = "error"),
-    "Missing values detected"
+    "The input temperature series includes missing values"
   )
 })
 

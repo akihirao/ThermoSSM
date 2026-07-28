@@ -135,12 +135,14 @@
     ci = ci,
     ci_level = ci_level,
     show_ci_in_title = FALSE,
-    fun = "autoplot_ar1_internal"
+    fun = "autoplot_ar"
   )
 
   ar_states <- paste0("arima", seq_len(res$ar_order))
   if (is.null(res$kfs) || is.null(res$kfs$alphahat)) {
-    cli::cli_abort("Autoregressive component not found in the smoothing results.")
+    cli::cli_abort(
+      "Autoregressive component not found in the smoothing results."
+    )
   }
 
   state_matrix <- res$kfs$alphahat
@@ -160,7 +162,9 @@
 
   ci_obj <- stats::confint(res$kfs, level = ci_level)
   if (!all(ar_states %in% names(ci_obj))) {
-    cli::cli_abort("Autoregressive component not found in confidence intervals.")
+    cli::cli_abort(
+      "Autoregressive component not found in confidence intervals."
+    )
   }
 
   lwr <- rowSums(vapply(ar_states, function(state) {
@@ -496,72 +500,6 @@ autoplot_ar <- function(res,
     ci_title = title,
     debug_name = "ar"
   )
-}
-
-
-#' Plot the estimated first autoregressive component from a tempssm model
-#'
-#' @description
-#' Create a \pkg{ggplot2} visualization of the estimated first autoregressive
-#' component (AR1) from a state space model fitted by \code{tempssm()}.
-#' A pointwise confidence interval is shown as a shaded ribbon.
-#'
-#' @inheritParams get_level_ts
-#' @inheritParams autoplot_level
-#'
-#' @param ylab
-#' Label of y-axis. The default is a plotmath expression showing temperature
-#' in degrees Celsius.
-#'
-#' @details
-#' The confidence interval is computed using
-#' \code{stats::confint()} applied to the Kalman filter and smoother
-#' results stored in \code{res$kfs}. The shaded ribbon represents
-#' pointwise confidence intervals for the AR1 state.
-#'
-#' @return
-#' A \code{ggplot} object, allowing further customization by adding
-#' standard \pkg{ggplot2} layers.
-#'
-#' @seealso
-#' \code{\link{tempssm}}, \code{\link[stats]{confint}}
-#'
-#' @noRd
-#'
-#' @examples
-#' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
-#'
-#' # Default 95% confidence interval
-#' autoplot_ar1(res)
-#'
-#' # Custom confidence level
-#' autoplot_ar1(res, ci_level = 0.9)
-#' }
-autoplot_ar1 <- function(res,
-                         ci = TRUE,
-                         ci_level = 0.95,
-                         ylab = expression(Temp. ~ (degree * C)),
-                         show_ci_in_title = FALSE) {
-  p <- autoplot_ar(
-    res = res,
-    ci = ci,
-    ci_level = ci_level,
-    ylab = ylab,
-    show_ci_in_title = show_ci_in_title
-  )
-
-  title <- .tempssm_component_plot_title(
-    title = "Autoregressive (1) component",
-    ci_title = "Autoregressive (1) component",
-    ci = ci,
-    ci_level = ci_level,
-    show_ci_in_title = show_ci_in_title
-  )
-  p <- p + ggplot2::labs(title = title)
-
-  p
 }
 
 
