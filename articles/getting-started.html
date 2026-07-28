@@ -62,7 +62,7 @@
                         <h4 data-toc-skip class="author">Akira S. Hirao,
 Shinya Baba, and Momoko Ichinokawa</h4>
             
-            <h4 data-toc-skip class="date">2026-07-27</h4>
+            <h4 data-toc-skip class="date">2026-07-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/akihirao/tempssm/blob/main/vignettes/getting-started.Rmd" class="external-link"><code>vignettes/getting-started.Rmd</code></a></small>
       <div class="d-none name"><code>getting-started.Rmd</code></div>
@@ -73,28 +73,21 @@ Shinya Baba, and Momoko Ichinokawa</h4>
 <div class="section level2">
 <h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
 </h2>
-<p><code>tempssm</code> is an R package for analyzing environmental
-temperature time series, including air and water temperature
-observations. It provides a practical framework for assessing how
-long-term trend, seasonal variation, autoregressive dependence, and
-optional exogenous effects contribute to observed temporal variation.
-The package facilitates the application of linear Gaussian state-space
-models estimated by Kalman filtering and smoothing, using the
-<code>KFAS</code> package as the computational backend (Helske,
-2017).</p>
-<p>The core modeling functions in <code>tempssm</code> expect input
-temperature series and optional exogenous covariates to be supplied as
-regularly spaced R <code>ts</code> objects (see the
-<code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">stats::ts</a></code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).
-The package also provides utility functions for converting common
-tabular and observational data formats into <code>ts</code> objects
-before model fitting.</p>
+<p><code>tempssm</code> is an R package for state-space modeling of
+environmental temperature time series, including air and water
+temperature observations. It provides a practical framework for
+assessing how long-term trend, seasonal variation, autoregressive
+dependence, and optional exogenous effects contribute to observed
+temporal variation. The package facilitates the application of linear
+Gaussian state-space models estimated by Kalman filtering and smoothing,
+using the <code>KFAS</code> package as the computational backend
+(Helske, 2017).</p>
 <div class="section level4">
 <h4 id="key-features">Key features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h4>
 <ul>
-<li>Designed for temperature time series with arbitrary seasonal
-frequencies; currently validated primarily on monthly data</li>
+<li>Designed for environmental temperature time series with arbitrary
+seasonal frequencies; currently validated primarily on monthly data</li>
 <li>Estimates latent states using linear Gaussian state-space models
 combined with Kalman filtering and smoothing</li>
 <li>Models temperature dynamics as a sum of interpretable latent
@@ -105,6 +98,17 @@ component (default: AR(1))</li>
 <li>Implements time-series cross-validation for model evaluation</li>
 </ul>
 </div>
+</div>
+<div class="section level2">
+<h2 id="input-data-format">Input Data Format<a class="anchor" aria-label="anchor" href="#input-data-format"></a>
+</h2>
+<p>The core modeling functions in <code>tempssm</code> expect input time
+series to be supplied as R <code>ts</code> objects. The <code>ts</code>
+class is base R’s standard format for regularly spaced time series (see
+the <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">stats::ts</a></code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).
+The package also provides utility functions for converting common
+tabular and observational data formats into <code>ts</code> objects
+before model fitting.</p>
 </div>
 <div class="section level2">
 <h2 id="prior-art-and-scope">Prior Art and Scope<a class="anchor" aria-label="anchor" href="#prior-art-and-scope"></a>
@@ -161,16 +165,6 @@ an installed package, it can be opened with
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Set libraries</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/akihirao/tempssm" class="external-link">tempssm</a></span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="input-data-format">Input Data Format<a class="anchor" aria-label="anchor" href="#input-data-format"></a>
-</h3>
-<p>Input data for <strong>tempssm</strong> must be supplied as an R
-<code>ts</code> object, which represents a regularly spaced time series
-(see <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">?stats::ts</a></code> or <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).</p>
-<p>To support data preparation, the package includes utility functions
-that convert external observational data into <code>ts</code> objects
-suitable for model fitting (see Appendix).</p>
 </div>
 <div class="section level3">
 <h3 id="practice-applying-state-space-model-to-a-univariate-temperature-time-series">Practice: Applying State-Space Model to a Univariate Temperature
@@ -276,41 +270,24 @@ model.</p>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.005985637 </span></span>
-<span><span class="co">##   State (Q trend): 1.268117e-07 </span></span>
-<span><span class="co">##   State (Q season): 0.001346139 </span></span>
-<span><span class="co">##   State (Q ar): 0.4097883 </span></span>
+<span><span class="co">##   Observation (H): 0.005985633 </span></span>
+<span><span class="co">##   State (Q trend): 1.268116e-07 </span></span>
+<span><span class="co">##   State (Q season): 0.001346144 </span></span>
+<span><span class="co">##   State (Q ar): 0.4097882 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.7442999</span></span></code></pre>
-<p>From the summary output, confirm that the model has converged
-(Converged: TRUE). The output also reports statistics such as the number
-of parameters (k), the log-likelihood, the likelihood type, and the
-number of diffuse initial states. The parameter estimates include the
-observation error variance (H), the process error variance of the
-long-term trend component (Q trend), the process error variance of the
-seasonal component (Q season), the process error variance of the
-autoregressive component, and the first-order autoregressive coefficient
-(AR1).</p>
-<p>The log-likelihood and the associated number of estimated parameters
-can also be extracted directly from the fitted <code>tempssm</code>
-object using <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code>.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
-<span><span class="va">ll</span></span></code></pre></div>
-<pre><code><span><span class="co">## 'log Lik.' -249.7962 (df=5)</span></span></code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">ll</span>, <span class="st">"df"</span><span class="op">)</span> <span class="co"># number of parameters</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 5</span></span></code></pre>
-<p>By default, <code><a href="../reference/tempssm.html">tempssm()</a></code> uses the KFAS marginal likelihood
-for parameter estimation. The selected likelihood type is retained for
-<code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>. The package
-intentionally does not compute AIC for <code>tempssm</code> objects. The
-log-likelihood and parameter count remain available through
-<code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code> for users who need them for their own
-model-assessment workflows. The diffuse likelihood remains available by
-fitting the model with <code>marginal = FALSE</code>.</p>
+<span><span class="co">##   Coefficient of AR1: 0.7443</span></span></code></pre>
+<p>First, confirm from the summary output that the model has converged
+(<code>Converged: TRUE</code>). The summary also reports the
+log-likelihood, parameter count, likelihood type, and number of diffuse
+initial states. The estimated parameters include variance terms for the
+observation error (<code>H</code>), long-term trend
+(<code>Q trend</code>), seasonal component (<code>Q season</code>), and
+autoregressive component (<code>Q ar</code>), as well as the
+autoregressive coefficient (<code>AR1</code> in the default model). See
+the detailed manual for extracting and using these quantities directly;
+its location is listed at the end of this quick tutorial.</p>
 </div>
 <div class="section level4">
 <h4 id="plotting-level-drift-seasonal-and-auto-regressive-components">Plotting Level, Drift, Seasonal, and Auto-Regressive Components<a class="anchor" aria-label="anchor" href="#plotting-level-drift-seasonal-and-auto-regressive-components"></a>
@@ -320,10 +297,10 @@ and their rates of change (drift) by extracting the corresponding latent
 components from the state-space model. Additionally, seasonal
 variability and autoregressive dependence are plotted out, allowing the
 underlying trend behavior to be examined more clearly.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># plot all components at once</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
 <p>The level component shows a persistent upward trend in sea surface
 temperature over the study period, while the drift component indicates a
 relatively stable positive rate of change. The shaded gray areas
@@ -349,15 +326,15 @@ residual time-series plots, residual autocorrelation, residual
 distributions, and Ljung-Box tests can be used to assess remaining
 temporal dependence and departures from the Gaussian error
 assumption.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_tempssm_residual_diagnostics.html">plot_tempssm_residual_diagnostics</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
-<p><img src="getting-started_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
 <p>In the model diagnostic plot, the upper panel shows the residual time
 series, the lower-left panel shows the residual autocorrelation plot
 (ACF plot), and the lower-right panel shows the residual frequency
 distribution. These plots should be checked for any notable residual
 patterns.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residuals.html">diagnose_residuals</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">diag</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
@@ -376,32 +353,32 @@ residual autocorrelation up to lag 12 (P &gt; 0.05).</p>
 </h4>
 <p>The long-term trend component and its rate of change (drift) can be
 extracted as ts objects as follows.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Smoothing estimates</span></span>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">alpha_hat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##            level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
-<span><span class="co">## Jan 2002 16.3944 0.005600278  -6.624678  -3.337435  0.6067452  4.7593086</span></span>
-<span><span class="co">## Feb 2002 16.4000 0.005600419  -7.676822  -6.624678 -3.3374348  0.6067452</span></span>
-<span><span class="co">## Mar 2002 16.4056 0.005600414  -7.346316  -7.676822 -6.6246785 -3.3374348</span></span>
-<span><span class="co">## Apr 2002 16.4112 0.005600309  -5.476554  -7.346316 -7.6768221 -6.6246785</span></span>
-<span><span class="co">## May 2002 16.4168 0.005600333  -2.217000  -5.476554 -7.3463157 -7.6768221</span></span>
-<span><span class="co">## Jun 2002 16.4224 0.005600466   2.468021  -2.217000 -5.4765544 -7.3463157</span></span>
+<span><span class="co">## Jan 2002 16.3944 0.005600277  -6.624678  -3.337435  0.6067452  4.7593085</span></span>
+<span><span class="co">## Feb 2002 16.4000 0.005600418  -7.676822  -6.624678 -3.3374347  0.6067452</span></span>
+<span><span class="co">## Mar 2002 16.4056 0.005600413  -7.346316  -7.676822 -6.6246785 -3.3374347</span></span>
+<span><span class="co">## Apr 2002 16.4112 0.005600308  -5.476554  -7.346316 -7.6768221 -6.6246785</span></span>
+<span><span class="co">## May 2002 16.4168 0.005600332  -2.217000  -5.476554 -7.3463159 -7.6768221</span></span>
+<span><span class="co">## Jun 2002 16.4224 0.005600464   2.468022  -2.217000 -5.4765542 -7.3463159</span></span>
 <span><span class="co">##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10</span></span>
-<span><span class="co">## Jan 2002  8.5280152  9.9007961  6.4159191  2.4680213  -2.217000   -5.476554</span></span>
-<span><span class="co">## Feb 2002  4.7593086  8.5280152  9.9007961  6.4159191   2.468021   -2.217000</span></span>
-<span><span class="co">## Mar 2002  0.6067452  4.7593086  8.5280152  9.9007961   6.415919    2.468021</span></span>
-<span><span class="co">## Apr 2002 -3.3374348  0.6067452  4.7593086  8.5280152   9.900796    6.415919</span></span>
-<span><span class="co">## May 2002 -6.6246785 -3.3374348  0.6067452  4.7593086   8.528015    9.900796</span></span>
-<span><span class="co">## Jun 2002 -7.6768221 -6.6246785 -3.3374348  0.6067452   4.759309    8.528015</span></span>
+<span><span class="co">## Jan 2002  8.5280154  9.9007962  6.4159187  2.4680217  -2.217000   -5.476554</span></span>
+<span><span class="co">## Feb 2002  4.7593085  8.5280154  9.9007962  6.4159187   2.468022   -2.217000</span></span>
+<span><span class="co">## Mar 2002  0.6067452  4.7593085  8.5280154  9.9007962   6.415919    2.468022</span></span>
+<span><span class="co">## Apr 2002 -3.3374347  0.6067452  4.7593085  8.5280154   9.900796    6.415919</span></span>
+<span><span class="co">## May 2002 -6.6246785 -3.3374347  0.6067452  4.7593085   8.528015    9.900796</span></span>
+<span><span class="co">## Jun 2002 -7.6768221 -6.6246785 -3.3374347  0.6067452   4.759308    8.528015</span></span>
 <span><span class="co">##          sea_dummy11       arima1</span></span>
-<span><span class="co">## Jan 2002   -7.346316  0.175231631</span></span>
-<span><span class="co">## Feb 2002   -5.476554 -0.377441280</span></span>
-<span><span class="co">## Mar 2002   -2.217000  0.286840201</span></span>
-<span><span class="co">## Apr 2002    2.468021  0.767966301</span></span>
-<span><span class="co">## May 2002    6.415919  0.330186811</span></span>
-<span><span class="co">## Jun 2002    9.900796  0.009042377</span></span></code></pre>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<span><span class="co">## Jan 2002   -7.346316  0.175231565</span></span>
+<span><span class="co">## Feb 2002   -5.476554 -0.377441338</span></span>
+<span><span class="co">## Mar 2002   -2.217000  0.286840281</span></span>
+<span><span class="co">## Apr 2002    2.468022  0.767966035</span></span>
+<span><span class="co">## May 2002    6.415919  0.330187003</span></span>
+<span><span class="co">## Jun 2002    9.900796  0.009041978</span></span></code></pre>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 　Smoothing estimate of level component</span></span>
 <span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span></span>
@@ -423,14 +400,14 @@ extracted as ts objects as follows.</p>
 end of the observed series. This is useful for visual checks of how the
 fitted model extrapolates the estimated level, seasonal, and
 autoregressive components.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span><span class="va">pred_1</span></span></code></pre></div>
 <pre><code><span><span class="co">##           Jan</span></span>
 <span><span class="co">## 2024 10.61997</span></span></code></pre>
 <p>Predictions for multiple future time points can be requested by
 setting the <code>n.ahead</code> argument.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res</span>, n.ahead <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="va">pred_12</span></span></code></pre></div>
 <pre><code><span><span class="co">##            Jan       Feb       Mar       Apr       May       Jun       Jul</span></span>

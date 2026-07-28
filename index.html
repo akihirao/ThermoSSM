@@ -56,19 +56,23 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="tempssm">tempssm<a class="anchor" aria-label="anchor" href="#tempssm"></a>
 </h1></div>
-<p><code>tempssm</code> is an R package for analyzing environmental temperature time series, including air and water temperature observations. It provides a practical framework for assessing how long-term trend, seasonal variation, autoregressive dependence, and optional exogenous effects contribute to observed temporal variation. The package facilitates the application of linear Gaussian state-space models estimated by Kalman filtering and smoothing, using the <code>KFAS</code> package as the computational backend (Helske, 2017).</p>
+<p><code>tempssm</code> is an R package for state-space modeling of environmental temperature time series, including air and water temperature observations. It provides a practical framework for assessing how long-term trend, seasonal variation, autoregressive dependence, and optional exogenous effects contribute to observed temporal variation. The package facilitates the application of linear Gaussian state-space models estimated by Kalman filtering and smoothing, using the <code>KFAS</code> package as the computational backend (Helske, 2017).</p>
 <div class="section level2">
 <h2 id="key-features">Key Features<a class="anchor" aria-label="anchor" href="#key-features"></a>
 </h2>
 <ul>
-<li>Fits linear Gaussian state-space models to temperature time series.</li>
+<li>Fits linear Gaussian state-space models to environmental temperature time series.</li>
 <li>Represents temperature dynamics using interpretable latent components: long-term trend, seasonal variation, autoregressive dependence, and optional exogenous effects.</li>
 <li>Supports arbitrary integer seasonal frequencies, while the current examples and validation focus primarily on monthly temperature data.</li>
 <li>Allows the autoregressive order to be specified by the user.</li>
 <li>Provides S3 methods for summaries, diagnostics, accessors, and plots.</li>
 <li>Includes time-series cross-validation tools for model evaluation.</li>
 </ul>
-<p>Core modeling functions expect regularly spaced R <code>ts</code> objects as inputs (see the <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">stats::ts</a></code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>). Utility functions are included to help convert common tabular or observational data into <code>ts</code> objects before fitting.</p>
+</div>
+<div class="section level2">
+<h2 id="input-data-format">Input Data Format<a class="anchor" aria-label="anchor" href="#input-data-format"></a>
+</h2>
+<p>Core modeling functions expect input time series to be supplied as R <code>ts</code> objects. The <code>ts</code> class is base R’s standard format for regularly spaced time series (see the <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">stats::ts</a></code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="external-link uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>). Utility functions are included to help convert common tabular or observational data into <code>ts</code> objects before fitting.</p>
 </div>
 <div class="section level2">
 <h2 id="prior-art-and-scope">Prior Art and Scope<a class="anchor" aria-label="anchor" href="#prior-art-and-scope"></a>

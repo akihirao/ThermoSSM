@@ -1,17 +1,18 @@
 # tempssm
 
-`tempssm` is an R package for analyzing environmental temperature time
-series, including air and water temperature observations. It provides a
-practical framework for assessing how long-term trend, seasonal
-variation, autoregressive dependence, and optional exogenous effects
-contribute to observed temporal variation. The package facilitates the
-application of linear Gaussian state-space models estimated by Kalman
-filtering and smoothing, using the `KFAS` package as the computational
-backend (Helske, 2017).
+`tempssm` is an R package for state-space modeling of environmental
+temperature time series, including air and water temperature
+observations. It provides a practical framework for assessing how
+long-term trend, seasonal variation, autoregressive dependence, and
+optional exogenous effects contribute to observed temporal variation.
+The package facilitates the application of linear Gaussian state-space
+models estimated by Kalman filtering and smoothing, using the `KFAS`
+package as the computational backend (Helske, 2017).
 
 ## Key Features
 
-- Fits linear Gaussian state-space models to temperature time series.
+- Fits linear Gaussian state-space models to environmental temperature
+  time series.
 - Represents temperature dynamics using interpretable latent components:
   long-term trend, seasonal variation, autoregressive dependence, and
   optional exogenous effects.
@@ -21,8 +22,12 @@ backend (Helske, 2017).
 - Provides S3 methods for summaries, diagnostics, accessors, and plots.
 - Includes time-series cross-validation tools for model evaluation.
 
-Core modeling functions expect regularly spaced R `ts` objects as inputs
-(see the [`stats::ts`](https://rdrr.io/r/stats/ts.html) documentation:
+## Input Data Format
+
+Core modeling functions expect input time series to be supplied as R
+`ts` objects. The `ts` class is base R’s standard format for regularly
+spaced time series (see the
+[`stats::ts`](https://rdrr.io/r/stats/ts.html) documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). Utility
 functions are included to help convert common tabular or observational
 data into `ts` objects before fitting.
