@@ -17,8 +17,8 @@ using the `KFAS` package as the computational backend (Helske, 2017).
   exogenous effects.
 - Supports arbitrary integer seasonal frequencies, while the current examples
   and validation focus primarily on monthly temperature data.
-- Allows the autoregressive order to be specified by the user.
-- Provides S3 methods for summaries, diagnostics, accessors, and plots.
+- Allows users to specify an arbitrary order of the autoregressive component
+  (default: AR(1)).
 - Includes time-series cross-validation tools for model evaluation.
 
 ## Input Data Format
