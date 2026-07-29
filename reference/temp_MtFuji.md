@@ -31,8 +31,8 @@ A `ts` object with:
 
 Created by processing content from the Japan Meteorological Agency
 (JMA), Past Weather Data Download page:
-<https://www.data.jma.go.jp/risk/obsdl/index.php> Values with JMA
-quality flags below 8 were treated as `NA`.
+<https://www.data.jma.go.jp/risk/obsdl/> Values with JMA quality flags
+below 8 were treated as `NA`.
 
 ## Details
 
