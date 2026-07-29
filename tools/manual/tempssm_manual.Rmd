@@ -373,8 +373,9 @@ as the baseline specification.
 
 The fitted `tempssm` object contains the smoothed state estimates returned by
 `KFAS`. The matrix `res_ar1$kfs$alphahat` stores these latent-state estimates,
-including the level, drift, seasonal states, and autoregressive state. Inspecting
-this matrix is useful for understanding the internal state representation.
+including the level, drift, seasonal states, and autoregressive state.
+Inspecting this matrix is useful for understanding the internal state
+representation.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # Smoothing estimates
@@ -451,91 +452,111 @@ horizon becomes longer, and long-horizon predictions can be sensitive to model
 assumptions about trend, seasonality, and autoregressive dependence.
 
 
-## Exercise II: Applying a State-Space Model to a Temperature Time Series with an Exogenous Variable
+## Exercise II: Model With Exogenous Variables
 
 ### Objective
 
 We extend the state-space modeling framework to examine the effect of an
-exogenous factor on temperature variation. Specifically, we examine the effect
-of the Pacific Decadal Oscillation (PDO) as an exogenous variable on SST
-observed off Yamaguchi Prefecture, Japan.
+exogenous factor on temperature variation. Specifically, we examine simulated
+Kuroshio path information as exogenous variables for the simulated SST series
+introduced in Exercise I.
 
-### Loading the PDO Index Dataset: PDO Index as an Exogenous Variable
+### Loading Simulated Kuroshio Exogenous Variables
 
-- **Data**: Monthly Pacific Decadal Oscillation (PDO) index (JMA)  
-- **Period**: January 1901 to December 2025
+Two simulated exogenous-variable datasets are included in the package.
 
-The Pacific Decadal Oscillation (PDO) index is defined as the projection of 
-monthly mean sea surface temperature (SST) anomalies onto the leading empirical 
-orthogonal function (EOF) of SST variability over the North Pacific north of 
-20°N. The EOF is computed using SST anomalies for 1901–2000, defined relative 
-to the 1901–2000 monthly climatology. To remove the global warming signal, 
-the global-mean SST anomaly is subtracted from each grid point prior to 
-the EOF analysis. In this package, we use the PDO index provided by 
-the Japan Meteorological Agency (JMA), available at
-<https://www.data.jma.go.jp/kaiyou/data/shindan/b_1/pdo/pdo.txt>.
+- **`kuroshio_a_sim`**: monthly binary indicator of the Kuroshio A-type path  
+- **`distance_sim`**: monthly offshore-distance index of the Kuroshio path  
+- **Period**: January 1998 to February 2023
 
+Both datasets are provided as univariate `ts` objects with `frequency = 12`.
+They are simulated monthly datasets based on the Kuroshio-related variables
+used in Baba et al. (2024). The original data used in that study had finer
+time resolution for some variables, but the simulated datasets in this package
+are represented as monthly time series for use with `tempssm` examples.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-data(pdo) # load a ts object of PDO index
-head(pdo)
+data(kuroshio_a_sim)
+data(distance_sim)
+
+head(kuroshio_a_sim)
+head(distance_sim)
+
+summary(kuroshio_a_sim)
+summary(distance_sim)
 ```
 
-### Intersecting the Temperature and PDO Time Series
+### Checking Time-Series Alignment
 
-For state-space modeling with exogenous variables, all input time series must
-share a common and aligned time index. In this step, the temperature and PDO
-time series are restricted to their overlapping period by trimming the leading
-and trailing portions so that both datasets cover the same time span.
-
-The function `tempssm::trim_ts_overlap()` is used to align the two `ts` objects
-on a shared timeline and returns time series containing only the common period.
+For state-space modeling with exogenous variables, the response and exogenous
+time series must share a common and aligned time index. In this example,
+`sst_sim`, `kuroshio_a_sim`, and `distance_sim` already have the same monthly
+time span and frequency.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-# Generate an object on a shared timeline
-trimmed_series <- trim_ts_overlap(yamaguchi_sst,
-                                  pdo,
-                                  temp_name = "Temp",
-                                  exo_name = "PDO")
+series_info <- tibble::tibble(
+  series = c("sst_sim", "kuroshio_a_sim", "distance_sim"),
+  start = c(
+    paste(start(sst_sim), collapse = "-"),
+    paste(start(kuroshio_a_sim), collapse = "-"),
+    paste(start(distance_sim), collapse = "-")
+  ),
+  end = c(
+    paste(end(sst_sim), collapse = "-"),
+    paste(end(kuroshio_a_sim), collapse = "-"),
+    paste(end(distance_sim), collapse = "-")
+  ),
+  frequency = c(
+    frequency(sst_sim),
+    frequency(kuroshio_a_sim),
+    frequency(distance_sim)
+  ),
+  missing = c(
+    sum(is.na(sst_sim)),
+    sum(is.na(kuroshio_a_sim)),
+    sum(is.na(distance_sim))
+  )
+)
 
-yamaguchi_sst_trim <- trimmed_series$temperature
-pdo_trim <- trimmed_series$exogenous
-
-start(yamaguchi_sst_trim)
-end(yamaguchi_sst_trim)
-
-start(pdo_trim)
-end(pdo_trim)
-
+series_info
 ```
 
-### Plotting Time Series of SST and the PDO Index
+If user-supplied time series have different start or end points,
+`trim_ts_overlap()` can be used to restrict the response and exogenous series
+to their shared overlapping period before fitting the model.
 
-We visualize the time-series structures of SST and the PDO index.
+### Plotting the Response and Exogenous Variables
+
+We visualize the simulated SST series together with the two simulated Kuroshio
+variables to inspect the overall structure of the dataset.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plt_yamaguchi_sst_trim <- forecast::autoplot(yamaguchi_sst_trim) +
-  labs(y = expression(Temp.~(degree*C)), 
-       x = "Time (year)") +
-  ggtitle("Monthly SST off Yamaguchi, Japan") +
+plt_sst_exo <- forecast::autoplot(sst_sim) +
+  labs(y = expression(Temp.~(degree*C)), x = "Time (year)") +
+  ggtitle("Simulated monthly SST") +
   theme_classic()
 
-
-plt_pdo <- forecast::autoplot(pdo_trim) +
-  labs(x = "Time (year)", y = "PDO index") +
-  ggtitle("PDO index") +
+plt_kuroshio_a <- forecast::autoplot(kuroshio_a_sim) +
+  labs(x = "Time (year)", y = "A-type indicator") +
+  ggtitle("Simulated Kuroshio A-type path") +
+  scale_y_continuous(breaks = c(0, 1)) +
   theme_classic()
 
-plt_yamaguchi_sst_trim + plt_pdo + patchwork::plot_layout(ncol=1)
+plt_distance <- forecast::autoplot(distance_sim) +
+  labs(x = "Time (year)", y = "Offshore distance") +
+  ggtitle("Simulated Kuroshio offshore distance") +
+  theme_classic()
 
+plt_sst_exo + plt_kuroshio_a + plt_distance +
+  patchwork::plot_layout(ncol = 1)
 ```
 
-The PDO index data used in this exercise contain no missing values. When using
-your own exogenous-variable data, however, make sure that the exogenous
-variables do not contain missing values before fitting the model. `tempssm()`
-does not allow missing values in exogenous variables, and model fitting will
-stop with an error if such data are supplied. If necessary, apply appropriate
-preprocessing, such as imputation, before the analysis.
+The simulated exogenous-variable series used in this exercise contain no
+missing values. When using your own exogenous-variable data, make sure that
+the exogenous variables do not contain missing values before fitting the
+model. `tempssm()` does not allow missing values in exogenous variables, and
+model fitting will stop with an error if such data are supplied. If necessary,
+apply appropriate preprocessing, such as imputation, before the analysis.
 
 In contrast, missing values in the dependent temperature time series are
 allowed. In the state-space model, these missing values are treated as
@@ -544,42 +565,58 @@ and smoothing.
 
 ### Applying a Model Without an Exogenous Variable
 
-We first apply a baseline state-space model that does not include any
-exogenous variables. This model serves as a reference case in which temperature
-variation is explained solely by the latent long-term trend, seasonal cycle,
-and autoregressive dependence. Although the same model was already fitted in
-Exercise I, here we explicitly specify the dependent-variable argument and
-store the returned object as `res_without`.
+The baseline model without exogenous variables was already fitted in
+Exercise I. Because Exercise II uses the same response series, `sst_sim`, we
+reuse that fitted object as the reference model instead of refitting the same
+model.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-res_without <- tempssm(temp_data = yamaguchi_sst_trim, ar_order = 1) 
+res_without <- res_ar1
 summary(res_without)
-
-plot_tempssm_residual_diagnostics(res_without)
-diag_res_without <- diagnose_residuals(res_without)
-print(diag_res_without)
 ```
 
-The residual diagnostics for this AR(1) baseline model do not indicate
-significant residual autocorrelation up to lag 12. This result suggests that
-the default first-order autoregressive structure is a reasonable starting
-point for the model without the exogenous variable.
+This avoids repeating the same estimation step and makes the comparison focus
+on the additional information introduced by the simulated Kuroshio variables.
 
-This baseline model provides a useful benchmark for evaluating the additional
-explanatory power of the PDO index introduced in the next section.
+### Combining Exogenous Variables into a Multivariate `ts` Object
 
-### Applying a Model With an Exogenous Variable
-
-We construct a model that uses the PDO index as a univariate exogenous
-variable. In the `tempssm()` function, the PDO data (`pdo_trim`) are supplied
-to the exogenous-variable argument (`exo_data`). The temperature time series
-(`yamaguchi_sst_trim`) is supplied to the dependent-variable argument
-(`temp_data`), which was implicit in the previous examples.
+The `exo_data` argument of `tempssm()` can accept either a univariate `ts`
+object or a multivariate `ts` object. Because this exercise uses two exogenous
+variables, we combine `kuroshio_a_sim` and `distance_sim` into a single
+multivariate `ts` object before fitting the model.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-res_with <- tempssm(temp_data = yamaguchi_sst_trim,
-                    exo_data = pdo_trim,
-                    ar_order = 1) 
+exo_kuroshio <- cbind(kuroshio_a_sim, distance_sim)
+colnames(exo_kuroshio) <- c("kuroshio_a", "distance")
+
+head(exo_kuroshio)
+start(exo_kuroshio)
+end(exo_kuroshio)
+frequency(exo_kuroshio)
+colnames(exo_kuroshio)
+sum(is.na(exo_kuroshio))
+```
+
+The resulting object has class `mts`, which is the multivariate form of base
+R's `ts` class. Each column is treated as a separate exogenous variable in the
+state-space model. The column names are used as variable labels in summaries
+and coefficient tables, so assigning informative names before model fitting is
+helpful.
+
+### Applying a Model With Exogenous Variables
+
+We next construct a model that uses the two simulated Kuroshio variables as
+exogenous variables. In the `tempssm()` function, the multivariate object
+`exo_kuroshio` is supplied to the exogenous-variable argument (`exo_data`),
+and the simulated SST series (`sst_sim`) is supplied to the
+dependent-variable argument (`temp_data`).
+
+```{r message = FALSE, warning = FALSE, echo = TRUE}
+res_with <- tempssm(
+  temp_data = sst_sim,
+  exo_data = exo_kuroshio,
+  ar_order = 1
+)
 summary(res_with)
 
 plot_tempssm_residual_diagnostics(res_with)
@@ -589,49 +626,43 @@ print(diag_res_with)
 
 ```{r echo = FALSE}
 exo_coef <- get_exo_coef(res_with)
-pdo_coef <- exo_coef$Coefficient[exo_coef$Variable == "PDO"]
-pdo_lwr <- exo_coef$lwr[exo_coef$Variable == "PDO"]
-pdo_upr <- exo_coef$upr[exo_coef$Variable == "PDO"]
 ```
 
-The residual diagnostics for the model with the PDO index also do not indicate
-significant residual autocorrelation up to lag 12. Thus, for both models
-considered here, the AR(1) specification provides an adequate working
-autoregressive structure according to these residual checks.
+The residual diagnostics for the model with the simulated Kuroshio variables
+also do not indicate significant residual autocorrelation up to lag 12. Thus,
+for both models considered here, the AR(1) specification provides an adequate
+working autoregressive structure according to these residual checks.
 
-We then examine the model estimates. The estimated coefficient for the
-exogenous PDO index is negative (`r sprintf("%.2f", pdo_coef)`), and its 95%
-confidence interval does not include zero, ranging from
-`r sprintf("%.2f", pdo_lwr)` to `r sprintf("%.2f", pdo_upr)`. This indicates a
-statistically significant negative relationship between local SST off Yamaguchi
-Prefecture and PDO variability.
+We then examine the estimated coefficients for the exogenous variables.
 
-Specifically, after accounting for the underlying long-term trend, seasonal
-cycle, and autoregressive dependence, the model suggests that a one-unit
-increase in the PDO index is associated with an average decrease of
-approximately `r sprintf("%.2f", abs(pdo_coef))` °C in monthly SST. This result
-implies that positive phases of the PDO systematically contribute to cooler
-conditions at the study site.
+```{r message = FALSE, warning = FALSE, echo = TRUE}
+exo_coef
+```
 
-Importantly, the effect of this exogenous variable is identified as an
-additional factor beyond the internal dynamics of the temperature time series,
-rather than as an artifact of improved representation of the long-term trend or
-temporal dependence. Compared with the baseline model without exogenous
-variables, the statistical significance of the PDO coefficient indicates that
-the PDO acts as an independent large-scale climate driver influencing local
-temperature variation.
+The coefficient table summarizes the estimated associations between SST and
+each simulated Kuroshio variable after accounting for the latent long-term
+trend, seasonal cycle, and autoregressive dependence. Because these are
+simulated example datasets, the estimates should be interpreted as an
+illustration of how to fit and inspect a model with multiple exogenous
+variables, rather than as new scientific evidence about the Kuroshio path.
 
 For models with exogenous variables, future values of the exogenous variables
 are needed when calling `predict()`. If such values are available, they can be
-passed through `new_exo_data`. For a simple one-step-ahead visual check,
-`exo_strategy = "last"` carries the final observed exogenous value forward.
-This is a persistence assumption for the exogenous variable, not a separate
-forecast model for the PDO index.
+passed through `new_exo_data`. For a model with multiple exogenous variables,
+`new_exo_data` should contain the same variables, in the same order, as the
+object supplied to `exo_data`. For a simple one-step-ahead visual check,
+`exo_strategy = "last"` carries the final observed row of all exogenous
+variables forward. This is a persistence assumption for the exogenous
+variables, not a separate forecast model for the Kuroshio path.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 pred_with_last_exo <- predict(res_with, exo_strategy = "last")
 pred_with_last_exo
 ```
+
+The next section evaluates whether including these simulated Kuroshio
+variables improves out-of-sample predictive performance under a conditional
+forecasting setting.
 
 ### Time-Series Cross-Validation (tsCV)
 
@@ -647,21 +678,23 @@ information leakage from the future to the past and is therefore suitable for
 model validation with temporal data.
 
 Here, by comparing cross-validation metrics for models with and without the
-exogenous PDO variable, we assess whether the statistical signal found in the
-PDO coefficient is also reflected in out-of-sample predictive performance.
+simulated Kuroshio variables, we assess whether the additional exogenous
+information is reflected in out-of-sample predictive performance.
 
-For the model with the PDO index, the test-period PDO values are supplied to
-the forecast step as exogenous variables. Therefore, this tsCV setting evaluates
-conditional forecasts, or hindcasts, under the assumption that the PDO values
-during each test period are known. This is appropriate when the aim is to assess
-the explanatory or reconstructive value of the PDO index.
+For the model with the simulated Kuroshio variables, the test-period values of
+those variables are supplied to the forecast step as exogenous variables.
+Therefore, this tsCV setting evaluates conditional forecasts, or hindcasts,
+under the assumption that the Kuroshio-variable values during each test period
+are known. This is appropriate when the aim is to assess the explanatory or
+reconstructive value of the exogenous variables.
 
-For real-time future forecasting, however, future PDO values are usually
-unknown. In that setting, users must either provide future PDO scenarios,
-forecast the PDO index with a separate model, or use a simplified assumption
-such as carrying the last observed value forward. The results below should
-therefore be interpreted as evidence for improved conditional predictive
-performance, not as a direct guarantee of operational forecast improvement.
+For real-time future forecasting, however, future exogenous-variable values are
+usually unknown. In that setting, users must either provide future scenarios,
+forecast the exogenous variables with separate models, or use a simplified
+assumption such as carrying the last observed value forward. The results below
+should therefore be interpreted as evidence for improved conditional
+predictive performance, not as a direct guarantee of operational forecast
+improvement.
 
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
@@ -682,54 +715,64 @@ if (interactive()) {
 }
 
 
-# ts cross-validation of the model without exogenous variables
-
 ## Generate a list of training and test datasets with their indices
 # Procedure for constructing year-based time-series cross-validation folds:
 # 
-# First training data: January 1982–December 2017;
-# First test data: one year starting from January 2018
+# First training data: January 1998-December 2010;
+# First test data: January 2011-December 2011
 # 
-# Second training data: January 1983–December 2018;
-# Second test data: one year starting from January 2019
+# Second training data: January 1999-December 2011;
+# Second test data: January 2012-December 2012
 # ...
 # 
-# Eighth training data: January 1989–December 2024;
-# Eighth test data: one year starting from January 2025
+# Twelfth training data: January 2009-December 2021;
+# Twelfth test data: January 2022-December 2022
 #
 # These folds are automatically generated by the ts_train_test_split() function.
+# The final two observations in 2023 are not used because allow_partial = FALSE
+# keeps every test set as a complete 12-month period.
 
-# Generate training and test dataset for model without PDO index
+# Generate training and test dataset for model without exogenous variables
 folds_without <- ts_train_test_split(
-  temp_data = yamaguchi_sst_trim,
+  temp_data = sst_sim,
   exo_data = NULL,
-  initial = 432, # 432 monthly observations from Jan 1982 to Dec 2017
-  horizon = 12, # forecast 12 monthly time-series
-  step = 12, # training data is moved in one-year steps
+  initial = 156, # 156 monthly observations from Jan 1998 to Dec 2010
+  horizon = 12, # forecast 12 monthly observations
+  step = 12, # move the fixed-width window in one-year steps
   fixed_window = TRUE,
   allow_partial = FALSE
   )
 
-# Generate training and test dataset for model with PDO index
+# Generate training and test dataset for model with Kuroshio variables
 folds_with <- ts_train_test_split(
-  temp_data = yamaguchi_sst_trim,
-  exo_data = pdo_trim,
-  initial = 432, # 432 monthly observations from Jan 1982 to Dec 2017
-  horizon = 12, # forecast 12 monthly time-series
-  step = 12, # training data is moved in one-year steps
+  temp_data = sst_sim,
+  exo_data = exo_kuroshio,
+  initial = 156, # 156 monthly observations from Jan 1998 to Dec 2010
+  horizon = 12, # forecast 12 monthly observations
+  step = 12, # move the fixed-width window in one-year steps
   fixed_window = TRUE,
   allow_partial = FALSE
   )
+
+# Check the first fold
+start(folds_without[[1]]$train_ts)
+end(folds_without[[1]]$train_ts)
+start(folds_without[[1]]$test_ts)
+end(folds_without[[1]]$test_ts)
 
 
 # *****************************************
 # Executing time-series cross validation
 
 #-------------------------------------------------- 
-# Model without the exogenous variable of PDO index
+# Model without exogenous variables
 
 # Single processing
-# cv_without_results <- ts_cv_run(folds_without, ar_order = 1, use_season = TRUE)
+# cv_without_results <- ts_cv_run(
+#   folds_without,
+#   ar_order = 1,
+#   use_season = TRUE
+# )
 
 # Parallel processing
 cv_without_results <- future.apply::future_lapply(
@@ -749,7 +792,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 
 
 #-------------------------------------------------- 
-# Model with the exogenous variable of PDO index
+# Model with simulated Kuroshio exogenous variables
 
 # Single processing
 # cv_with_results <- ts_cv_run(folds_with, ar_order = 1, use_season = TRUE)
@@ -796,7 +839,8 @@ plt_MASE_seasonal <- ggplot(data=cv_tbl,
   geom_boxplot()
 
 
-plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal + patchwork::plot_layout(nrow=1)
+plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal +
+  patchwork::plot_layout(nrow = 1)
 
 plot(plt_tsCV)
 
@@ -804,8 +848,8 @@ plot(plt_tsCV)
 
 ```{r echo = FALSE}
 monthly_mean_sst <- tapply(
-  as.numeric(yamaguchi_sst_trim),
-  cycle(yamaguchi_sst_trim),
+  as.numeric(sst_sim),
+  cycle(sst_sim),
   mean,
   na.rm = TRUE
 )
@@ -839,42 +883,43 @@ with the exogenous variable reduces the mean MAE by approximately
 `r sprintf("%.1f", mae_improvement)`% compared with the model without the
 exogenous variable. Similar improvements are also seen in the MASE metrics.
 This interpretation should be kept conditional on the tsCV setting used here,
-in which observed PDO values during the test periods are supplied as exogenous
-variables.
+in which the test-period values of the simulated Kuroshio variables are
+supplied as exogenous variables.
 
-Taken together, the results consistently support including the PDO index as an
-exogenous variable in the state-space model. The PDO coefficient is
-statistically significant, indicating a clear effect on temperature variation.
-Time-series cross-validation further indicates that this effect is accompanied
-by better out-of-sample predictive performance.
+Taken together, the results illustrate how exogenous-variable models can be
+evaluated using both coefficient estimates and time-series cross-validation.
+Because the datasets in this exercise are simulated, the emphasis is on the
+workflow rather than on drawing new scientific conclusions about Kuroshio
+variability.
 
-These complementary lines of evidence provide robust and multifaceted support
-for adopting the exogenous-variable model.
+These complementary lines of evidence can help users decide whether an
+exogenous-variable model is useful for their own data, while keeping the
+forecasting assumptions for future exogenous variables explicit.
 
-Although this exercise used a single exogenous variable, `tempssm()` also
-supports models with multiple exogenous variables supplied as multivariate
+This exercise used two exogenous variables supplied as multivariate
 time-series data. Users interested in broader applications can extend the same
 workflow to other environmental, climatic, or ecological covariates. In doing
 so, model structure should be considered carefully for the target data, while
 checking model diagnostics and out-of-sample predictive performance.
 
 
-### Comparing Estimation Patterns Between Models With and Without the Exogenous Variable
+### Comparing Estimation Patterns Between Models
 
 We compare how the estimated patterns of the long-term trend and its rate of
-change differ between the models with and without the exogenous variable.
+change differ between the models with and without the simulated Kuroshio
+variables.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 plt_level_without_ts <- autoplot(res_without,
                                  component=c("level")
                                  ) +
-  labs(title="Model without the PDO index") +
+  labs(title="Model without exogenous variables") +
   theme_classic()
 
 plt_drift_without_ts <- autoplot(res_without, 
                              component=c("drift")
                              ) + 
-  labs(title="Model without the PDO index") +
+  labs(title="Model without exogenous variables") +
   theme_classic()
 
 plt_level_drift_without_ts <- plt_level_without_ts + 
@@ -887,13 +932,13 @@ plot(plt_level_drift_without_ts)
 plt_level_with_ts <- autoplot(res_with,
                           component=c("level")
                           )+ 
-  labs(title="Model with the PDO index") +
+  labs(title="Model with Kuroshio variables") +
   theme_classic()
 
 plt_drift_with_ts <- autoplot(res_with,
                           component=c("drift")
                           ) + 
-  labs(title="Model with the PDO index") + 
+  labs(title="Model with Kuroshio variables") +
   theme_classic()
 
 plt_level_drift_with_ts <- plt_level_with_ts + 
@@ -918,18 +963,19 @@ In the model without an exogenous variable, the plots of the long-term trend
 and its rate of change show a wavelike pattern. In contrast, in the model with
 the exogenous variable, the long-term trend and its rate of change show a more
 stable pattern. This suggests that the wavelike pattern reflects the influence
-of the exogenous PDO variable.
+of variation represented by the simulated Kuroshio variables.
 
 The estimated annual rate of SST change over the observation period is
 `r sprintf("%.4f", mean_drift_year_without)` in the model without the
 exogenous variable and `r sprintf("%.4f", mean_drift_year_with)` in the model
 with the exogenous variable.
 
-In this case, the model incorporating the PDO index is considered preferable
-for accurately estimating the SST trend. Thus, the SST warming rate, which was
-estimated somewhat higher in the model without the exogenous variable, is
-estimated more conservatively after introducing the model with the exogenous
-variable.
+In this simulated example, the model incorporating the exogenous variables
+provides an alternative decomposition of the SST series after accounting for
+the additional covariates. The comparison illustrates that estimated long-term
+components can change when external drivers are included, which is one reason
+to inspect both model diagnostics and predictive performance before selecting a
+working model.
 
 
 # Using Your Own Data
