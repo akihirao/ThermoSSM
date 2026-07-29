@@ -208,14 +208,14 @@ summary(res)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.4919418 
+    ##   Observation (H): 0.4919424 
     ##   State (Q trend): 1.146228e-08 
-    ##   State (Q season): 4.153711e-24 
-    ##   State (Q ar): 1.901346 
+    ##   State (Q season): 4.153675e-24 
+    ##   State (Q ar): 1.901345 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.2564485
+    ##   Coefficient of AR1: 0.2564486
 
 First, confirm from the summary output that the model has converged
 (`Converged: TRUE`). The summary also reports the log-likelihood,
@@ -325,7 +325,7 @@ head(alpha_hat)
 ```
 
     ##              level        slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jul 1932 -6.816007 0.0005640189  11.386172   7.235620   2.725050  -2.300199
+    ## Jul 1932 -6.816007 0.0005640188  11.386172   7.235620   2.725050  -2.300199
     ## Aug 1932 -6.815443 0.0005640232  12.425581  11.386172   7.235620   2.725050
     ## Sep 1932 -6.814879 0.0005640323   9.370378  12.425581  11.386172   7.235620
     ## Oct 1932 -6.814315 0.0005640433   3.464614   9.370378  12.425581  11.386172
@@ -339,12 +339,12 @@ head(alpha_hat)
     ## Nov 1932  11.386172   7.235620   2.725050  -2.300199  -8.183394  -11.668060
     ## Dec 1932  12.425581  11.386172   7.235620   2.725050  -2.300199   -8.183394
     ##          sea_dummy11      arima1
-    ## Jul 1932    9.370378  0.74270050
-    ## Aug 1932    3.464614  0.07576104
-    ## Sep 1932   -2.878391 -0.64035911
-    ## Oct 1932   -9.076789 -1.00172106
-    ## Nov 1932  -12.500582  0.22370692
-    ## Dec 1932  -11.668060  2.40713410
+    ## Jul 1932    9.370378  0.74270026
+    ## Aug 1932    3.464614  0.07576101
+    ## Sep 1932   -2.878391 -0.64035897
+    ## Oct 1932   -9.076789 -1.00172074
+    ## Nov 1932  -12.500582  0.22370697
+    ## Dec 1932  -11.668060  2.40713337
 
 For routine use, helper functions provide a simpler way to extract
 individual components as `ts` objects with the original time index. The
