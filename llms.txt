@@ -93,8 +93,8 @@ For Japanese users, a detailed manual is also provided:
 ### Load the Package and Example Data
 
 This example uses `sst_niigata`, a monthly sea surface temperature (SST)
-time series off Niigata, Japan. The series is provided as a `ts` object
-and can be passed directly to
+time series off Niigata, Japan, covering 2002 to 2023. The series is
+provided as a `ts` object and can be passed directly to
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md).
 
 ``` r
@@ -127,8 +127,10 @@ plot(res)
 
 Example output from plot(res)
 
-The panels show the estimated model components; gray ribbons indicate
-pointwise 95% confidence intervals.
+The panels show the level component (long-term trend; upper left), drift
+component (rate of change in the long-term trend; upper right), seasonal
+component (lower left), and autoregressive component (lower right). The
+gray ribbons indicate pointwise 95% confidence intervals.
 
 In this example, the estimated level component suggests a gradual
 long-term increase in SST. The seasonal component captures the recurring

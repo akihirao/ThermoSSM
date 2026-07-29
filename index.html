@@ -114,7 +114,7 @@
 <div class="section level3">
 <h3 id="load-the-package-and-example-data">Load the Package and Example Data<a class="anchor" aria-label="anchor" href="#load-the-package-and-example-data"></a>
 </h3>
-<p>This example uses <code>sst_niigata</code>, a monthly sea surface temperature (SST) time series off Niigata, Japan. The series is provided as a <code>ts</code> object and can be passed directly to <code><a href="reference/tempssm.html">tempssm()</a></code>.</p>
+<p>This example uses <code>sst_niigata</code>, a monthly sea surface temperature (SST) time series off Niigata, Japan, covering 2002 to 2023. The series is provided as a <code>ts</code> object and can be passed directly to <code><a href="reference/tempssm.html">tempssm()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/akihirao/tempssm" class="external-link">tempssm</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sst_niigata</span><span class="op">)</span></span></code></pre></div>
@@ -132,7 +132,7 @@
 <div class="float">
 <img src="reference/figures/myfig.png" alt="Example output from plot(res)"><div class="figcaption">Example output from plot(res)</div>
 </div>
-<p>The panels show the estimated model components; gray ribbons indicate pointwise 95% confidence intervals.</p>
+<p>The panels show the level component (long-term trend; upper left), drift component (rate of change in the long-term trend; upper right), seasonal component (lower left), and autoregressive component (lower right). The gray ribbons indicate pointwise 95% confidence intervals.</p>
 <p>In this example, the estimated level component suggests a gradual long-term increase in SST. The seasonal component captures the recurring annual cycle, while the autoregressive component represents shorter-term departures from the trend and seasonal pattern.</p>
 <p>For scripted workflows, <code><a href="reference/plot_tempssm_components.html">plot_tempssm_components()</a></code> returns the same component plot as a <code>ggplot</code> object; <code><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">ggplot2::autoplot()</a></code> is also available.</p>
 </div>
