@@ -328,8 +328,8 @@ autoplot.tempssm <- function(object,
 #'
 #' @examples
 #' \dontrun{
-#' data(sst_jogashima)
-#' res <- tempssm(sst_jogashima)
+#' data(sst_sim)
+#' res <- tempssm(sst_sim)
 #'
 #' # Explicit component-plot helper
 #' plot_tempssm_components(res)

@@ -60,10 +60,6 @@ into a reusable R package interface with input validation, documented S3
 methods, tests, diagnostics, cross-validation utilities, and examples
 for broader temperature time-series analysis.
 
-The next section gives a brief model overview. A separate model
-specification vignette describes the mathematical formulation in more
-detail.
-
 # Model Overview
 
 The model implemented in `tempssm` can be viewed as an extension of the

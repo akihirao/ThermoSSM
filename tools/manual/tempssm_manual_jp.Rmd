@@ -214,10 +214,15 @@ attr(ll, "df") # number of parameters
 `tempssm` オブジェクトに保存され、`logLik()` や `summary()` などの下流メソッドでも
 一貫して用いられます。
 
-本パッケージでは、`tempssm` オブジェクトに対して AIC を計算しない方針を
-採用しています。一方で、対数尤度やパラメーター数は `logLik()` を通じて
-取得できます。これらをどのようにモデル評価に用いるかは、ユーザー自身の
-モデル比較の前提に基づいて判断してください。
+本パッケージでは、`tempssm` オブジェクトに対する AIC は自動計算しません。
+これは、状態空間モデルにおける AIC 比較では、尤度タイプ、散漫初期化、
+潜在状態構造の違いなどに応じて解釈に注意が必要となる場合があるためです。
+AIC をデフォルトのモデル選択基準として提示することを避けるため、
+`tempssm` では AIC に基づく自動比較は提供していません。その代わり、
+本マニュアルでは、残差診断と時系列クロスバリデーションを組み合わせた
+モデル評価の流れを重視します。なお、独自のモデル評価ワークフローで
+必要となる場合に備えて、対数尤度と推定パラメーター数は `logLik()` から
+取得できます。
 
 ### 長期トレンド、ドリフト、季節成分、自己回帰成分のプロット
 
@@ -244,17 +249,18 @@ mean_drift_year <- mean(get_drift_ts(res_ar1))
 読み取れます。灰色の網掛け部分は、推定された潜在状態
 の 95% 信頼区間を表し、各推定成分に伴う不確実性を示しています。
 
-標準的なプロット用インターフェースは `plot(res)` です。ggplot2 形式の
-インターフェースである `autoplot(res)` も利用でき、デフォルトでは同じ
-成分プロットを生成します。個別の成分について ggplot オブジェクトを取得するには、
-以下のように `autoplot()` の component 引数を指定します。
+スクリプト内で明示的な関数名を使いたい場合は、
+`plot_tempssm_components()` から同じ成分プロットを `ggplot` オブジェクトとして
+取得できます。`ggplot2::autoplot()` も利用できます。個別の成分について
+ggplot オブジェクトを取得するには、以下のように
+`plot_tempssm_components()` の component 引数を指定します。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # plot each of components at once
-plt_level <- autoplot(res_ar1, component = c("level"))
-plt_drift <- autoplot(res_ar1, component = c("drift"))
-plt_season <- autoplot(res_ar1, component = c("season"))
-plt_ar <- autoplot(res_ar1, component = c("ar"))
+plt_level <- plot_tempssm_components(res_ar1, component = c("level"))
+plt_drift <- plot_tempssm_components(res_ar1, component = c("drift"))
+plt_season <- plot_tempssm_components(res_ar1, component = c("season"))
+plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 ```
 
 ### モデル診断
@@ -265,19 +271,29 @@ plt_ar <- autoplot(res_ar1, component = c("ar"))
 時間依存性や正規誤差仮定からの大きな逸脱がないかを確認できます。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plot_tempssm_residual_diagnostics(res_ar1)
+r <- get_tempssm_residuals(res_ar1)
+lb_lag <- frequency(res_ar1$temp_data)
+forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ```
 
-モデル診断プロットにおいて、上パネルは残差の時系列プロット、下左パネルは
-残差の自己相関プロット（ACFプロット）、下右パネルは頻度分布プロットを表します。
-残差の各パターンについて留意すべき点がないかをチェックしておきます。
+ここでは、`get_tempssm_residuals()` によって標準化再帰残差を取り出し、
+`forecast::checkresiduals()` によって残差時系列プロット、ACF プロット、
+ヒストグラム、Ljung-Box 検定を確認します。3つの図は、それぞれ上段、
+下段左、下段右に表示されます。検定に用いるラグは入力データの季節周期に
+合わせており、月別データでは lag 12 を用います。これらの図と検定結果を
+用いて、残差に留意すべきパターンが残っていないかを確認します。
 
-この例では、残差 ACF プロットにおいて lag 5 と lag 27 付近に単発の突出が
-認められます。しかし、連続する複数のラグにわたる有意な自己相関や、季節周期に
-対応する反復的なパターンは明瞭ではありません。多数のラグを確認する場合には、
-このような単発の突出が偶然に生じることもあるため、ACF プロットだけでモデル
-変更を判断するのではなく、Ljung-Box 検定や残差時系列プロットとあわせて
-解釈します。
+この例では、残差 ACF プロットにおいて、連続する複数のラグにわたる
+有意な自己相関や、季節周期に対応する反復的なパターンは明瞭ではありません。
+多数のラグを確認する場合には、単発の突出が偶然に生じることもあるため、
+ACF プロットだけでモデル変更を判断するのではなく、Ljung-Box 検定や
+残差時系列プロットとあわせて解釈します。
+
+同様の診断プロットを1つの関数で確認したい場合には、
+`plot_tempssm_residual_diagnostics()` も利用できます。
+
+Ljung-Box 検定と残差尖度をコンパクトな表として確認したい場合は、
+`diagnose_residuals()` を用います。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 diag <- diagnose_residuals(res_ar1)
@@ -342,18 +358,26 @@ AR(1) モデルをベースラインの仕様として用います。
 
 ### 推定されたパラメータと潜在状態の成分
 
-長期トレンド成分やその変化率（ドリフト）は、次のように`ts` オブジェクトとして
-取り出すことができます。
+推定済みの `tempssm` オブジェクトには、`KFAS` から返された平滑化状態推定値が
+格納されています。`res_ar1$kfs$alphahat` は、レベル、ドリフト、季節状態、
+自己回帰状態などの潜在状態推定値を含む行列です。この行列を確認すると、
+モデル内部で状態がどのように表現されているかを把握できます。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # Smoothing estimates
 alpha_hat <- res_ar1$kfs$alphahat
 head(alpha_hat)
+```
 
-#　Smoothing estimate of level component
+通常の利用では、個別の成分を元の時系列インデックスを持つ `ts` オブジェクトとして
+取り出すためのヘルパー関数を使うと便利です。レベル成分は推定された長期的な
+温度水準を表し、ドリフト成分はその年あたりの変化率を表します。
+
+```{r message = FALSE, warning = FALSE, echo = TRUE}
+# Smoothing estimate of level component
 level_ts <- get_level_ts(res_ar1)
 
-#　Smoothing estimate of drift component
+# Smoothing estimate of drift component
 drift_ts <- get_drift_ts(res_ar1)
 
 # Average drift rate per year across the full period
@@ -361,8 +385,10 @@ mean_drift_year <- mean(drift_ts)
 print(mean_drift_year)
 ```
  
-SST の平均的な年上昇率は `r sprintf("%.4f", mean_drift_year)` °C と
-推定されました。
+SST の平均的な年変化率は、全期間では
+`r sprintf("%.4f", mean_drift_year)` °C と推定されました。ただし、
+推定されたドリフトは時期によって符号が変化するため、この値は一定の上昇率ではなく、
+全期間を要約したモデルベースの指標として解釈します。
 
 ### 短期予測
 

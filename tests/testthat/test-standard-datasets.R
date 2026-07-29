@@ -42,12 +42,14 @@ test_that("time-series CV splitting works with the standard nottem data", {
 
 test_that("package data used in examples and tests are exported", {
   package_data <- c(
+    "distance_sim",
     "hmo_temp",
+    "kuroshio_a_sim",
     "nao",
     "niigata_sst",
     "pdo",
-    "sst_jogashima",
     "sst_niigata",
+    "sst_sim",
     "sst_yamaguchi",
     "soi",
     "temp_MtFuji",

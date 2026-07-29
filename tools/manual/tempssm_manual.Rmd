@@ -4,10 +4,10 @@ subtitle: "Version `r packageVersion('tempssm')`"
 author: "Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa"
 date: "`r Sys.Date()`"
 output:
-#  pdf_document:
-#    latex_engine: lualatex
+  pdf_document:
+    latex_engine: lualatex
 #    toc: true
-  rmarkdown::html_vignette: default
+#  rmarkdown::html_vignette: default
 #  md_document:
 #    variant: gfm+tex_math_dollars
 vignette: >
@@ -77,9 +77,6 @@ reusable R package interface with input validation, documented S3 methods,
 tests, diagnostics, cross-validation utilities, and examples for broader
 temperature time-series analysis.
 
-The next section gives a brief model overview. The mathematical formulation is
-described separately in the package vignette `model-specification`.
-
 # Model Overview
 
 The model implemented in `tempssm` can be viewed as an extension of the Basic
@@ -130,25 +127,27 @@ library(patchwork)
 ### Objective
 
 In Exercise I, we apply a linear Gaussian state-space model to a univariate
-temperature time series. This exercise introduces basic modeling without
-exogenous variables and examines the role of autoregressive dynamics.
+temperature time series. This exercise introduces the basic workflow for model
+fitting, component visualization, residual diagnostics, and short-term
+prediction without exogenous variables.
 
 ### Loading the Sea Surface Temperature (SST) Dataset
 
 A sample sea surface temperature (SST) dataset is included in the package.
 
-- **Dataset**: Monthly sea surface temperature (SST) off Yamaguchi Pref., Japan  
+- **Dataset**: Monthly sea surface temperature (SST) off Jogashima, Japan  
 - **Unit**: °C  
-- **Period**: February 2002 to December 2023
+- **Period**: January 1998 to February 2023
 
-This dataset was created by aggregating daily SST data obtained from the Japan
-Meteorological Agency website (https://www.jma.go.jp/jma/indexe.html) into
-monthly values.
+This dataset is a simulated monthly SST time series generated from the
+state-space model analysis of sea temperature off Jogashima reported by Baba
+et al. (2024). It is included as a reproducible example connected to the
+motivating study of this package.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-data(yamaguchi_sst) # load a ts object of SST off Niigata
-head(yamaguchi_sst)
-summary(yamaguchi_sst)
+data(sst_sim) # load a ts object of SST off Jogashima
+head(sst_sim)
+summary(sst_sim)
 ```
 
 ### Plotting the Monthly SST Time Series
@@ -158,29 +157,33 @@ overall structure, including apparent trends, seasonal variability,
 and the presence or absence of missing observations.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plt_yamaguchi_sst <- forecast::autoplot(yamaguchi_sst) +
+plt_sst_sim <- forecast::autoplot(sst_sim) +
   labs(y = expression(Temp.~(degree*C)), 
        x = "Time (year)") +
-  ggtitle("Monthly SST off Yamaguchi, Japan") +
+  ggtitle("Monthly SST off Jogashima, Japan") +
   theme_classic()
 
-plot(plt_yamaguchi_sst)
+plot(plt_sst_sim)
 ```
 
 ```{r echo = FALSE}
-yamaguchi_sst_mean <- mean(yamaguchi_sst, na.rm = TRUE)
+sst_sim_mean <- mean(sst_sim, na.rm = TRUE)
+sst_sim_na <- sum(is.na(sst_sim))
 ```
 
 The overall mean SST is approximately
-`r sprintf("%.1f", yamaguchi_sst_mean)` °C, and a clear seasonal pattern is
-visible. The series contains no missing observations. Although SST appears to
-increase over the study period, year-to-year variability is also evident,
-making the long-term trend difficult to assess from the raw time series alone.
+`r sprintf("%.1f", sst_sim_mean)` °C, and a clear seasonal pattern is
+visible. The series contains
+`r sst_sim_na` missing observations. The raw time series suggests that
+SST may have decreased gradually from the beginning of the record to around
+2008 and then increased thereafter. However, interannual variability is also
+evident, making the long-term pattern difficult to assess from the raw series
+alone.
 
 ### Applying a Linear Gaussian State-Space Model
 
 When a `ts` object containing temperature time-series data (here,
-`yamaguchi_sst`) is passed to the core function `tempssm()`, model construction
+`sst_sim`) is passed to the core function `tempssm()`, model construction
 and parameter estimation are performed together. The returned S3 object of
 class `tempssm` (here, `res_ar1`) stores the filtering and smoothing estimates,
 as well as the constructed model and input data. By default, `tempssm()` fits a
@@ -188,7 +191,7 @@ first-order autoregressive model.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # model with first-order autoregressive component
-res_ar1 <- tempssm(yamaguchi_sst) # (ar_order=1: default)
+res_ar1 <- tempssm(sst_sim) # (ar_order=1: default)
 summary(res_ar1)
 ```
 
@@ -216,9 +219,15 @@ estimation. The diffuse likelihood remains available by explicitly setting
 `tempssm` object and is used consistently by downstream methods such as
 `logLik()` and `summary()`.
 
-The package intentionally does not compute AIC for `tempssm` objects. The
-log-likelihood and parameter count remain available through `logLik()` for
-users who need them for their own model-assessment workflows.
+The package intentionally does not compute AIC for `tempssm` objects. This is
+because AIC comparisons for state-space models can require care when
+likelihood type, diffuse initialization, or latent-state structure differs
+across models. To avoid presenting AIC as a default model-selection criterion,
+`tempssm` does not provide automatic AIC-based comparison. Instead, this manual
+emphasizes a model-assessment workflow based on residual diagnostics and
+time-series cross-validation. The log-likelihood and parameter count remain
+available through `logLik()` for users who need them for their own
+model-assessment workflows.
 
 ### Plotting Long-Term Trend, Drift, Seasonal, and Autoregressive Components
 
@@ -236,29 +245,30 @@ plot(res_ar1)
 mean_drift_year <- mean(get_drift_ts(res_ar1))
 ```
 
-The long-term trend in the upper-left panel indicates an increasing SST pattern
-over the study period. In this example, the average annual rate of SST increase
-over the study period is approximately
-`r sprintf("%.3f", mean_drift_year)` °C.
+The long-term trend in the upper-left panel suggests that SST decreased during
+the first part of the study period and then increased after around 2008. In
+this example, the average annual rate of SST change over the full period is
+approximately `r sprintf("%.3f", mean_drift_year)` °C.
 
-However, the rate of SST change itself also appears to vary over time. Focusing
-on the rate of change (drift) in the upper-right panel, the rate of change
-declines to zero or near zero during the 2000s and then increases after 2010.
+However, this full-period average should be interpreted together with the
+time-varying drift component. In the upper-right panel, the drift component is
+negative before around 2008 and becomes positive thereafter, corresponding to
+the shift from a decreasing to an increasing long-term SST pattern.
 The shaded gray areas represent 95% confidence intervals for the estimated
 latent states and illustrate the uncertainty associated with each estimated
 component.
 
-The standard plotting interface is `plot(res)`. The ggplot2-style interface
-`autoplot(res)` is also available and produces the same component plot by
-default. To obtain a ggplot object for an individual component, specify the
-`component` argument in `autoplot()` as follows.
+For scripted workflows, `plot_tempssm_components()` returns the same component
+plot as a `ggplot` object; `ggplot2::autoplot()` is also available. To obtain
+a ggplot object for an individual component, specify the `component` argument
+in `plot_tempssm_components()` as follows.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # plot each of components at once
-plt_level <- autoplot(res_ar1, component = c("level"))
-plt_drift <- autoplot(res_ar1, component = c("drift"))
-plt_season <- autoplot(res_ar1, component = c("season"))
-plt_ar <- autoplot(res_ar1, component = c("ar"))
+plt_level <- plot_tempssm_components(res_ar1, component = c("level"))
+plt_drift <- plot_tempssm_components(res_ar1, component = c("drift"))
+plt_season <- plot_tempssm_components(res_ar1, component = c("season"))
+plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 ```
 
 ### Model Diagnostics
@@ -270,19 +280,30 @@ can be used to assess remaining temporal dependence and departures from the
 Gaussian error assumption.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plot_tempssm_residual_diagnostics(res_ar1)
+r <- get_tempssm_residuals(res_ar1)
+lb_lag <- frequency(res_ar1$temp_data)
+forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ```
 
-In the model diagnostic plot, the upper panel shows the residual time series,
-the lower-left panel shows the residual autocorrelation plot (ACF plot), and
-the lower-right panel shows the residual frequency distribution. These plots
-should be checked for any notable residual patterns. 
+Here, `get_tempssm_residuals()` extracts standardized recursive residuals, and
+`forecast::checkresiduals()` displays their time-series plot, ACF plot,
+histogram, and Ljung-Box test. The three plots appear in the upper,
+lower-left, and lower-right panels, respectively. The lag is set to the
+seasonal frequency of the input data; for monthly data, this uses lag 12.
+These plots and the test result should be checked for any notable residual
+patterns.
 
-In this example, the ACF plot shows an isolated spike around lag 5 and lag 27, 
-but there is no clear sequence of successive significant lags or repeated 
-seasonal pattern. Such isolated spikes can occur when many lags are inspected, 
-so they should be interpreted together with the Ljung-Box test and the residual 
-time-series plot rather than used as the sole basis for changing the model.　
+In this example, the ACF plot does not show a clear sequence of successive
+significant lags or a repeated seasonal pattern. Isolated spikes can occur when
+many lags are inspected, so they should be interpreted together with the
+Ljung-Box test and the residual time-series plot rather than used as the sole
+basis for changing the model.
+
+The package wrapper `plot_tempssm_residual_diagnostics()` is also available
+when a single function call for these diagnostic plots is preferred.
+
+For a compact tabular summary of the Ljung-Box test and residual kurtosis, use
+`diagnose_residuals()`.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 diag <- diagnose_residuals(res_ar1)
@@ -328,7 +349,7 @@ model, users can fit an AR(2) model and repeat the same diagnostics.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # Optional sensitivity check with a second-order autoregressive component
-res_ar2 <- tempssm(yamaguchi_sst, ar_order = 2)
+res_ar2 <- tempssm(sst_sim, ar_order = 2)
 summary(res_ar2)
 plot_tempssm_residual_diagnostics(res_ar2)
 diag_lag12_ar2 <- diagnose_residuals(res_ar2, lb_lag = 12)
@@ -339,12 +360,10 @@ diag_lags_ar2$check <- c("lag 12", "lag 24", "lag 36")
 diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ```
 
-In a sensitivity check with an AR(2) specification, the short-lag residual
-autocorrelation was also limited, but the residual ACF showed a negative spike
-around lag 24, 26, 27. This pattern suggests that increasing the AR order 
-does not necessarily improve all aspects of the residual structure. Therefore, 
-the AR(2) model should be treated as a model requiring additional diagnostic
-attention rather than as an automatic improvement over the AR(1) baseline.
+In a sensitivity check with an AR(2) specification, the residual diagnostics
+were very similar to those from the AR(1) model. This suggests that increasing
+the AR order does not provide an obvious diagnostic improvement in this
+example.
 
 In the present example, the residual diagnostics do not provide strong
 evidence that a higher AR order is needed, so we proceed with the AR(1) model
@@ -352,18 +371,27 @@ as the baseline specification.
 
 ### Estimated Parameters and Latent-State Components
 
-The long-term trend component and its rate of change (drift) can be extracted
-as `ts` objects as follows.
-r
+The fitted `tempssm` object contains the smoothed state estimates returned by
+`KFAS`. The matrix `res_ar1$kfs$alphahat` stores these latent-state estimates,
+including the level, drift, seasonal states, and autoregressive state. Inspecting
+this matrix is useful for understanding the internal state representation.
+
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # Smoothing estimates
 alpha_hat <- res_ar1$kfs$alphahat
 head(alpha_hat)
+```
 
-#　Smoothing estimate of level component
+For routine use, helper functions provide a simpler way to extract individual
+components as `ts` objects with the original time index. The level component
+represents the estimated long-term temperature level, while the drift
+component represents its rate of change per year.
+
+```{r message = FALSE, warning = FALSE, echo = TRUE}
+# Smoothing estimate of level component
 level_ts <- get_level_ts(res_ar1)
 
-#　Smoothing estimate of drift component
+# Smoothing estimate of drift component
 drift_ts <- get_drift_ts(res_ar1)
 
 # Average drift rate per year across the full period
@@ -371,8 +399,11 @@ mean_drift_year <- mean(drift_ts)
 print(mean_drift_year)
 ```
  
-The average annual rate of SST increase was estimated to be
-`r sprintf("%.4f", mean_drift_year)` °C.
+The average annual rate of SST change was estimated to be
+`r sprintf("%.4f", mean_drift_year)` °C over the full period. Because the
+estimated drift changes sign over time, this value should be interpreted as a
+model-based summary of the whole study period rather than as a constant
+warming rate.
 
 ### Short-Term Prediction
 

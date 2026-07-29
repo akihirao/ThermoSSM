@@ -137,9 +137,9 @@ motivating study:
 <https://github.com/logics-of-blue/sea-temperature-trend-jogashima>
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-data(sst_jogashima) # load a ts object of SST off Jogashima
-head(sst_jogashima)
-summary(sst_jogashima)
+data(sst_sim) # load a ts object of SST off Jogashima
+head(sst_sim)
+summary(sst_sim)
 ```
 
 This simulated dataset contains no missing observations. In general,
@@ -153,7 +153,7 @@ overall structure, including apparent trends, seasonal variability,
 and whether missing observations are present.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
+plt_sst_sim <- forecast::autoplot(sst_sim) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
@@ -161,14 +161,14 @@ plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
   ggplot2::ggtitle("Simulated monthly SST off Jogashima, Japan") +
   ggplot2::theme_classic()
 
-plot(plt_jogashima_sst)
+plot(plt_sst_sim)
 ```
 
 ```{r echo = FALSE}
-sst_jogashima_mean <- mean(sst_jogashima, na.rm = TRUE)
+sst_sim_mean <- mean(sst_sim, na.rm = TRUE)
 ```
 
-The overall mean SST is approximately `r sprintf("%.1f", sst_jogashima_mean)`
+The overall mean SST is approximately `r sprintf("%.1f", sst_sim_mean)`
 °C, and a clear seasonal pattern is visible. The series contains no missing
 observations. SST appears to decline gradually from the beginning of the series
 to around 2010 and then increase thereafter. However, year-to-year variability
@@ -178,7 +178,7 @@ the raw time series alone.
 # Fit a State-Space Model
 
 When a `ts` object containing temperature time-series data
-(here, `sst_jogashima`) is passed to the core function `tempssm()`, model
+(here, `sst_sim`) is passed to the core function `tempssm()`, model
 construction and parameter estimation are performed together. The returned S3
 object of class `tempssm`
 (here, `res`) stores the filtering and smoothing estimates, as well as the
@@ -187,7 +187,7 @@ autoregressive model.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # model with first-order autoregressive component
-res <- tempssm(sst_jogashima) # AR(1), the default model
+res <- tempssm(sst_sim) # AR(1), the default model
 summary(res)
 ```
 
