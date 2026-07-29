@@ -70,10 +70,17 @@ detail.
 
 ## Model Overview
 
-`tempssm` represents temperature variation with a linear Gaussian
-state-space model composed of interpretable latent components: a
-long-term trend, seasonal variation, autoregressive dependence, and
-optional exogenous effects. The model is estimated with `KFAS`, and
+The model implemented in `tempssm` can be viewed as an extension of the
+Basic Structural Time Series Model (BSTSM), a standard state-space
+formulation that represents an observed time series using latent trend,
+seasonal, and irregular components. Following the temperature
+time-series application of Baba et al. (2024), `tempssm` keeps this
+interpretable decomposition and adds autoregressive dependence and
+optional exogenous effects. This makes it useful for separating
+long-term temperature change, seasonal cycles, and short-term
+departures.
+
+The model is estimated with `KFAS`, and
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
 returns both filtering and smoothing estimates. Unless otherwise stated,
 the summaries, diagnostics, and plots in this vignette use smoothed

@@ -70,10 +70,17 @@ detail.
 
 ## Model Overview
 
-`tempssm` represents temperature variation with a linear Gaussian
-state-space model composed of interpretable latent components: a
-long-term trend, seasonal variation, autoregressive dependence, and
-optional exogenous effects. The model is estimated with `KFAS`, and
+The model implemented in `tempssm` can be viewed as an extension of the
+Basic Structural Time Series Model (BSTSM), a standard state-space
+formulation that represents an observed time series using latent trend,
+seasonal, and irregular components. Following the temperature
+time-series application of Baba et al. (2024), `tempssm` keeps this
+interpretable decomposition and adds autoregressive dependence and
+optional exogenous effects. This makes it useful for separating
+long-term temperature change, seasonal cycles, and short-term
+departures.
+
+The model is estimated with `KFAS`, and
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
 returns both filtering and smoothing estimates. Unless otherwise stated,
 the summaries, diagnostics, and plots in this vignette use smoothed
@@ -244,13 +251,13 @@ plot(res)
 The level component summarizes gradual changes in the underlying
 temperature level after removing the dominant seasonal pattern. In this
 example, the estimated long-term level indicates a gradual increase in
-summit temperature over the study period. The drift component is
-positive on average but small relative to the seasonal variation. The
-seasonal component captures the recurring annual cycle, while the
-autoregressive component represents shorter-term departures from the
-trend and seasonal pattern. The shaded gray areas represent 95%
-confidence intervals for the estimated latent states, illustrating the
-uncertainty associated with each estimated component.
+temperature over the study period. The drift component is positive on
+average but small relative to the seasonal variation. The seasonal
+component captures the recurring annual cycle, while the autoregressive
+component represents shorter-term departures from the trend and seasonal
+pattern. The shaded gray areas represent 95% confidence intervals for
+the estimated latent states, illustrating the uncertainty associated
+with each estimated component.
 
 The standard plotting interface is `plot(res)`. The explicit helper
 `plot_tempssm_components(res)` produces the same component plot and can
@@ -288,18 +295,15 @@ forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 
 Here,
 [`get_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.md)
-explicitly extracts the standardized recursive residuals from the fitted
-model.
+extracts standardized recursive residuals, and
 [`forecast::checkresiduals()`](https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html)
-then displays the residual time series, residual autocorrelation plot
-(ACF plot), and residual frequency distribution, together with a
-Ljung-Box test. In the diagnostic figure, the residual time series
-appears in the upper panel, the ACF plot in the lower-left panel, and
-the residual frequency distribution in the lower-right panel. The lag is
-set to the seasonal frequency of the input data; for monthly data, this
-uses lag 12. These plots and the test result should be checked for any
-notable residual patterns. In this example, the Ljung-Box test indicated
-no significant residual autocorrelation up to lag 12 (P \> 0.05).
+displays their time-series plot, ACF plot, histogram, and Ljung-Box
+test. The three plots appear in the upper, lower-left, and lower-right
+panels, respectively. The lag is set to the seasonal frequency of the
+input data; for monthly data, this uses lag 12. These plots and the test
+result should be checked for any notable residual patterns. In this
+example, the Ljung-Box test indicated no significant residual
+autocorrelation up to lag 12 (P \> 0.05).
 
 For tabular residual diagnostic summaries, see
 [`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
@@ -414,8 +418,20 @@ autoregressive dependence.
 ## Read Your Own CSV Data
 
 For monthly temperature data stored in a CSV file, prepare columns named
-`Year`, `Month`, and `Temp`. The package includes an example CSV file in
-`inst/extdata`. The helper function
+`Year`, `Month`, and `Temp`. Use `NA` for missing temperature values,
+and keep the corresponding `Year` and `Month` entries.
+
+``` text
+Year,Month,Temp
+2010,8,13.6
+2010,9,6.8
+2010,10,NA
+2010,11,-1.4
+...
+```
+
+The CSV file should be comma-separated and UTF-8 encoded. The package
+includes an example CSV file in `inst/extdata`. The helper function
 [`read_monthly_temp_ts()`](https://akihirao.github.io/tempssm/reference/read_monthly_temp_ts.md)
 reads this type of CSV file and converts it into an R `ts` object for
 use with
@@ -436,9 +452,6 @@ head(csv_temp)
     ##        Jan Feb Mar Apr May Jun Jul   Aug   Sep   Oct   Nov   Dec
     ## 2010                                13.6   6.8   0.2  -6.8 -12.5
     ## 2011 -18.8
-
-Use `NA` for missing temperature values, and keep the corresponding
-`Year` and `Month` entries in the CSV file.
 
 ## Further Reading
 

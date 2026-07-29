@@ -145,14 +145,19 @@ detail.</p>
 <div class="section level2">
 <h2 id="model-overview">Model Overview<a class="anchor" aria-label="anchor" href="#model-overview"></a>
 </h2>
-<p><code>tempssm</code> represents temperature variation with a linear
-Gaussian state-space model composed of interpretable latent components:
-a long-term trend, seasonal variation, autoregressive dependence, and
-optional exogenous effects. The model is estimated with
-<code>KFAS</code>, and <code><a href="../reference/tempssm.html">tempssm()</a></code> returns both filtering and
-smoothing estimates. Unless otherwise stated, the summaries,
-diagnostics, and plots in this vignette use smoothed state
-estimates.</p>
+<p>The model implemented in <code>tempssm</code> can be viewed as an
+extension of the Basic Structural Time Series Model (BSTSM), a standard
+state-space formulation that represents an observed time series using
+latent trend, seasonal, and irregular components. Following the
+temperature time-series application of Baba et al. (2024),
+<code>tempssm</code> keeps this interpretable decomposition and adds
+autoregressive dependence and optional exogenous effects. This makes it
+useful for separating long-term temperature change, seasonal cycles, and
+short-term departures.</p>
+<p>The model is estimated with <code>KFAS</code>, and
+<code><a href="../reference/tempssm.html">tempssm()</a></code> returns both filtering and smoothing estimates.
+Unless otherwise stated, the summaries, diagnostics, and plots in this
+vignette use smoothed state estimates.</p>
 <p>The full mathematical specification, including the observation
 equation, state decomposition, seasonal constraint, autoregressive
 component, exogenous component, parameter count, and estimation

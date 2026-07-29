@@ -91,7 +91,15 @@ package are based on smoothed state estimates.</p>
 <p>We consider an extended version of the Basic Structural Time Series
 Model (BSTSM) to describe temperature time series with explicit
 long-term trend, seasonal variability, and autoregressive structure. The
-observation equation is given by</p>
+BSTSM is a standard state-space formulation that represents an observed
+time series using latent trend, seasonal, and irregular components
+(Harvey 1989). Following the temperature time-series application of Baba
+et al. (2024), the model used in <code>tempssm</code> keeps this
+interpretable decomposition and adds autoregressive dependence and
+optional exogenous effects. This structure is useful for separating
+long-term temperature change, seasonal cycles, and short-term
+departures.</p>
+<p>The observation equation is given by</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>t</mi></msub><mo>=</mo><msub><mi>α</mi><mi>t</mi></msub><mo>+</mo><msub><mi>v</mi><mi>t</mi></msub><mi>.</mi></mrow><annotation encoding="application/x-tex">
 y_t = \alpha_t + v_t. \tag{1}
 </annotation></semantics></math></p>
@@ -256,6 +264,8 @@ English abstract.) <a href="https://doi.org/10.34423/jsfo.88.3_190" class="exter
 <p>Baba, S. (2024). Supplementary code and test data for estimating sea
 temperature trends using a linear Gaussian state-space model. GitHub
 repository: <a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="external-link uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
+<p>Harvey, A. C. (1989). <em>Forecasting, Structural Time Series Models
+and the Kalman Filter</em>. Cambridge University Press.</p>
 <p>Helske, J. (2017). KFAS: Exponential Family State Space Models in R.
 <em>Journal of Statistical Software</em>, 78(10), 1-39. <a href="https://doi.org/10.18637/jss.v078.i10" class="external-link uri">https://doi.org/10.18637/jss.v078.i10</a></p>
 </div>

@@ -145,14 +145,19 @@ detail.</p>
 <div class="section level2">
 <h2 id="model-overview">Model Overview<a class="anchor" aria-label="anchor" href="#model-overview"></a>
 </h2>
-<p><code>tempssm</code> represents temperature variation with a linear
-Gaussian state-space model composed of interpretable latent components:
-a long-term trend, seasonal variation, autoregressive dependence, and
-optional exogenous effects. The model is estimated with
-<code>KFAS</code>, and <code><a href="../reference/tempssm.html">tempssm()</a></code> returns both filtering and
-smoothing estimates. Unless otherwise stated, the summaries,
-diagnostics, and plots in this vignette use smoothed state
-estimates.</p>
+<p>The model implemented in <code>tempssm</code> can be viewed as an
+extension of the Basic Structural Time Series Model (BSTSM), a standard
+state-space formulation that represents an observed time series using
+latent trend, seasonal, and irregular components. Following the
+temperature time-series application of Baba et al. (2024),
+<code>tempssm</code> keeps this interpretable decomposition and adds
+autoregressive dependence and optional exogenous effects. This makes it
+useful for separating long-term temperature change, seasonal cycles, and
+short-term departures.</p>
+<p>The model is estimated with <code>KFAS</code>, and
+<code><a href="../reference/tempssm.html">tempssm()</a></code> returns both filtering and smoothing estimates.
+Unless otherwise stated, the summaries, diagnostics, and plots in this
+vignette use smoothed state estimates.</p>
 <p>The full mathematical specification, including the observation
 equation, state decomposition, seasonal constraint, autoregressive
 component, exogenous component, parameter count, and estimation
@@ -296,13 +301,13 @@ underlying trend behavior to be examined more clearly.</p>
 <p>The level component summarizes gradual changes in the underlying
 temperature level after removing the dominant seasonal pattern. In this
 example, the estimated long-term level indicates a gradual increase in
-summit temperature over the study period. The drift component is
-positive on average but small relative to the seasonal variation. The
-seasonal component captures the recurring annual cycle, while the
-autoregressive component represents shorter-term departures from the
-trend and seasonal pattern. The shaded gray areas represent 95%
-confidence intervals for the estimated latent states, illustrating the
-uncertainty associated with each estimated component.</p>
+temperature over the study period. The drift component is positive on
+average but small relative to the seasonal variation. The seasonal
+component captures the recurring annual cycle, while the autoregressive
+component represents shorter-term departures from the trend and seasonal
+pattern. The shaded gray areas represent 95% confidence intervals for
+the estimated latent states, illustrating the uncertainty associated
+with each estimated component.</p>
 <p>The standard plotting interface is <code>plot(res)</code>. The
 explicit helper <code>plot_tempssm_components(res)</code> produces the
 same component plot and can be useful in scripts where a descriptive
@@ -333,15 +338,12 @@ assumption.</p>
 <span><span class="co">## Q* = 4.4043, df = 12, p-value = 0.975</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model df: 0.   Total lags used: 12</span></span></code></pre>
-<p>Here, <code><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals()</a></code> explicitly extracts the
-standardized recursive residuals from the fitted model.
-<code><a href="https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html" class="external-link">forecast::checkresiduals()</a></code> then displays the residual time
-series, residual autocorrelation plot (ACF plot), and residual frequency
-distribution, together with a Ljung-Box test. In the diagnostic figure,
-the residual time series appears in the upper panel, the ACF plot in the
-lower-left panel, and the residual frequency distribution in the
-lower-right panel. The lag is set to the seasonal frequency of the input
-data; for monthly data, this uses lag 12. These plots and the test
+<p>Here, <code><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals()</a></code> extracts standardized
+recursive residuals, and <code><a href="https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html" class="external-link">forecast::checkresiduals()</a></code>
+displays their time-series plot, ACF plot, histogram, and Ljung-Box
+test. The three plots appear in the upper, lower-left, and lower-right
+panels, respectively. The lag is set to the seasonal frequency of the
+input data; for monthly data, this uses lag 12. These plots and the test
 result should be checked for any notable residual patterns. In this
 example, the Ljung-Box test indicated no significant residual
 autocorrelation up to lag 12 (P &gt; 0.05).</p>
@@ -440,12 +442,21 @@ autoregressive dependence.</p>
 <h2 id="read-your-own-csv-data">Read Your Own CSV Data<a class="anchor" aria-label="anchor" href="#read-your-own-csv-data"></a>
 </h2>
 <p>For monthly temperature data stored in a CSV file, prepare columns
-named <code>Year</code>, <code>Month</code>, and <code>Temp</code>. The
-package includes an example CSV file in <code>inst/extdata</code>. The
-helper function <code><a href="../reference/read_monthly_temp_ts.html">read_monthly_temp_ts()</a></code> reads this type of
-CSV file and converts it into an R <code>ts</code> object for use with
+named <code>Year</code>, <code>Month</code>, and <code>Temp</code>. Use
+<code>NA</code> for missing temperature values, and keep the
+corresponding <code>Year</code> and <code>Month</code> entries.</p>
+<pre class="text"><code>Year,Month,Temp
+2010,8,13.6
+2010,9,6.8
+2010,10,NA
+2010,11,-1.4
+...</code></pre>
+<p>The CSV file should be comma-separated and UTF-8 encoded. The package
+includes an example CSV file in <code>inst/extdata</code>. The helper
+function <code><a href="../reference/read_monthly_temp_ts.html">read_monthly_temp_ts()</a></code> reads this type of CSV file
+and converts it into an R <code>ts</code> object for use with
 <code><a href="../reference/tempssm.html">tempssm()</a></code>.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>  <span class="st">"extdata"</span>,</span>
 <span>  <span class="st">"example_monthly_temp.csv"</span>,</span>
@@ -457,9 +468,6 @@ CSV file and converts it into an R <code>ts</code> object for use with
 <pre><code><span><span class="co">##        Jan Feb Mar Apr May Jun Jul   Aug   Sep   Oct   Nov   Dec</span></span>
 <span><span class="co">## 2010                                13.6   6.8   0.2  -6.8 -12.5</span></span>
 <span><span class="co">## 2011 -18.8</span></span></code></pre>
-<p>Use <code>NA</code> for missing temperature values, and keep the
-corresponding <code>Year</code> and <code>Month</code> entries in the
-CSV file.</p>
 </div>
 <div class="section level2">
 <h2 id="further-reading">Further Reading<a class="anchor" aria-label="anchor" href="#further-reading"></a>
