@@ -55,7 +55,7 @@ observational dataset. Missing values, if any, are encoded as `NA`.
 
 Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea
 temperature trends using a linear Gaussian state-space model in
-Jogashima, Kanagawa, Japan.
+Jogashima, Kanagawa, Japan (in Japanese with an English abstract).
 
 Baba, S. (2024). Supplementary code and test data for estimating sea
 temperature trends using a linear Gaussian state-space model.

@@ -64,7 +64,7 @@
 <ul>
 <li>Fits linear Gaussian state-space models to environmental temperature time series.</li>
 <li>Represents temperature dynamics using interpretable latent components: long-term trend, seasonal variation, autoregressive dependence, and optional exogenous effects.</li>
-<li>Supports arbitrary integer seasonal frequencies, while the current examples and validation focus primarily on monthly temperature data.</li>
+<li>Supports arbitrary seasonal frequencies, while the current examples and validation focus primarily on monthly temperature data.</li>
 <li>Allows users to specify an arbitrary order of the autoregressive component (default: AR(1)).</li>
 <li>Includes time-series cross-validation tools for model evaluation.</li>
 </ul>
@@ -138,25 +138,31 @@
 <div class="section level3">
 <h3 id="use-your-own-data">Use Your Own Data<a class="anchor" aria-label="anchor" href="#use-your-own-data"></a>
 </h3>
-<p>Once your data are stored as a <code>ts</code> object in the desired temperature unit, pass it directly to <code><a href="reference/tempssm.html">tempssm()</a></code>. For monthly temperature data stored in a CSV file, prepare columns named <code>Year</code>, <code>Month</code>, and <code>Temp</code>.</p>
+<p>For monthly temperature data stored in a CSV file, prepare columns named <code>Year</code>, <code>Month</code>, and <code>Temp</code>. Use <code>NA</code> for missing temperature values, and keep the corresponding <code>Year</code> and <code>Month</code> entries.</p>
 <pre class="text"><code>Year,Month,Temp
 2010,8,13.6
 2010,9,6.8
 2010,10,NA
 2010,11,-1.4
 ...</code></pre>
-<p>Use <code>NA</code> for missing temperature values, and keep the corresponding <code>Year</code> and <code>Month</code> entries. The CSV file should be comma-separated and UTF-8 encoded.</p>
+<p>The CSV file should be comma-separated and UTF-8 encoded. An example CSV file is included with the package.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">temp_ts</span> <span class="op">&lt;-</span> <span class="fu">tempssm</span><span class="fu">::</span><span class="fu"><a href="reference/read_monthly_temp_ts.html">read_monthly_temp_ts</a></span><span class="op">(</span><span class="st">"temperature.csv"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
+<span>  <span class="st">"extdata"</span>,</span>
+<span>  <span class="st">"example_monthly_temp.csv"</span>,</span>
+<span>  package <span class="op">=</span> <span class="st">"tempssm"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">temp_ts</span> <span class="op">&lt;-</span> <span class="fu">tempssm</span><span class="fu">::</span><span class="fu"><a href="reference/read_monthly_temp_ts.html">read_monthly_temp_ts</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
 <span><span class="va">res_csv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">temp_ts</span><span class="op">)</span></span></code></pre></div>
-<p><code><a href="reference/read_monthly_temp_ts.html">read_monthly_temp_ts()</a></code> uses base R’s <code><a href="https://rdrr.io/r/stats/ts.html" class="external-link">ts()</a></code> representation internally. You can also construct a <code>ts</code> object manually if finer control is needed.</p>
+<p>The helper function <code><a href="reference/read_monthly_temp_ts.html">read_monthly_temp_ts()</a></code> reads this type of CSV file and converts it into an R <code>ts</code> object for use with <code><a href="reference/tempssm.html">tempssm()</a></code>. If your data are already stored as a <code>ts</code> object, you can pass them directly to <code><a href="reference/tempssm.html">tempssm()</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <p>Baba, S. (2024). Supplementary code and test data for estimating sea temperature trends using a linear Gaussian state-space model. GitHub repository: <a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="external-link uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
-<p>Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea temperature trends using a linear Gaussian state-space model in Jogashima, Kanagawa, Japan. <em>Bulletin of the Japanese Society of Fisheries Oceanography</em>, 88(3), 190-199. <a href="https://doi.org/10.34423/jsfo.88.3_190" class="external-link uri">https://doi.org/10.34423/jsfo.88.3_190</a></p>
+<p>Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea temperature trends using a linear Gaussian state-space model in Jogashima, Kanagawa, Japan. <em>Bulletin of the Japanese Society of Fisheries Oceanography</em>, 88(3), 190-199. (In Japanese with an English abstract.) <a href="https://doi.org/10.34423/jsfo.88.3_190" class="external-link uri">https://doi.org/10.34423/jsfo.88.3_190</a></p>
 <p>Helske, J. (2017). KFAS: Exponential family state space models in R. <em>Journal of Statistical Software</em>, 78(10), 1-39. <a href="https://doi.org/10.18637/jss.v078.i10" class="external-link uri">https://doi.org/10.18637/jss.v078.i10</a></p>
 </div>
 </div>

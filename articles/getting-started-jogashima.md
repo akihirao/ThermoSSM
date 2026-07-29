@@ -13,16 +13,16 @@ package as the computational backend (Helske, 2017).
 
 ## Key Features
 
-- Designed for environmental temperature time series with arbitrary
-  seasonal frequencies; currently validated primarily on monthly data
-- Estimates latent states using linear Gaussian state-space models
-  combined with Kalman filtering and smoothing
-- Models temperature dynamics as a sum of interpretable latent
-  components, including long-term trend, seasonal variation,
-  autoregressive dependence, and optional exogenous effects
+- Fits linear Gaussian state-space models to environmental temperature
+  time series.
+- Represents temperature dynamics using interpretable latent components:
+  long-term trend, seasonal variation, autoregressive dependence, and
+  optional exogenous effects.
+- Supports arbitrary seasonal frequencies, while the current examples
+  and validation focus primarily on monthly temperature data.
 - Allows users to specify an arbitrary order of the autoregressive
-  component (default: AR(1))
-- Implements time-series cross-validation for model evaluation
+  component (default: AR(1)).
+- Includes time-series cross-validation tools for model evaluation.
 
 ## Input Data Format
 
@@ -33,6 +33,11 @@ for regularly spaced time series (see the
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). The
 package also provides utility functions for converting common tabular
 and observational data formats into `ts` objects before model fitting.
+
+The seasonal cycle used by
+[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
+is taken from the `frequency` attribute of the input `ts` object. For
+example, `frequency = 12` represents monthly data.
 
 ## Prior Art and Scope
 

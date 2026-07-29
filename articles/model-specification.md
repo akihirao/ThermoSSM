@@ -163,8 +163,8 @@ methods such as [`logLik()`](https://rdrr.io/r/stats/logLik.html) and
 Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea
 temperature trends using a linear Gaussian state-space model in
 Jogashima, Kanagawa, Japan. *Bulletin of the Japanese Society of
-Fisheries Oceanography*, 88(3), 190-199.
-<https://doi.org/10.34423/jsfo.88.3_190>
+Fisheries Oceanography*, 88(3), 190-199. (In Japanese with an English
+abstract.) <https://doi.org/10.34423/jsfo.88.3_190>
 
 Baba, S. (2024). Supplementary code and test data for estimating sea
 temperature trends using a linear Gaussian state-space model. GitHub
