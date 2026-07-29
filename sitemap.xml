@@ -21,6 +21,7 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/convert_monthly_df_to_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/daily_zoo_to_monthly_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/diagnose_residuals.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/distance_sim.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_ar_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_drift_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_exo_coef.html</loc></url>
@@ -32,6 +33,7 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/hmo_temp.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/index.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/kuroshio_a_sim.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/logLik.tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/nao.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/niigata_sst.html</loc></url>
@@ -48,8 +50,8 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/set_ts_name.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/soi.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/split_multi_ts.html</loc></url>
-<url><loc>https://akihirao.github.io/tempssm/reference/sst_jogashima.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/sst_niigata.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/sst_sim.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/sst_yamaguchi.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/summary.tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/temp_MtFuji.html</loc></url>

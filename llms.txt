@@ -247,6 +247,9 @@ Helske, J. (2017). KFAS: Exponential family state space models in R.
 - [`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
   : Residual diagnostics for tempssm models
 
+- [`distance_sim`](https://akihirao.github.io/tempssm/reference/distance_sim.md)
+  : Simulated monthly Kuroshio offshore-distance time series
+
 - [`get_ar_ts()`](https://akihirao.github.io/tempssm/reference/get_ar_ts.md)
   : Extract autoregressive components as a time series
 
@@ -279,6 +282,9 @@ Helske, J. (2017). KFAS: Exponential family state space models in R.
 - [`hmo_temp`](https://akihirao.github.io/tempssm/reference/hmo_temp.md)
   : Monthly mean air temperature at Hohenpeissenberg Meteorological
   Observatory
+
+- [`kuroshio_a_sim`](https://akihirao.github.io/tempssm/reference/kuroshio_a_sim.md)
+  : Simulated monthly Kuroshio large-meander indicator
 
 - [`logLik(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/logLik.tempssm.md)
   : Log-likelihood method for tempssm objects (S3 method)
@@ -327,11 +333,11 @@ Helske, J. (2017). KFAS: Exponential family state space models in R.
 - [`split_multi_ts()`](https://akihirao.github.io/tempssm/reference/split_multi_ts.md)
   : Split a multivariate ts object into univariate ts objects
 
-- [`sst_jogashima`](https://akihirao.github.io/tempssm/reference/sst_jogashima.md)
-  : Simulated monthly sea surface temperature off Jogashima, Japan
-
 - [`sst_niigata`](https://akihirao.github.io/tempssm/reference/sst_niigata.md)
   : Monthly mean sea surface temperature off Niigata, Japan
+
+- [`sst_sim`](https://akihirao.github.io/tempssm/reference/sst_sim.md) :
+  Simulated monthly sea surface temperature time series
 
 - [`sst_yamaguchi`](https://akihirao.github.io/tempssm/reference/sst_yamaguchi.md)
   : Monthly mean sea surface temperature off Yamaguchi Prefecture

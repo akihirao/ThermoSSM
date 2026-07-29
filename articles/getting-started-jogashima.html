@@ -203,12 +203,12 @@ Baba et al. (2024). It is distributed with the supplementary materials
 and prototype code for the motivating study:</p>
 <p><a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="external-link uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span> <span class="co"># load a ts object of SST off Jogashima</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sst_sim</span><span class="op">)</span> <span class="co"># load a ts object of SST off Jogashima</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">sst_sim</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##        Jan   Feb   Mar   Apr   May   Jun</span></span>
 <span><span class="co">## 1998 16.19 13.82 16.44 16.49 19.70 21.83</span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">sst_sim</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       Temp      </span></span>
 <span><span class="co">##  Min.   :11.17  </span></span>
 <span><span class="co">##  1st Qu.:16.22  </span></span>
@@ -228,7 +228,7 @@ filtering and smoothing.</p>
 overall structure, including apparent trends, seasonal variability, and
 whether missing observations are present.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">plt_jogashima_sst</span> <span class="op">&lt;-</span> <span class="fu">forecast</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span> <span class="op">+</span></span>
+<code class="sourceCode R"><span><span class="va">plt_sst_sim</span> <span class="op">&lt;-</span> <span class="fu">forecast</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span><span class="va">sst_sim</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
 <span>    y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/expression.html" class="external-link">expression</a></span><span class="op">(</span><span class="va">Temperature</span> <span class="op">~</span> <span class="op">(</span><span class="va">degree</span> <span class="op">*</span> <span class="va">C</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    x <span class="op">=</span> <span class="st">"Time (year)"</span></span>
@@ -236,7 +236,7 @@ whether missing observations are present.</p>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"Simulated monthly SST off Jogashima, Japan"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_classic</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">plt_jogashima_sst</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">plt_sst_sim</span><span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started-jogashima_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="700"></p>
 <p>The overall mean SST is approximately 18.2 °C, and a clear seasonal
 pattern is visible. The series contains no missing observations. SST
@@ -249,7 +249,7 @@ from the raw time series alone.</p>
 <h2 id="fit-a-state-space-model">Fit a State-Space Model<a class="anchor" aria-label="anchor" href="#fit-a-state-space-model"></a>
 </h2>
 <p>When a <code>ts</code> object containing temperature time-series data
-(here, <code>sst_jogashima</code>) is passed to the core function
+(here, <code>sst_sim</code>) is passed to the core function
 <code><a href="../reference/tempssm.html">tempssm()</a></code>, model construction and parameter estimation are
 performed together. The returned S3 object of class <code>tempssm</code>
 (here, <code>res</code>) stores the filtering and smoothing estimates,
@@ -257,12 +257,12 @@ as well as the constructed model and input data. By default,
 <code><a href="../reference/tempssm.html">tempssm()</a></code> fits a first-order autoregressive model.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># model with first-order autoregressive component</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_jogashima</span><span class="op">)</span> <span class="co"># AR(1), the default model</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_sim</span><span class="op">)</span> <span class="co"># AR(1), the default model</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## tempssm summary</span></span>
 <span><span class="co">## -----------------</span></span>
 <span><span class="co">## Call:</span></span>
-<span><span class="co">## tempssm(temp_data = sst_jogashima)</span></span>
+<span><span class="co">## tempssm(temp_data = sst_sim)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model fit:</span></span>
 <span><span class="co">##   Likelihood type: marginal </span></span>
@@ -272,9 +272,9 @@ as well as the constructed model and input data. By default,
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.07496413 </span></span>
-<span><span class="co">##   State (Q trend): 4.937123e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001763536 </span></span>
+<span><span class="co">##   Observation (H): 0.07496414 </span></span>
+<span><span class="co">##   State (Q trend): 4.937125e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001763537 </span></span>
 <span><span class="co">##   State (Q ar): 0.1202156 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
@@ -387,10 +387,10 @@ extracted as ts objects as follows.</p>
 <span><span class="co">##          sea_dummy11     arima1</span></span>
 <span><span class="co">## Jan 1998  -2.8244535 -0.2178663</span></span>
 <span><span class="co">## Feb 1998  -2.0508949  0.1519894</span></span>
-<span><span class="co">## Mar 1998   0.2882283  0.4187225</span></span>
+<span><span class="co">## Mar 1998   0.2882283  0.4187224</span></span>
 <span><span class="co">## Apr 1998   1.9925949  0.2408083</span></span>
 <span><span class="co">## May 1998   2.4937014  0.7185730</span></span>
-<span><span class="co">## Jun 1998   4.9410126  1.0167732</span></span></code></pre>
+<span><span class="co">## Jun 1998   4.9410126  1.0167731</span></span></code></pre>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 　Smoothing estimate of level component</span></span>
 <span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>

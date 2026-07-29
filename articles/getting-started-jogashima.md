@@ -132,8 +132,8 @@ and prototype code for the motivating study:
 
 ``` r
 
-data(sst_jogashima) # load a ts object of SST off Jogashima
-head(sst_jogashima)
+data(sst_sim) # load a ts object of SST off Jogashima
+head(sst_sim)
 ```
 
     ##        Jan   Feb   Mar   Apr   May   Jun
@@ -141,7 +141,7 @@ head(sst_jogashima)
 
 ``` r
 
-summary(sst_jogashima)
+summary(sst_sim)
 ```
 
     ##       Temp      
@@ -165,7 +165,7 @@ whether missing observations are present.
 
 ``` r
 
-plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
+plt_sst_sim <- forecast::autoplot(sst_sim) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
@@ -173,7 +173,7 @@ plt_jogashima_sst <- forecast::autoplot(sst_jogashima) +
   ggplot2::ggtitle("Simulated monthly SST off Jogashima, Japan") +
   ggplot2::theme_classic()
 
-plot(plt_jogashima_sst)
+plot(plt_sst_sim)
 ```
 
 ![](getting-started-jogashima_files/figure-html/unnamed-chunk-3-1.png)
@@ -188,7 +188,7 @@ from the raw time series alone.
 ## Fit a State-Space Model
 
 When a `ts` object containing temperature time-series data (here,
-`sst_jogashima`) is passed to the core function
+`sst_sim`) is passed to the core function
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md),
 model construction and parameter estimation are performed together. The
 returned S3 object of class `tempssm` (here, `res`) stores the filtering
@@ -200,14 +200,14 @@ fits a first-order autoregressive model.
 ``` r
 
 # model with first-order autoregressive component
-res <- tempssm(sst_jogashima) # AR(1), the default model
+res <- tempssm(sst_sim) # AR(1), the default model
 summary(res)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_jogashima)
+    ## tempssm(temp_data = sst_sim)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
@@ -217,9 +217,9 @@ summary(res)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
+    ##   Observation (H): 0.07496414 
+    ##   State (Q trend): 4.937125e-06 
+    ##   State (Q season): 0.0001763537 
     ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
@@ -350,10 +350,10 @@ head(alpha_hat)
     ##          sea_dummy11     arima1
     ## Jan 1998  -2.8244535 -0.2178663
     ## Feb 1998  -2.0508949  0.1519894
-    ## Mar 1998   0.2882283  0.4187225
+    ## Mar 1998   0.2882283  0.4187224
     ## Apr 1998   1.9925949  0.2408083
     ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167732
+    ## Jun 1998   4.9410126  1.0167731
 
 ``` r
 
