@@ -35,7 +35,7 @@
 #' @references
 #' Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea temperature
 #' trends using a linear Gaussian state-space model in Jogashima, Kanagawa,
-#' Japan.
+#' Japan (in Japanese with an English abstract).
 #'
 #' Baba, S. (2024). Supplementary code and test data for estimating sea
 #' temperature trends using a linear Gaussian state-space model.

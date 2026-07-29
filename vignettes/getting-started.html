@@ -12,7 +12,7 @@
 
 <meta name="author" content="Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa" />
 
-<meta name="date" content="2026-07-28" />
+<meta name="date" content="2026-07-29" />
 
 <title>tempssm: State-space modeling for temperature time series in R</title>
 
@@ -344,7 +344,7 @@ temperature time series in R</h1>
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">Akira S. Hirao, Shinya Baba, and Momoko
 Ichinokawa</h4>
-<h4 class="date">2026-07-28</h4>
+<h4 class="date">2026-07-29</h4>
 
 
 
@@ -363,16 +363,17 @@ using the <code>KFAS</code> package as the computational backend
 <div id="key-features" class="section level1">
 <h1>Key Features</h1>
 <ul>
-<li>Designed for environmental temperature time series with arbitrary
-seasonal frequencies; currently validated primarily on monthly data</li>
-<li>Estimates latent states using linear Gaussian state-space models
-combined with Kalman filtering and smoothing</li>
-<li>Models temperature dynamics as a sum of interpretable latent
-components, including long-term trend, seasonal variation,
-autoregressive dependence, and optional exogenous effects</li>
+<li>Fits linear Gaussian state-space models to environmental temperature
+time series.</li>
+<li>Represents temperature dynamics using interpretable latent
+components: long-term trend, seasonal variation, autoregressive
+dependence, and optional exogenous effects.</li>
+<li>Supports arbitrary seasonal frequencies, while the current examples
+and validation focus primarily on monthly temperature data.</li>
 <li>Allows users to specify an arbitrary order of the autoregressive
-component (default: AR(1))</li>
-<li>Implements time-series cross-validation for model evaluation</li>
+component (default: AR(1)).</li>
+<li>Includes time-series cross-validation tools for model
+evaluation.</li>
 </ul>
 </div>
 <div id="input-data-format" class="section level1">
@@ -384,6 +385,9 @@ the <code>stats::ts</code> documentation: <a href="https://search.r-project.org/
 The package also provides utility functions for converting common
 tabular and observational data formats into <code>ts</code> objects
 before model fitting.</p>
+<p>The seasonal cycle used by <code>tempssm()</code> is taken from the
+<code>frequency</code> attribute of the input <code>ts</code> object.
+For example, <code>frequency = 12</code> represents monthly data.</p>
 </div>
 <div id="prior-art-and-scope" class="section level1">
 <h1>Prior Art and Scope</h1>
@@ -677,6 +681,29 @@ rather than definitive forecasts. Uncertainty generally increases as the
 prediction horizon becomes longer, and long-horizon predictions can be
 sensitive to model assumptions about trend, seasonality, and
 autoregressive dependence.</p>
+</div>
+<div id="read-your-own-csv-data" class="section level1">
+<h1>Read Your Own CSV Data</h1>
+<p>For monthly temperature data stored in a CSV file, prepare columns
+named <code>Year</code>, <code>Month</code>, and <code>Temp</code>. The
+package includes an example CSV file in <code>inst/extdata</code>. The
+helper function <code>read_monthly_temp_ts()</code> reads this type of
+CSV file and converts it into an R <code>ts</code> object for use with
+<code>tempssm()</code>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>  <span class="st">&quot;extdata&quot;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>  <span class="st">&quot;example_monthly_temp.csv&quot;</span>,</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a>  <span class="at">package =</span> <span class="st">&quot;tempssm&quot;</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a>)</span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a>csv_temp <span class="ot">&lt;-</span> tempssm<span class="sc">::</span><span class="fu">read_monthly_temp_ts</span>(path)</span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="fu">head</span>(csv_temp)</span></code></pre></div>
+<pre><code>##        Jan Feb Mar Apr May Jun Jul   Aug   Sep   Oct   Nov   Dec
+## 2010                                13.6   6.8   0.2  -6.8 -12.5
+## 2011 -18.8</code></pre>
+<p>Use <code>NA</code> for missing temperature values, and keep the
+corresponding <code>Year</code> and <code>Month</code> entries in the
+CSV file.</p>
 </div>
 <div id="further-reading" class="section level1">
 <h1>Further Reading</h1>

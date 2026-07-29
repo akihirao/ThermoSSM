@@ -15,7 +15,7 @@ using the `KFAS` package as the computational backend (Helske, 2017).
 - Represents temperature dynamics using interpretable latent components:
   long-term trend, seasonal variation, autoregressive dependence, and optional
   exogenous effects.
-- Supports arbitrary integer seasonal frequencies, while the current examples
+- Supports arbitrary seasonal frequencies, while the current examples
   and validation focus primarily on monthly temperature data.
 - Allows users to specify an arbitrary order of the autoregressive component
   (default: AR(1)).
@@ -133,9 +133,9 @@ plot as a `ggplot` object; `ggplot2::autoplot()` is also available.
 
 ### Use Your Own Data
 
-Once your data are stored as a `ts` object in the desired temperature unit,
-pass it directly to `tempssm()`. For monthly temperature data stored in a CSV
-file, prepare columns named `Year`, `Month`, and `Temp`.
+For monthly temperature data stored in a CSV file, prepare columns named
+`Year`, `Month`, and `Temp`. Use `NA` for missing temperature values, and keep
+the corresponding `Year` and `Month` entries.
 
 ```text
 Year,Month,Temp
@@ -146,16 +146,23 @@ Year,Month,Temp
 ...
 ```
 
-Use `NA` for missing temperature values, and keep the corresponding `Year` and
-`Month` entries. The CSV file should be comma-separated and UTF-8 encoded.
+The CSV file should be comma-separated and UTF-8 encoded. An example CSV file
+is included with the package.
 
 ```r
-temp_ts <- tempssm::read_monthly_temp_ts("temperature.csv")
+path <- system.file(
+  "extdata",
+  "example_monthly_temp.csv",
+  package = "tempssm"
+)
+
+temp_ts <- tempssm::read_monthly_temp_ts(path)
 res_csv <- tempssm(temp_ts)
 ```
 
-`read_monthly_temp_ts()` uses base R's `ts()` representation internally. You
-can also construct a `ts` object manually if finer control is needed.
+The helper function `read_monthly_temp_ts()` reads this type of CSV file and
+converts it into an R `ts` object for use with `tempssm()`. If your data are
+already stored as a `ts` object, you can pass them directly to `tempssm()`.
 
 ## References
 
@@ -167,7 +174,8 @@ repository:
 Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea temperature
 trends using a linear Gaussian state-space model in Jogashima, Kanagawa,
 Japan. *Bulletin of the Japanese Society of Fisheries Oceanography*, 88(3),
-190-199. <https://doi.org/10.34423/jsfo.88.3_190>
+190-199. (In Japanese with an English abstract.)
+<https://doi.org/10.34423/jsfo.88.3_190>
 
 Helske, J. (2017). KFAS: Exponential family state space models in R.
 *Journal of Statistical Software*, 78(10), 1-39.

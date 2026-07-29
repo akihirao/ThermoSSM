@@ -361,7 +361,7 @@ Helske, J. (2017). KFAS: Exponential family state space models in R.
 
 Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea temperature
 trends using a linear Gaussian state-space model in Jogashima, Kanagawa,
-Japan (in Japanese with English abstract, tables, and figures).
+Japan (in Japanese with an English abstract).
 \emph{Bulletin of the Japanese Society of Fisheries Oceanography},
 88(3), 190--199. \doi{10.34423/jsfo.88.3_190}
 

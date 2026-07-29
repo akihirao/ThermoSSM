@@ -33,11 +33,10 @@ using the `KFAS` package as the computational backend (Helske, 2017).
 - Represents temperature dynamics using interpretable latent components:
   long-term trend, seasonal variation, autoregressive dependence, and optional
   exogenous effects.
-- Supports arbitrary integer seasonal frequencies, while the current examples
+- Supports arbitrary seasonal frequencies, while the current examples
   and validation focus primarily on monthly temperature data.
 - Allows users to specify an arbitrary order of the autoregressive component
-  (default: AR(1))
-- Provides S3 methods for summaries, diagnostics, accessors, and plots.
+  (default: AR(1)).
 - Includes time-series cross-validation tools for model evaluation.
 
 # Input Data Format
@@ -48,6 +47,10 @@ regularly spaced time series (see the `stats::ts` documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). The package also
 provides utility functions for converting common tabular and observational data
 formats into `ts` objects before model fitting.
+
+The seasonal cycle used by `tempssm()` is taken from the `frequency` attribute
+of the input `ts` object. For example, `frequency = 12` represents monthly
+data.
 
 # Prior Art and Scope
 
@@ -942,11 +945,11 @@ akadake_temp <- tempssm::read_monthly_temp_ts(path)
 head(akadake_temp)
 ```
 
-The `read_monthly_temp_ts()` function internally uses the base R `ts()`
-function to create a time-series object. See the `stats::ts` documentation
-for details:
-<https://search.r-project.org/R/refmans/stats/html/ts.html>. If finer control
-is needed, you can construct the `ts` object manually.
+The `read_monthly_temp_ts()` function reads this type of CSV file and converts
+it into an R `ts` object for use with `tempssm()`. If finer control is needed,
+you can also construct a `ts` object manually; see the `stats::ts`
+documentation for details:
+<https://search.r-project.org/R/refmans/stats/html/ts.html>.
 
 
 
@@ -1011,22 +1014,16 @@ Year,Month,Temp
   and Month entries.
 * The CSV file must be comma-separated and UTF-8 encoded.
 
-The following example uses a sample CSV file included in the package.
+The following example uses the sample CSV file included in the package. It
+contains monthly air temperature observations from Mt. Akadake, Hokkaido,
+Japan.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-tmp_csv <- tempfile(fileext = ".csv")
-writeLines(
-  c("Year,Month,Temp",
-    "2001,1,10.4",
-    "2001,2,8.2",
-    "2001,3,NA",
-    "2001,4,13.6",
-    "2001,5,16.1"),
-   tmp_csv
- )
+path <- system.file("extdata", "example_monthly_temp.csv", package = "tempssm")
 
-# Read the CSV file and convert to a monthly ts object
-temp_ts <- read_monthly_temp_ts(tmp_csv)
+# Read the CSV file and convert it to a monthly ts object
+temp_ts <- read_monthly_temp_ts(path)
+head(temp_ts)
 ```
 
 ## 2. `convert_monthly_df_to_ts()`

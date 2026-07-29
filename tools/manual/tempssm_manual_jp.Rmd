@@ -34,11 +34,11 @@ vignette: >
 # 主な特徴
 
 - 環境中で観測される温度時系列に線形ガウス状態空間モデルを適用
-- 温度の動態を潜在状態 (latent state) の次の各成分に分解して表現：
-長期トレンド、季節変動、自己回帰構造、および任意の外生効果
-- 任意の整数季節周期に対応（ただし実例と検証では、主として月別の温度データを対象）
+- 温度の動態を解釈しやすい潜在成分として表現：
+  長期トレンド、季節変動、自己回帰構造、および任意の外生効果
+- 任意の季節周期に対応
+  （ただし実例と検証では、主として月別の温度データを対象）
 - 自己回帰成分の次数をユーザーが指定可能（デフォルト: AR(1)）
-- 要約、モデル診断、アクセサ、プロットのための S3 メソッドを提供
 - モデル評価のための時系列交差検証ツールを提供
 
 # 入力データ形式
@@ -50,6 +50,10 @@ vignette: >
 <https://search.r-project.org/R/refmans/stats/html/ts.html>）。
 本パッケージには、表形式データや観測データをモデル適用前に
 `ts` オブジェクトへ変換するためのユーティリティ関数も含まれています。
+
+`tempssm()` が用いる季節周期は、入力された `ts` オブジェクトの
+`frequency` 属性から決まります。たとえば、月別データでは
+`frequency = 12` を用います。
 
 # 既存研究と本パッケージの範囲
 
@@ -901,12 +905,11 @@ akadake_temp <- tempssm::read_monthly_temp_ts(path)
 head(akadake_temp)
 ```
 
-`read_monthly_temp_ts()` 関数は、内部で base R の `ts()` 関数を
-用いて時系列オブジェクトを作成します。詳細は R 公式の
-`stats::ts` ドキュメントを参照してください：
+`read_monthly_temp_ts()` 関数は、このような CSV ファイルを読み込み、
+`tempssm()` で利用できる R の `ts` オブジェクトへ変換します。
+より細かな制御が必要な場合は、手動で `ts` オブジェクトを作成することも
+できます。詳細は R 公式の `stats::ts` ドキュメントを参照してください：
 <https://search.r-project.org/R/refmans/stats/html/ts.html>。
-より細かな制御が必要な場合は、手動で `ts` オブジェクトを作成することが
-できます。
 
 
 
@@ -964,25 +967,18 @@ Year,Month,Temp
 ```
 
 * 欠測した温度値には NA を使用し、対応する Year と Month の行は
-必ず保持してください。* CSV ファイルはカンマ区切りで、UTF-8 エンコーディング
-としてください。
+  必ず保持してください。
+* CSV ファイルはカンマ区切りで、UTF-8 エンコーディングとしてください。
 
-次の例では、パッケージに含まれるサンプル CSV ファイルを使用します。
+次の例では、パッケージに含まれるサンプル CSV ファイルを使用します。この
+ファイルには、北海道赤岳における月別気温観測値が含まれています。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-tmp_csv <- tempfile(fileext = ".csv")
-writeLines(
-  c("Year,Month,Temp",
-    "2001,1,10.4",
-    "2001,2,8.2",
-    "2001,3,NA",
-    "2001,4,13.6",
-    "2001,5,16.1"),
-   tmp_csv
- )
+path <- system.file("extdata", "example_monthly_temp.csv", package = "tempssm")
 
-# Read the CSV file and convert to a monthly ts object
-temp_ts <- read_monthly_temp_ts(tmp_csv)
+# Read the CSV file and convert it to a monthly ts object
+temp_ts <- read_monthly_temp_ts(path)
+head(temp_ts)
 ```
 
 ## 2. `convert_monthly_df_to_ts()`
