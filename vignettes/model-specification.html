@@ -12,7 +12,7 @@
 
 <meta name="author" content="Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa" />
 
-<meta name="date" content="2026-07-27" />
+<meta name="date" content="2026-07-29" />
 
 <title>Model specification in tempssm</title>
 
@@ -241,7 +241,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">Akira S. Hirao, Shinya Baba, and Momoko
 Ichinokawa</h4>
-<h4 class="date">2026-07-27</h4>
+<h4 class="date">2026-07-29</h4>
 
 
 
@@ -263,7 +263,15 @@ package are based on smoothed state estimates.</p>
 <p>We consider an extended version of the Basic Structural Time Series
 Model (BSTSM) to describe temperature time series with explicit
 long-term trend, seasonal variability, and autoregressive structure. The
-observation equation is given by</p>
+BSTSM is a standard state-space formulation that represents an observed
+time series using latent trend, seasonal, and irregular components
+(Harvey 1989). Following the temperature time-series application of Baba
+et al. (2024), the model used in <code>tempssm</code> keeps this
+interpretable decomposition and adds autoregressive dependence and
+optional exogenous effects. This structure is useful for separating
+long-term temperature change, seasonal cycles, and short-term
+departures.</p>
+<p>The observation equation is given by</p>
 <p><span class="math display">\[
 y_t = \alpha_t + v_t. \tag{1}
 \]</span></p>
@@ -388,10 +396,13 @@ methods such as <code>logLik()</code> and <code>summary()</code>.</p>
 <p>Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea
 temperature trends using a linear Gaussian state-space model in
 Jogashima, Kanagawa, Japan. <em>Bulletin of the Japanese Society of
-Fisheries Oceanography</em>, 88(3), 190-199. <a href="https://doi.org/10.34423/jsfo.88.3_190" class="uri">https://doi.org/10.34423/jsfo.88.3_190</a></p>
+Fisheries Oceanography</em>, 88(3), 190-199. (In Japanese with an
+English abstract.) <a href="https://doi.org/10.34423/jsfo.88.3_190" class="uri">https://doi.org/10.34423/jsfo.88.3_190</a></p>
 <p>Baba, S. (2024). Supplementary code and test data for estimating sea
 temperature trends using a linear Gaussian state-space model. GitHub
 repository: <a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
+<p>Harvey, A. C. (1989). <em>Forecasting, Structural Time Series Models
+and the Kalman Filter</em>. Cambridge University Press.</p>
 <p>Helske, J. (2017). KFAS: Exponential Family State Space Models in R.
 <em>Journal of Statistical Software</em>, 78(10), 1-39. <a href="https://doi.org/10.18637/jss.v078.i10" class="uri">https://doi.org/10.18637/jss.v078.i10</a></p>
 </div>

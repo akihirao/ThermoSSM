@@ -30,8 +30,16 @@ the package are based on smoothed state estimates.
 
 We consider an extended version of the Basic Structural Time Series Model
 (BSTSM) to describe temperature time series with explicit long-term trend,
-seasonal variability, and autoregressive structure. The observation equation
-is given by
+seasonal variability, and autoregressive structure. The BSTSM is a standard
+state-space formulation that represents an observed time series using latent
+trend, seasonal, and irregular components (Harvey 1989). Following the
+temperature time-series application of Baba et al. (2024), the model used in
+`tempssm` keeps this interpretable decomposition and adds autoregressive
+dependence and optional exogenous effects. This structure is useful for
+separating long-term temperature change, seasonal cycles, and short-term
+departures.
+
+The observation equation is given by
 
 $$
 y_t = \alpha_t + v_t. \tag{1}
@@ -171,6 +179,9 @@ https://doi.org/10.34423/jsfo.88.3_190
 Baba, S. (2024). Supplementary code and test data for estimating sea
 temperature trends using a linear Gaussian state-space model. GitHub
 repository: https://github.com/logics-of-blue/sea-temperature-trend-jogashima
+
+Harvey, A. C. (1989). *Forecasting, Structural Time Series Models and the
+Kalman Filter*. Cambridge University Press.
 
 Helske, J. (2017). KFAS: Exponential Family State Space Models in R.
 *Journal of Statistical Software*, 78(10), 1-39.

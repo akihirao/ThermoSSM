@@ -37,7 +37,15 @@ vignette: >
 
 本パッケージでは、長期トレンド、季節変動、自己回帰成分を明示的に含む温度時系列を
 記述するために、基本構造時系列モデル（Basic Structural Time Series Model; BSTSM）
-を拡張したモデルを考えます。観測方程式は次のように表されます。
+を拡張したモデルを考えます。基本構造時系列モデルは、観測時系列を潜在的な
+トレンド成分、季節成分、不規則成分から構成されるものとして表す
+状態空間モデルの標準的な定式化の一つです（Harvey 1989）。
+Baba et al. (2024) による
+温度時系列への適用を踏まえ、`tempssm` では、この解釈しやすい分解を保ちつつ、
+自己回帰的依存性と任意の外生効果を加えています。これにより、
+長期的な温度変化、季節周期、短期的な変動を分けて検討しやすくしています。
+
+観測方程式は次のように表されます。
 
 $$
 y_t = \alpha_t + v_t. \tag{1}
@@ -171,6 +179,10 @@ Baba, S. (2024).
 テストデータ。
 GitHub リポジトリ:
 https://github.com/logics-of-blue/sea-temperature-trend-jogashima
+
+Harvey, A. C. (1989).
+*Forecasting, Structural Time Series Models and the Kalman Filter*.
+Cambridge University Press.
 
 Helske, J. (2017).
 KFAS: R における指数型分布族状態空間モデル。

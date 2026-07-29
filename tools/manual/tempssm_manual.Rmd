@@ -82,12 +82,19 @@ described separately in the package vignette `model-specification`.
 
 # Model Overview
 
-`tempssm` uses a linear Gaussian state-space model to represent temperature
-variation as the sum of a long-term trend, seasonal variation, autoregressive
-dependence, and optional exogenous effects. The computational backend is
-`KFAS`, and the fitted `tempssm` object stores both filtering and smoothing
-estimates. Unless otherwise stated, this manual interprets summary statistics,
-diagnostics, and plots based on smoothed state estimates.
+The model implemented in `tempssm` can be viewed as an extension of the Basic
+Structural Time Series Model (BSTSM), a standard state-space formulation that
+represents an observed time series using latent trend, seasonal, and irregular
+components. Following the temperature time-series application of Baba et al.
+(2024), `tempssm` keeps this interpretable decomposition and adds
+autoregressive dependence and optional exogenous effects. This makes it useful
+for separating long-term temperature change, seasonal cycles, and short-term
+departures.
+
+The computational backend is `KFAS`, and the fitted `tempssm` object stores
+both filtering and smoothing estimates. Unless otherwise stated, this manual
+interprets summary statistics, diagnostics, and plots based on smoothed state
+estimates.
 
 The detailed mathematical formulation is separated from this tutorial-style
 manual to reduce duplication and improve maintainability. See the package
@@ -978,8 +985,6 @@ Helske, J. (2017).
 KFAS: Exponential Family State Space Models in R.
 *Journal of Statistical Software*, 78(10), 1–39.
 https://doi.org/10.18637/jss.v078.i10
-
-
 
 # Appendix: Utility Functions
 

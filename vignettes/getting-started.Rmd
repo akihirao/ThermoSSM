@@ -82,12 +82,18 @@ vignette describes the mathematical formulation in more detail.
 
 # Model Overview
 
-`tempssm` represents temperature variation with a linear Gaussian state-space
-model composed of interpretable latent components: a long-term trend, seasonal
-variation, autoregressive dependence, and optional exogenous effects. The model
-is estimated with `KFAS`, and `tempssm()` returns both filtering and smoothing
-estimates. Unless otherwise stated, the summaries, diagnostics, and plots in
-this vignette use smoothed state estimates.
+The model implemented in `tempssm` can be viewed as an extension of the Basic
+Structural Time Series Model (BSTSM), a standard state-space formulation that
+represents an observed time series using latent trend, seasonal, and irregular
+components. Following the temperature time-series application of Baba et al.
+(2024), `tempssm` keeps this interpretable decomposition and adds
+autoregressive dependence and optional exogenous effects. This makes it useful
+for separating long-term temperature change, seasonal cycles, and short-term
+departures.
+
+The model is estimated with `KFAS`, and `tempssm()` returns both filtering and
+smoothing estimates. Unless otherwise stated, the summaries, diagnostics, and
+plots in this vignette use smoothed state estimates.
 
 The full mathematical specification, including the observation equation, state
 decomposition, seasonal constraint, autoregressive component, exogenous
@@ -211,7 +217,7 @@ plot(res)
 
 The level component summarizes gradual changes in the underlying temperature
 level after removing the dominant seasonal pattern. In this example, the
-estimated long-term level indicates a gradual increase in summit temperature
+estimated long-term level indicates a gradual increase in temperature 
 over the study period. The drift component is positive on average but small
 relative to the seasonal variation. The seasonal component captures the
 recurring annual cycle, while the autoregressive component represents
@@ -243,14 +249,12 @@ lb_lag <- frequency(res$temp_data)
 forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ```
 
-Here, `get_tempssm_residuals()` explicitly extracts the standardized recursive
-residuals from the fitted model. `forecast::checkresiduals()` then displays
-the residual time series, residual autocorrelation plot (ACF plot), and
-residual frequency distribution, together with a Ljung-Box test. In the
-diagnostic figure, the residual time series appears in the upper panel, the
-ACF plot in the lower-left panel, and the residual frequency distribution in
-the lower-right panel. The lag is set to the seasonal frequency of the input
-data; for monthly data, this uses lag 12. These plots and the test result
+Here, `get_tempssm_residuals()` extracts standardized recursive residuals, and
+`forecast::checkresiduals()` displays their time-series plot, ACF plot,
+histogram, and Ljung-Box test. The three plots appear in the upper,
+lower-left, and lower-right panels, respectively. The lag is set to the
+seasonal frequency of the input data; for monthly data, this uses lag 12.
+These plots and the test result
 should be checked for any notable residual patterns. In this example, the
 Ljung-Box test indicated no significant residual autocorrelation up to lag 12
 (P > 0.05).
@@ -326,9 +330,22 @@ assumptions about trend, seasonality, and autoregressive dependence.
 # Read Your Own CSV Data
 
 For monthly temperature data stored in a CSV file, prepare columns named
-`Year`, `Month`, and `Temp`. The package includes an example CSV file in
-`inst/extdata`. The helper function `read_monthly_temp_ts()` reads this type of
-CSV file and converts it into an R `ts` object for use with `tempssm()`.
+`Year`, `Month`, and `Temp`. Use `NA` for missing temperature values, and keep
+the corresponding `Year` and `Month` entries.
+
+```text
+Year,Month,Temp
+2010,8,13.6
+2010,9,6.8
+2010,10,NA
+2010,11,-1.4
+...
+```
+
+The CSV file should be comma-separated and UTF-8 encoded. The package includes
+an example CSV file in `inst/extdata`. The helper function
+`read_monthly_temp_ts()` reads this type of CSV file and converts it into an R
+`ts` object for use with `tempssm()`.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 path <- system.file(
@@ -340,9 +357,6 @@ path <- system.file(
 csv_temp <- tempssm::read_monthly_temp_ts(path)
 head(csv_temp)
 ```
-
-Use `NA` for missing temperature values, and keep the corresponding `Year` and
-`Month` entries in the CSV file.
 
 # Further Reading
 
