@@ -11,11 +11,11 @@
 # 主な特徴
 
 - 環境中で観測される温度時系列に線形ガウス状態空間モデルを適用
-- 温度の動態を潜在状態 (latent state) の次の各成分に分解して表現：
+- 温度の動態を解釈しやすい潜在成分として表現：
   長期トレンド、季節変動、自己回帰構造、および任意の外生効果
-- 任意の整数季節周期に対応（ただし実例と検証では、主として月別の温度データを対象）
+- 任意の季節周期に対応
+  （ただし実例と検証では、主として月別の温度データを対象）
 - 自己回帰成分の次数をユーザーが指定可能（デフォルト: AR(1)）
-- 要約、モデル診断、アクセサ、プロットのための S3 メソッドを提供
 - モデル評価のための時系列交差検証ツールを提供
 
 # 入力データ形式
@@ -27,6 +27,10 @@
 <https://search.r-project.org/R/refmans/stats/html/ts.html>）。
 本パッケージには、表形式データや観測データをモデル適用前に `ts`
 オブジェクトへ変換するためのユーティリティ関数も含まれています。
+
+`tempssm()` が用いる季節周期は、入力された `ts` オブジェクトの
+`frequency` 属性から決まります。たとえば、月別データでは
+`frequency = 12` を用います。
 
 # 既存研究と本パッケージの範囲
 
@@ -59,12 +63,21 @@ Baba et al. (2024)
 
 # モデル概要
 
-`tempssm` は、線形ガウス状態空間モデルを用いて、温度時系列の変動を
-長期トレンド、季節変動、自己回帰的依存性、および任意の外生効果の和として
-表現します。計算バックエンドには `KFAS` を用い、推定済みの `tempssm`
-オブジェクトにはフィルタリング推定値と平滑化推定値の両方が格納されます。
-特に断らない限り、本マニュアルでは、要約統計、診断、プロットの解釈は
-平滑化推定値に基づいています。
+`tempssm` で用いるモデルは、基本構造時系列モデル （Basic Structural Time
+Series Model; BSTSM）を拡張したものとして
+位置づけられます。基本構造時系列モデルは、観測時系列を潜在的な
+トレンド成分、季節成分、不規則成分から構成されるものとして表す
+状態空間モデルの標準的な定式化の一つです。Baba et al. (2024) による
+温度時系列への適用を踏まえ、`tempssm`
+では、この解釈しやすい分解を保ちつつ、
+自己回帰的依存性と任意の外生効果を加えています。これにより、
+長期的な温度変化、季節周期、短期的な変動を分けて検討しやすくしています。
+
+計算バックエンドには `KFAS` を用い、推定済みの `tempssm`
+オブジェクトには
+フィルタリング推定値と平滑化推定値の両方が格納されます。特に断らない限り、
+本マニュアルでは、要約統計、診断、プロットの解釈は平滑化推定値に
+基づいています。
 
 数式を含む詳細なモデル定式化は、重複を避け、保守性を高めるために
 本チュートリアル形式のマニュアルから分離しました。観測方程式、状態方程式、
@@ -72,9 +85,23 @@ Baba et al. (2024)
 英語版 vignette `model-specification` および日本語版の
 `tools/manual/tempssm_model_jp.Rmd` を参照してください。
 
-# 使用方法
+# チュートリアルの流れ
 
-## 環境設定
+このチュートリアルでは、`tempssm` を月別の環境温度時系列へ適用する
+典型的なワークフローを示します。演習 I
+では、シミュレーションで生成された 海面水温（SST）データセット `sst_sim`
+を用いて、外生変数を含まない
+ベースラインの状態空間モデルを当てはめ、潜在成分の可視化、残差診断、
+短期予測を行います。演習 II では、同じ流れを外生変数ありモデルへ拡張し、
+シミュレーションで生成された海洋環境変数を追加することで、モデル解釈と
+条件付き予測性能がどのように変わるかを、診断と時系列交差検証に基づいて
+確認します。
+
+ここでの目的は、シミュレーションデータから新しい科学的結論を導くことでは
+ありません。モデル当てはめ、診断、予測、モデル比較の流れを、
+再現可能な例として示すことを目的としています。
+
+## セットアップ
 
 以下の例を実行するため、以下のR
 パッケージを読み込みます。未インストールの
@@ -94,44 +121,47 @@ library(ggplot2)
 library(patchwork)
 ```
 
-## 演習 I: 単変量の温度時系列への状態空間モデルの適用
+## 演習 I: 単変量温度時系列のベースラインモデル
 
-### 目的
+演習 I では、外生変数を含まない単変量モデルについて、モデル適用、
+潜在成分の可視化、残差診断、および短期予測の基本的なワークフローを
+示します。
 
-演習 I では、単変量の温度時系列に線形ガウス状態空間モデルを適用する
-方法を実践します。外生変数を含めない基本的なモデリングの導入に位置づけられます。
-あわせて自己回帰的な動態が果たす役割を検討します。
+### シミュレーション SST データセットの読み込み
 
-### 海面水温（SST）データセットの読み込み
+パッケージには、シミュレーションで生成された月別海面水温（SST）
+データセット `sst_sim` が含まれています。
 
-本パッケージには、以下の海面水温（SST）のサンプルデータセットが含まれています。
-
-- **データセット**: 山口県沖の月別海面水温（SST）\
+- **データセット**: 城ヶ島地先（神奈川県三浦市）のシミュレーション月別
+  SST
 - **単位**: °C\
-- **期間**: 2002 年 2 月から 2023 年 12 月
+- **期間**: 1998 年 1 月から 2023 年 2 月
 
-このデータセットは、気象庁ウェブサイト（<https://www.jma.go.jp/jma/indexe.html>）
-から取得した日別SSTデータセットを月別に集約したものです。
+このデータセットは、Baba et al. (2024) で報告された城ヶ島地先の海水温に
+対する状態空間モデル解析に基づいて生成されたものです。ここでは、
+`tempssm` の基本的なワークフローを示すための再現可能な応答時系列として
+使用します。演習 II では、この同じシミュレーション SST に、
+シミュレーションで生成された海洋環境変数を組み合わせます。
 
 ``` r
-data(yamaguchi_sst) # load a ts object of SST off Niigata
-head(yamaguchi_sst)
+data(sst_sim) # load a ts object of SST off Jogashima
+head(sst_sim)
 ```
 
-    ##           Jan      Feb      Mar      Apr      May      Jun
-    ## 1982 14.85516 13.36500 13.55645 14.29933 17.72419 21.53000
+    ##        Jan   Feb   Mar   Apr   May   Jun
+    ## 1998 16.19 13.82 16.44 16.49 19.70 21.83
 
 ``` r
-summary(yamaguchi_sst)
+summary(sst_sim)
 ```
 
     ##       Temp      
-    ##  Min.   :11.45  
-    ##  1st Qu.:15.13  
-    ##  Median :18.84  
-    ##  Mean   :19.54  
-    ##  3rd Qu.:23.63  
-    ##  Max.   :29.49
+    ##  Min.   :11.17  
+    ##  1st Qu.:16.22  
+    ##  Median :18.39  
+    ##  Mean   :18.23  
+    ##  3rd Qu.:20.11  
+    ##  Max.   :26.10
 
 ### 月別 SST 時系列のプロット
 
@@ -140,28 +170,28 @@ summary(yamaguchi_sst)
 全体的な構造を確認しておきます。
 
 ``` r
-plt_yamaguchi_sst <- forecast::autoplot(yamaguchi_sst) +
+plt_sst_sim <- forecast::autoplot(sst_sim) +
   labs(y = expression(Temp.~(degree*C)), 
        x = "Time (year)") +
-  ggtitle("Monthly SST off Yamaguchi, Japan") +
+  ggtitle("Monthly SST off Jogashima, Japan") +
   theme_classic()
 
-plot(plt_yamaguchi_sst)
+plot(plt_sst_sim)
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-SST の全体平均は約 19.5 °C であり、
-明瞭な季節変動パターンが認められます。
-この時系列には欠損値は含まれていません。観測期間を通じて SST
-は上昇している
-ように見えますが、年変動も認められるため、生の時系列だけから長期トレンドを
-分離して把握することは容易ではありません。
+SST の全体平均は約 18.2 °C であり、
+明瞭な季節変動パターンが認められます。この時系列には 0
+個の欠測値が含まれています。生の時系列からは、 記録の開始期から 2008
+年前後にかけて SST が低下し、その後に上昇する
+ようにも見えます。ただし、年変動も認められるため、生の時系列だけから
+長期パターンを評価することは容易ではありません。
 
 ### 線形ガウス状態空間モデルの適用
 
 本パッケージのコア関数`tempssm()`に温度時系列データの `ts` オブジェクト
-（ここでは `yamaguchi_sst`）を与えて、実行すると、モデル構築から
+（ここでは `sst_sim`）を与えて、実行すると、モデル構築から
 パラメーター推定までが一挙に処理されます。
 返り値として、フィルタリング推定値、平滑化推定値などの結果に加えて
 、構築されたモデルや入力データなどがS3クラスの`tempssm`オブジェクト
@@ -170,40 +200,41 @@ SST の全体平均は約 19.5 °C であり、
 
 ``` r
 # model with first-order autoregressive component
-res_ar1 <- tempssm(yamaguchi_sst) # (ar_order=1: default)
+res_ar1 <- tempssm(sst_sim) # (ar_order=1: default)
 summary(res_ar1)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst)
+    ## tempssm(temp_data = sst_sim)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -437.2 
+    ##   Log-likelihood : -198.19 
     ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 4.542027e-14 
-    ##   State (Q trend): 9.936473e-08 
-    ##   State (Q season): 8.408352e-56 
-    ##   State (Q ar): 0.3145626 
+    ##   Observation (H): 0.07496416 
+    ##   State (Q trend): 4.937122e-06 
+    ##   State (Q season): 0.0001763538 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6202321
+    ##   Coefficient of AR1: 0.7579372
 
 結果の要約から、モデルが収束したこと（Converged: TRUE)を確かめます。
 その他に統計量として、パラメーター数 (k)、対数尤度 (Log-likelihood)、
 尤度タイプ、散漫初期化された状態数が示されています。
-パラメーター推定値の内訳は次のとおりです：
-観測誤差の分散（H)、長期トレンド成分の過程誤差の分散（Q
-trend)、季節周期成分の 過程誤差の分散（Q
-season)、自己回帰成分の過程誤差の分散（Q trend)、１次の
-自己回帰係数（AR1)
+パラメーター推定値は、推定された状態空間モデルにおける誤差分散と
+自己回帰係数に対応します。`H` は観測誤差分散であり、潜在状態では
+説明されない観測温度系列の変動を表します。`Q` 系の項は各潜在成分の
+過程誤差分散です。`Q trend` は長期トレンド成分、`Q season` は季節成分、
+自己回帰成分の過程誤差分散は短期的な自己回帰成分の変動を表します。 `AR1`
+は、その短期成分における 1 次自己回帰依存性を表します。
 
 対数尤度と対応する推定パラメーター数は、`logLik()` を用いて推定済みの
 `tempssm` オブジェクトから直接取得できます。
@@ -213,7 +244,7 @@ ll <- logLik(res_ar1)
 ll
 ```
 
-    ## 'log Lik.' -437.1989 (df=5)
+    ## 'log Lik.' -198.1929 (df=5)
 
 ``` r
 attr(ll, "df") # number of parameters
@@ -228,16 +259,21 @@ attr(ll, "df") # number of parameters
 オブジェクトに保存され、`logLik()` や `summary()` などの下流メソッドでも
 一貫して用いられます。
 
-本パッケージでは、`tempssm` オブジェクトに対して AIC を計算しない方針を
-採用しています。一方で、対数尤度やパラメーター数は `logLik()` を通じて
-取得できます。これらをどのようにモデル評価に用いるかは、ユーザー自身の
-モデル比較の前提に基づいて判断してください。
+本パッケージでは、`tempssm` オブジェクトに対する AIC
+は自動計算しません。 これは、状態空間モデルにおける AIC
+比較では、尤度タイプ、散漫初期化、
+潜在状態構造の違いなどに応じて解釈に注意が必要となる場合があるためです。
+AIC をデフォルトのモデル選択基準として提示することを避けるため、
+`tempssm` では AIC に基づく自動比較は提供していません。その代わり、
+本マニュアルでは、残差診断と時系列クロスバリデーションを組み合わせた
+モデル評価の流れを重視します。なお、独自のモデル評価ワークフローで
+必要となる場合に備えて、対数尤度と推定パラメーター数は `logLik()` から
+取得できます。
 
-### 長期トレンド、ドリフト、季節成分、自己回帰成分のプロット
+### 潜在成分のプロット
 
-状態空間モデルから対応する潜在成分を抽出し、推定された温度レベルの長期的な変化
-と、その変化率（ドリフト）を可視化します。あわせて季節変動と自己回帰的依存性も
-プロットすることで、基礎となるトレンド構造をより明確に確認できます。
+成分プロットでは、推定された長期水準、ドリフト、季節変動、
+自己回帰的依存性を可視化します。
 
 ``` r
 # plot all components at once
@@ -246,28 +282,30 @@ plot(res_ar1)
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-パネル左上の長期トレンドは、解析期間を通じてSST上昇していくパターンを
-示しています。このグラフの例において、解析期間を通じたSST の平均的な
-年上昇率は約 0.034 °C です。
+    ## [1] 0.08777084
 
-しかしながら、SSTの変化率そのものも時系列に沿って変化しているようです。
-パネル右上の変化率（ドリフト）に注目すると、2000 年代に 変化率が 0
-(または0の近傍）に低下した後、2010年以降に上昇したことが
-読み取れます。灰色の網掛け部分は、推定された潜在状態 の 95%
-信頼区間を表し、各推定成分に伴う不確実性を示しています。
+パネル左上の長期トレンドは、解析期間の前半に SST が低下し、2008 年前後
+以降に上昇するパターンを示しています。この例では、解析期間全体を通した
+SST の平均的な年変化率は約 0.088 °C です。
 
-標準的なプロット用インターフェースは `plot(res)` です。ggplot2 形式の
-インターフェースである `autoplot(res)` も利用でき、デフォルトでは同じ
-成分プロットを生成します。個別の成分について ggplot
-オブジェクトを取得するには、 以下のように `autoplot()` の component
-引数を指定します。
+ただし、この全期間平均は、時間とともに変化するドリフト成分とあわせて
+解釈する必要があります。パネル右上では、ドリフトが 2008 年前後までは
+負で、その後に正へ転じており、長期的な SST パターンが低下から上昇へ
+移行したことに対応しています。灰色の網掛け部分は、推定された潜在状態の
+95% 信頼区間を表します。
+
+スクリプト内で明示的な関数名を使いたい場合は、
+`plot_tempssm_components()` から同じ成分プロットを `ggplot`
+オブジェクトとして
+取得できます。個別の成分についてプロットを取得するには、`component`
+引数を 指定します。
 
 ``` r
-# plot each of components at once
-plt_level <- autoplot(res_ar1, component = c("level"))
-plt_drift <- autoplot(res_ar1, component = c("drift"))
-plt_season <- autoplot(res_ar1, component = c("season"))
-plt_ar <- autoplot(res_ar1, component = c("ar"))
+# extract individual component plots
+plt_level <- plot_tempssm_components(res_ar1, component = c("level"))
+plt_drift <- plot_tempssm_components(res_ar1, component = c("drift"))
+plt_season <- plot_tempssm_components(res_ar1, component = c("season"))
+plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 ```
 
 ### モデル診断
@@ -278,21 +316,39 @@ plt_ar <- autoplot(res_ar1, component = c("ar"))
 時間依存性や正規誤差仮定からの大きな逸脱がないかを確認できます。
 
 ``` r
-plot_tempssm_residual_diagnostics(res_ar1)
+r <- get_tempssm_residuals(res_ar1)
+lb_lag <- frequency(res_ar1$temp_data)
+forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-モデル診断プロットにおいて、上パネルは残差の時系列プロット、下左パネルは
-残差の自己相関プロット（ACFプロット）、下右パネルは頻度分布プロットを表します。
-残差の各パターンについて留意すべき点がないかをチェックしておきます。
+    ## 
+    ##  Ljung-Box test
+    ## 
+    ## data:  Residuals
+    ## Q* = 9.6827, df = 12, p-value = 0.6438
+    ## 
+    ## Model df: 0.   Total lags used: 12
 
-この例では、残差 ACF プロットにおいて lag 5 と lag 27 付近に単発の突出が
-認められます。しかし、連続する複数のラグにわたる有意な自己相関や、季節周期に
-対応する反復的なパターンは明瞭ではありません。多数のラグを確認する場合には、
-このような単発の突出が偶然に生じることもあるため、ACF
-プロットだけでモデル 変更を判断するのではなく、Ljung-Box
-検定や残差時系列プロットとあわせて 解釈します。
+ここでは、`get_tempssm_residuals()` によって標準化再帰残差を取り出し、
+`forecast::checkresiduals()` によって残差時系列プロット、ACF プロット、
+ヒストグラム、Ljung-Box 検定を確認します。3つの図は、それぞれ上段、
+下段左、下段右に表示されます。検定に用いるラグは入力データの季節周期に
+合わせており、月別データでは lag 12 を用います。これらの図と検定結果を
+用いて、残差に留意すべきパターンが残っていないかを確認します。
+
+この例では、残差 ACF プロットにおいて、連続する複数のラグにわたる
+有意な自己相関や、季節周期に対応する反復的なパターンは明瞭ではありません。
+多数のラグを確認する場合には、単発の突出が偶然に生じることもあるため、
+ACF プロットだけでモデル変更を判断するのではなく、Ljung-Box 検定や
+残差時系列プロットとあわせて解釈します。
+
+同様の診断プロットを1つの関数で確認したい場合には、
+`plot_tempssm_residual_diagnostics()` も利用できます。
+
+Ljung-Box 検定と残差尖度をコンパクトな表として確認したい場合は、
+`diagnose_residuals()` を用います。
 
 ``` r
 diag <- diagnose_residuals(res_ar1)
@@ -302,7 +358,7 @@ print(diag)
     ## # A tibble: 1 × 4
     ##   lb_stat lb_lag lb_pvalue kurtosis
     ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    18.1     12     0.111     3.70
+    ## 1    9.68     12     0.644     3.26
 
 `diagnose_residuals()` の返り値のうち、`lb_stat`、`lb_lag`、`lb_pvalue`
 は それぞれ Ljung-Box 検定統計量、検定に用いたラグ、対応する P
@@ -326,9 +382,9 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1 lag 12    18.1     12    0.111      3.70
-    ## 2 lag 24    30.8     24    0.158      3.70
-    ## 3 lag 36    48.9     36    0.0746     3.70
+    ## 1 lag 12    9.68     12     0.644     3.26
+    ## 2 lag 24   19.5      24     0.725     3.26
+    ## 3 lag 36   27.9      36     0.831     3.26
 
 これらの検定結果は、残差ACFプロットとあわせて解釈します。多数のラグを確認する
 場合には、少数のラグが偶然に信頼限界を超えることもあります。一方で、周期的または
@@ -348,32 +404,32 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 
 ``` r
 # Optional sensitivity check with a second-order autoregressive component
-res_ar2 <- tempssm(yamaguchi_sst, ar_order = 2)
+res_ar2 <- tempssm(sst_sim, ar_order = 2)
 summary(res_ar2)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst, ar_order = 2)
+    ## tempssm(temp_data = sst_sim, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -434.26 
+    ##   Log-likelihood : -198.19 
     ##   k              : 6 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.120908 
-    ##   State (Q trend): 2.206262e-07 
-    ##   State (Q season): 5.525557e-16 
-    ##   State (Q ar): 0.1044204 
+    ##   Observation (H): 0.05517452 
+    ##   State (Q trend): 4.945287e-06 
+    ##   State (Q season): 0.0001859987 
+    ##   State (Q ar): 0.149755 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 2 
-    ##   Coefficient of AR1: 1.185818 
-    ##   Coefficient of AR2: -0.4790522
+    ##   Coefficient of AR1: 0.6553237 
+    ##   Coefficient of AR2: 0.07430046
 
 ``` r
 plot_tempssm_residual_diagnostics(res_ar2)
@@ -393,26 +449,20 @@ diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1 lag 12    9.93     12     0.623     3.66
-    ## 2 lag 24   24.0      24     0.461     3.66
-    ## 3 lag 36   43.9      36     0.170     3.66
+    ## 1 lag 12    9.61     12     0.650     3.26
+    ## 2 lag 24   19.4      24     0.729     3.26
+    ## 3 lag 36   27.9      36     0.831     3.26
 
-なお、AR(2)
-モデルを感度確認として当てはめた場合、短いラグでの残差自己相関は
-限定的でしたが、残差 ACF では lag 24, 26, 27
-付近に負の突出が認められました。 この結果は、AR
-次数を高くすることが、残差構造のすべての面を自動的に改善する
-わけではないことを示唆します。そのため、この例では AR(2) モデルを AR(1)
-ベースラインに対する明確な改善としてではなく、追加の診断的注意を要する
-候補モデルとしてみなせます。
-
-これらの残差診断からは高次のAR項が必要である強い根拠は認められないため、
-AR(1) モデルをベースラインの仕様として用います。
+この例では、AR(2) モデルの診断結果は AR(1) モデルとよく似ているため、
+AR(1) をベースラインの仕様として用います。
 
 ### 推定されたパラメータと潜在状態の成分
 
-長期トレンド成分やその変化率（ドリフト）は、次のように`ts`
-オブジェクトとして 取り出すことができます。
+推定済みの `tempssm` オブジェクトには、`KFAS`
+から返された平滑化状態推定値が 格納されています。`res_ar1$kfs$alphahat`
+は、レベル、ドリフト、季節状態、
+自己回帰状態などの潜在状態推定値を含む行列です。この行列を確認すると、
+モデル内部で状態がどのように表現されているかを把握できます。
 
 ``` r
 # Smoothing estimates
@@ -421,32 +471,37 @@ head(alpha_hat)
 ```
 
     ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 1982 18.96708 0.002442910  -4.388514  -1.989138  0.8440593  3.3269013
-    ## Feb 1982 18.96952 0.002442962  -5.783514  -4.388514 -1.9891376  0.8440593
-    ## Mar 1982 18.97197 0.002442995  -5.905440  -5.783514 -4.3885143 -1.9891376
-    ## Apr 1982 18.97441 0.002443203  -4.593786  -5.905440 -5.7835140 -4.3885143
-    ## May 1982 18.97685 0.002443328  -1.903379  -4.593786 -5.9054404 -5.7835140
-    ## Jun 1982 18.97930 0.002443456   1.457171  -1.903379 -4.5937863 -5.9054404
+    ## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553992
+    ## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451
+    ## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344
+    ## Apr 1998 18.60118 -0.01911003 -2.0508949 -2.8244535 -5.0256252 -2.0428374
+    ## May 1998 18.58207 -0.01914415  0.2882283 -2.0508949 -2.8244535 -5.0256252
+    ## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
-    ## Jan 1982  6.1507774  7.6637613  5.1211012  1.4571706  -1.903379   -4.593786
-    ## Feb 1982  3.3269013  6.1507774  7.6637613  5.1211012   1.457171   -1.903379
-    ## Mar 1982  0.8440593  3.3269013  6.1507774  7.6637613   5.121101    1.457171
-    ## Apr 1982 -1.9891376  0.8440593  3.3269013  6.1507774   7.663761    5.121101
-    ## May 1982 -4.3885143 -1.9891376  0.8440593  3.3269013   6.150777    7.663761
-    ## Jun 1982 -5.7835140 -4.3885143 -1.9891376  0.8440593   3.326901    6.150777
-    ##          sea_dummy11      arima1
-    ## Jan 1982   -5.905440  0.27659369
-    ## Feb 1982   -4.593786  0.17898925
-    ## Mar 1982   -1.903379  0.48992423
-    ## Apr 1982    1.457171 -0.08129112
-    ## May 1982    5.121101  0.65071819
-    ## Jun 1982    7.663761  1.09353211
+    ## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949
+    ## Feb 1998  0.9553992  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283
+    ## Mar 1998  0.5642451  0.9553992  1.6282639  4.9410126  2.4937014   1.9925949
+    ## Apr 1998 -0.9196344  0.5642451  0.9553992  1.6282639  4.9410126   2.4937014
+    ## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553992  1.6282639   4.9410126
+    ## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553992   1.6282639
+    ##          sea_dummy11     arima1
+    ## Jan 1998  -2.8244535 -0.2178662
+    ## Feb 1998  -2.0508949  0.1519895
+    ## Mar 1998   0.2882283  0.4187224
+    ## Apr 1998   1.9925949  0.2408084
+    ## May 1998   2.4937014  0.7185730
+    ## Jun 1998   4.9410126  1.0167731
+
+通常の利用では、個別の成分を元の時系列インデックスを持つ `ts`
+オブジェクトとして
+取り出すためのヘルパー関数を使うと便利です。レベル成分は推定された長期的な
+温度水準を表し、ドリフト成分はその年あたりの変化率を表します。
 
 ``` r
-#　Smoothing estimate of level component
+# Smoothing estimate of level component
 level_ts <- get_level_ts(res_ar1)
 
-#　Smoothing estimate of drift component
+# Smoothing estimate of drift component
 drift_ts <- get_drift_ts(res_ar1)
 
 # Average drift rate per year across the full period
@@ -454,9 +509,12 @@ mean_drift_year <- mean(drift_ts)
 print(mean_drift_year)
 ```
 
-    ## [1] 0.03365529
+    ## [1] 0.08777084
 
-SST の平均的な年上昇率は 0.0337 °C と 推定されました。
+SST の平均的な年変化率は、全期間では 0.0878 °C
+と推定されました。ただし、
+推定されたドリフトは時期によって符号が変化するため、この値は一定の上昇率ではなく、
+全期間を要約したモデルベースの指標として解釈します。
 
 ### 短期予測
 
@@ -470,8 +528,8 @@ pred_1 <- predict(res_ar1)
 pred_1
 ```
 
-    ##           May
-    ## 2026 18.71037
+    ##           Mar
+    ## 2023 18.33035
 
 複数時点先の予測値を取得したい場合には、`n.ahead` 引数を指定します。
 
@@ -481,11 +539,11 @@ pred_12
 ```
 
     ##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug
-    ## 2026                                     18.71037 22.01798 25.65128 28.17714
-    ## 2027 16.12028 14.72978 14.61284 15.92978                                    
+    ## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694
+    ## 2024 19.09319 16.16926                                                      
     ##           Sep      Oct      Nov      Dec
-    ## 2026 26.65593 23.82915 21.34670 18.51594
-    ## 2027
+    ## 2023 22.69098 22.00902 21.74806 20.19190
+    ## 2024
 
 予測に伴う不確実性は、`interval` 引数を指定することで取得できます。
 `interval = "confidence"`
@@ -510,239 +568,305 @@ pred_12_pi
 ```
 
     ##               fit      lwr      upr
-    ## May 2026 18.71037 17.58819 19.83255
-    ## Jun 2026 22.01798 20.68625 23.34972
-    ## Jul 2026 25.65128 24.24035 27.06221
-    ## Aug 2026 28.17714 26.73244 29.62184
-    ## Sep 2026 26.65593 25.19542 28.11643
-    ## Oct 2026 23.82915 22.36046 25.29783
-    ## Nov 2026 21.34670 19.87329 22.82011
-    ## Dec 2026 18.51594 17.03948 19.99240
-    ## Jan 2027 16.12028 14.64169 17.59886
-    ## Feb 2027 14.72978 13.24938 16.21017
-    ## Mar 2027 14.61284 13.13087 16.09480
-    ## Apr 2027 15.92978 14.44637 17.41319
+    ## Mar 2023 18.33035 17.35029 19.31042
+    ## Apr 2023 18.96985 17.85360 20.08610
+    ## May 2023 21.33710 20.13453 22.53967
+    ## Jun 2023 23.08522 21.82425 24.34619
+    ## Jul 2023 23.51856 22.21551 24.82161
+    ## Aug 2023 26.03694 24.70183 27.37204
+    ## Sep 2023 22.69098 21.33016 24.05179
+    ## Oct 2023 22.00902 20.62664 23.39141
+    ## Nov 2023 21.74806 20.34682 23.14929
+    ## Dec 2023 20.19190 18.77359 21.61020
+    ## Jan 2024 19.09319 17.65904 20.52734
+    ## Feb 2024 16.16926 14.72135 17.61717
 
 これらの予測値は、確定的な将来予測ではなく、モデルに基づく外挿として
 解釈してください。一般に、予測期間が長くなるほど不確実性は大きくなり、
 長期の予測はトレンド、季節性、自己回帰構造に関するモデル仮定の影響を
 受けやすくなります。
 
-## 演習 II: 外生変数を伴う温度時系列への状態空間モデルの適用
+## 演習 II: 外生変数を含むモデル
 
-### 目的
+ここでは、外生要因が温度変動に与える影響を検討するために、
+状態空間モデリングの枠組みを拡張します。具体的には、黒潮流路に関連する
+シミュレーション海洋環境変数を、演習 I で用いたシミュレーション SST の
+外生変数として利用します。
 
-状態空間モデリングのフレームを拡張して、外生的要因が温度変動に与える影響を
-検討します。具体的には、外生変数としての太平洋十年規模振動 （Pacific
-Decadal Oscillation; PDO）が、山口県沖で観測された SST に与える影響を
-検討します。
+### シミュレーション海洋環境変数の読み込み
 
-### PDO 指数データセットの読み込み: 外生変数としての PDO 指数
+本パッケージには、2つのシミュレーション外生変数データセットが含まれています。
 
-- **データ**: 月別の太平洋十年規模振動（PDO）指数（JMA）\
-- **期間**: 1901 年 1 月から 2025 年 12 月
+- **`kuroshio_a_sim`**: 黒潮 A 型流路の月別バイナリ指標
+- **`distance_sim`**: 黒潮流路の月別離岸距離指標
+- **期間**: 1998 年 1 月から 2023 年 2 月
 
-太平洋十年規模振動（PDO）指数は、20°N 以北の北太平洋におけるSST変動の第
-1 経験直交関数（EOF）に、月平均 SST
-偏差を射影したものとして定義されます。 EOF は、1901 年から 2000
-年の月別平年値を基準として定義された、1901–2000 年の SST
-偏差を用いて計算されます。地球温暖化シグナルを取り除くため、EOF
-解析に先立ち、各格子点から全球平均 SST 偏差が差し引かれます。
-本パッケージでは、気象庁（JMA）が提供する PDO 指数を使用します。データは
-<https://www.data.jma.go.jp/kaiyou/data/shindan/b_1/pdo/pdo.txt>
-で入手できます。
+いずれも `frequency = 12` の単変量 `ts` オブジェクトです。これらは Baba
+et al. (2024) で用いられた黒潮関連変数に基づいて生成された
+月別のシミュレーションデータです。元研究で用いられた一部の変数は
+より細かい時間分解能を持っていましたが、本パッケージに含まれる
+シミュレーションデータは、`tempssm`
+の例で扱いやすいように月別時系列として 表現されています。
 
 ``` r
-data(pdo) # load a ts object of PDO index
-head(pdo)
+data(kuroshio_a_sim)
+data(distance_sim)
+
+head(kuroshio_a_sim)
 ```
 
-    ##          Jan     Feb     Mar     Apr     May     Jun
-    ## 1901  1.0040  0.7403  0.9011 -0.0109 -0.2325 -0.6810
-
-### 温度時系列と PDO 時系列の共通期間への切り出し
-
-外生変数を伴う状態空間モデリングでは、すべての入力時系列が共通かつ整合した
-時間インデックスをもつ必要があります。このステップでは、温度時系列と PDO
-時系列について、先頭および末尾の重ならない部分を切り落とし、両データセットが
-同一の期間の範囲となるようにします。
-
-`tempssm::trim_ts_overlap()` 関数を用いて 2 つの `ts`
-オブジェクトを共通の時間軸にそろえ、共通期間のみを含む多変量時系列を返します。
+    ##      Jan Feb Mar Apr May Jun
+    ## 1998   0   0   0   0   0   0
 
 ``` r
-# Generate an object on a shared timeline
-yamaguchi_sst_trim <- trim_ts_overlap(yamaguchi_sst,
-                                      pdo,
-                                      temp_name = "Temp",
-                                      exo_name="PDO")$temperature
-
-
-pdo_trim <- trim_ts_overlap(yamaguchi_sst,
-                            pdo,
-                            temp_name = "Temp",
-                            exo_name="PDO")$exogenous
-
-start(yamaguchi_sst_trim)
+head(distance_sim)
 ```
 
-    ## [1] 1982    1
+    ##      Jan Feb Mar Apr May Jun
+    ## 1998 116 148  49 131  45  40
 
 ``` r
-end(yamaguchi_sst_trim)
+summary(kuroshio_a_sim)
 ```
 
-    ## [1] 2025   12
+    ##    kuroshio_a    
+    ##  Min.   :0.0000  
+    ##  1st Qu.:0.0000  
+    ##  Median :0.0000  
+    ##  Mean   :0.2483  
+    ##  3rd Qu.:0.0000  
+    ##  Max.   :1.0000
 
 ``` r
-start(pdo_trim)
+summary(distance_sim)
 ```
 
-    ## [1] 1982    1
+    ##     distance     
+    ##  Min.   : 10.00  
+    ##  1st Qu.: 26.00  
+    ##  Median : 43.00  
+    ##  Mean   : 55.65  
+    ##  3rd Qu.: 84.00  
+    ##  Max.   :150.00
+
+### 時系列の整合性の確認
+
+外生変数を含む状態空間モデルでは、応答変数と外生変数が共通し、
+整合した時間インデックスを持つ必要があります。この例では、`sst_sim`、
+`kuroshio_a_sim`、`distance_sim` は、同じ月別期間と同じ frequency を
+持っています。
 
 ``` r
-end(pdo_trim)
+series_info <- tibble::tibble(
+  series = c("sst_sim", "kuroshio_a_sim", "distance_sim"),
+  start = c(
+    paste(start(sst_sim), collapse = "-"),
+    paste(start(kuroshio_a_sim), collapse = "-"),
+    paste(start(distance_sim), collapse = "-")
+  ),
+  end = c(
+    paste(end(sst_sim), collapse = "-"),
+    paste(end(kuroshio_a_sim), collapse = "-"),
+    paste(end(distance_sim), collapse = "-")
+  ),
+  frequency = c(
+    frequency(sst_sim),
+    frequency(kuroshio_a_sim),
+    frequency(distance_sim)
+  ),
+  missing = c(
+    sum(is.na(sst_sim)),
+    sum(is.na(kuroshio_a_sim)),
+    sum(is.na(distance_sim))
+  )
+)
+
+series_info
 ```
 
-    ## [1] 2025   12
+    ## # A tibble: 3 × 5
+    ##   series         start  end    frequency missing
+    ##   <chr>          <chr>  <chr>      <dbl>   <int>
+    ## 1 sst_sim        1998-1 2023-2        12       0
+    ## 2 kuroshio_a_sim 1998-1 2023-2        12       0
+    ## 3 distance_sim   1998-1 2023-2        12       0
 
-### 海面水温と PDO 指数の時系列プロット
+ユーザー自身の時系列データで開始時点や終了時点が異なる場合には、
+`trim_ts_overlap()` を用いて、応答系列と外生変数系列を共通の重複期間に
+切り出してからモデルを当てはめることができます。
 
-海面水温と PDO 指数の時系列構造を可視化して把握します。
+### 応答変数と外生変数のプロット
+
+シミュレーション SST と2つの黒潮関連変数をあわせて可視化し、
+データセット全体の構造を確認します。
 
 ``` r
-plt_yamaguchi_sst_trim <- forecast::autoplot(yamaguchi_sst_trim) +
-  labs(y = expression(Temp.~(degree*C)), 
-       x = "Time (year)") +
-  ggtitle("Monthly SST off Yamaguchi, Japan") +
+plt_sst_exo <- forecast::autoplot(sst_sim) +
+  labs(y = expression(Temp.~(degree*C)), x = "Time (year)") +
+  ggtitle("Simulated monthly SST") +
   theme_classic()
 
-
-plt_pdo <- forecast::autoplot(pdo_trim) +
-  labs(x = "Time (year)", y = "PDO index") +
-  ggtitle("PDO index") +
+plt_kuroshio_a <- forecast::autoplot(kuroshio_a_sim) +
+  labs(x = "Time (year)", y = "A-type indicator") +
+  ggtitle("Simulated Kuroshio A-type path") +
+  scale_y_continuous(breaks = c(0, 1)) +
   theme_classic()
 
-plt_yamaguchi_sst_trim + plt_pdo + patchwork::plot_layout(ncol=1)
+plt_distance <- forecast::autoplot(distance_sim) +
+  labs(x = "Time (year)", y = "Offshore distance") +
+  ggtitle("Simulated Kuroshio offshore distance") +
+  theme_classic()
+
+plt_sst_exo + plt_kuroshio_a + plt_distance +
+  patchwork::plot_layout(ncol = 1)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
-演習用の PDO 指数データには欠損値はありません。ただし、ユーザー自身の
-外生変数データを用いる場合には、外生変数に欠損値が含まれていないことを
-事前に確認してください。`tempssm()`では、欠損値を含む外生変数は許容されず、
-そのようなデータを指定するとモデル推定はエラーで停止します。必要に応じて、
-解析前に適切な欠損値補完などの前処理をおこなってください。
+ここで用いるシミュレーション外生変数には欠測値は含まれていません。
+ユーザー自身の外生変数データを用いる場合、欠測値はモデル当てはめの前に
+処理してください。`tempssm()` は外生変数の欠測値を許容しません。一方で、
+従属変数である温度時系列の欠測値は、カルマンフィルタリングおよび平滑化に
+おいて未観測応答として扱われます。
 
-一方で、従属変数である温度時系列データの欠損値は許容されます。状態空間モデルでは、
-これらの欠損値は未観測の応答値として扱われ、カルマンフィルタリングおよび
-平滑化の枠組みの中で推定が実行されます。
+### ベースラインモデルの再利用
 
-### 外生変数を含まないモデルの適用
-
-まず、外生変数を含まないベースラインの状態空間モデルを適用します。
-このモデルは、温度変動が潜在的な長期トレンド、季節周期、自己回帰的依存性のみで
-説明される参照ケースとして機能します。既に演習 I で同一のモデルを
-取得していますが、ここでは従属変数の引数を明示して実行し、
-返り値を`res_without`とします。
+演習 II では演習 I
+と同じ応答系列を用いるため、外生変数なしの参照モデルとして、
+既に当てはめた AR(1) モデルを再利用します。
 
 ``` r
-res_without <- tempssm(temp_data = yamaguchi_sst_trim, ar_order = 1) 
+res_without <- res_ar1
 summary(res_without)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst_trim, ar_order = 1)
+    ## tempssm(temp_data = sst_sim)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -435.46 
+    ##   Log-likelihood : -198.19 
     ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 2.019273e-14 
-    ##   State (Q trend): 1.118445e-07 
-    ##   State (Q season): 2.312771e-149 
-    ##   State (Q ar): 0.3164652 
+    ##   Observation (H): 0.07496416 
+    ##   State (Q trend): 4.937122e-06 
+    ##   State (Q season): 0.0001763538 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6205502
+    ##   Coefficient of AR1: 0.7579372
+
+これにより、比較の焦点をシミュレーション黒潮変数によって追加される情報に
+絞ることができます。
+
+### 外生変数の結合
+
+`tempssm()` の `exo_data` 引数には、単変量 `ts` オブジェクトまたは
+多変量 `ts`
+オブジェクトを与えることができます。この演習では2つの外生変数を
+用いるため、`kuroshio_a_sim` と `distance_sim` を1つの多変量 `ts`
+オブジェクトに結合します。
 
 ``` r
-plot_tempssm_residual_diagnostics(res_without)
+exo_kuroshio <- cbind(kuroshio_a_sim, distance_sim)
+colnames(exo_kuroshio) <- c("kuroshio_a", "distance")
+
+head(exo_kuroshio)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+    ##          kuroshio_a distance
+    ## Jan 1998          0      116
+    ## Feb 1998          0      148
+    ## Mar 1998          0       49
+    ## Apr 1998          0      131
+    ## May 1998          0       45
+    ## Jun 1998          0       40
 
 ``` r
-diag_res_without <- diagnose_residuals(res_without)
-print(diag_res_without)
+start(exo_kuroshio)
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    17.0     12     0.149     3.68
-
-この AR(1) ベースラインモデルの残差診断では、lag 12 までの残差自己相関に
-有意性は認められません。この結果から、外生変数を含まないモデルにおいても、
-デフォルトの 1 次自己回帰構造は妥当な出発点であると考えられます。
-
-このベースラインモデルは、次節で導入する PDO 指数の追加的な説明力を
-評価するための有用な基準となります。
-
-### 外生変数を含むモデルの適用
-
-PDO
-指数を単変量の外生変数とするモデルを構築します。`tempssm()`関数において、
-外生変数用の引数 (exo_data) に PDO指数のデータ（pdo_trim）を与えます。
-これまで明示していませんでしたが、温度時系列データ (yamaguchi_sst_trim)
-は 従属変数の引数 (temp_data) に 与えます。
+    ## [1] 1998    1
 
 ``` r
-res_with <- tempssm(temp_data = yamaguchi_sst_trim,
-                    exo_data = pdo_trim,
-                    ar_order = 1) 
+end(exo_kuroshio)
+```
+
+    ## [1] 2023    2
+
+``` r
+frequency(exo_kuroshio)
+```
+
+    ## [1] 12
+
+``` r
+colnames(exo_kuroshio)
+```
+
+    ## [1] "kuroshio_a" "distance"
+
+``` r
+sum(is.na(exo_kuroshio))
+```
+
+    ## [1] 0
+
+得られたオブジェクトのクラスは `mts` であり、base R の `ts` クラスの
+多変量形式です。各列は別々の外生変数として扱われ、列名は要約や係数表の
+ラベルとして用いられます。
+
+### 外生変数ありモデルの適用
+
+次に、2つのシミュレーション黒潮変数を `exo_data` として与えたモデルを
+当てはめます。
+
+``` r
+res_with <- tempssm(
+  temp_data = sst_sim,
+  exo_data = exo_kuroshio,
+  ar_order = 1
+)
 summary(res_with)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst_trim, exo_data = pdo_trim, 
-    ##     ar_order = 1)
+    ## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 1)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -390.99 
-    ##   k              : 6 
-    ##   Diffuse states : 14 
+    ##   Log-likelihood : -154.38 
+    ##   k              : 7 
+    ##   Diffuse states : 15 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 1.490122e-25 
-    ##   State (Q trend): 7.158619e-20 
-    ##   State (Q season): 2.316533e-82 
-    ##   State (Q ar): 0.2695508 
+    ##   Observation (H): 0.003184407 
+    ##   State (Q trend): 4.132733e-06 
+    ##   State (Q season): 0.0006818023 
+    ##   State (Q ar): 0.1556755 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6566528 
-    ## Exogenous variable    PDO 
-    ## Estimated coefficient     -0.4476073 
-    ## Lower CI  -0.5372882 
-    ## Upper CI  -0.3579264
+    ##   Coefficient of AR1: 0.6585956 
+    ## Exogenous variable    kuroshio_a distance 
+    ## Estimated coefficient     0.5110124 -0.007070968 
+    ## Lower CI  0.1658023 -0.008467629 
+    ## Upper CI  0.8562225 -0.005674308
 
 ``` r
 plot_tempssm_residual_diagnostics(res_with)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
 diag_res_with <- diagnose_residuals(res_with)
@@ -752,75 +876,165 @@ print(diag_res_with)
     ## # A tibble: 1 × 4
     ##   lb_stat lb_lag lb_pvalue kurtosis
     ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    5.53     12     0.938     3.69
+    ## 1    6.50     12     0.889     3.07
 
-PDO 指数を含むモデルの残差診断でも、lag 12 までの残差自己相関に有意性は
-認められません。したがって、ここで比較する外生変数なし/ありの両モデルにおいて、
-AR(1) は残差診断上、作業モデルとして十分な自己回帰構造を与えていると
+このモデルの残差診断でも、lag 12
+までの有意な残差自己相関は認められません。
+したがって、ここで比較する2つのモデルでは、AR(1) は妥当な作業上の仕様と
 考えられます。
 
-モデルの推定結果を確認します。外生 PDO 指数の推定係数は負
-（-0.45）であり、その 95% 信頼区間はゼロを含まず、 -0.54 から -0.36
-の範囲でした。 これは、山口県沖の局所的な SST と PDO の変動との間に、
-統計的に有意な負の関係があることを示しています。
+次に、外生変数の推定係数を確認します。
 
-具体的な解釈として、基礎となる長期トレンド、季節周期、自己回帰的依存性を
-考慮した後でも、PDO 指数が 1 単位増加すると、月別 SST は平均して 約 0.45
-°C 低下することがモデルから示唆されます。 この結果は、PDO
-の正の位相が、調査地点における低温の条件に体系的に
-寄与することを意味します。
+``` r
+exo_coef
+```
 
-重要な点として、この外生変数の効果は、長期トレンドや時間依存性の表現が
-改善されたことによる見かけの効果としてではなく、温度時系列の内部動態に
-加えられた、もう一つ要因として識別されています。外生変数を含まない
-ベースラインモデルと比べて PDO 係数が統計的に有意であることは、PDO
-が局所的な温度変動に影響する独立した大規模気候駆動因子として作用していることを
-示します。
+    ##     Variable  Coefficient          lwr          upr
+    ## 1 kuroshio_a  0.511012406  0.165802340  0.856222472
+    ## 2   distance -0.007070968 -0.008467629 -0.005674308
+
+係数表は、潜在成分を考慮したうえで、SST と各シミュレーション黒潮変数との
+推定された関係を要約しています。このモデルでは、`kuroshio_a`
+の推定係数は 0.51 °C であり、95% 信頼区間は 0.17 から 0.86
+です。`kuroshio_a` はバイナリ指標なので、 この係数は、他のモデル成分と
+`distance` を条件づけたうえでの、A 型条件と 非 A 型条件の推定 SST
+差として読むことができます。
+
+`distance` の推定係数は -0.007 °C/単位であり、 95% 信頼区間は -0.008
+から -0.006 です。これは、潜在成分と `kuroshio_a` を
+条件づけたうえで、シミュレーション距離指標の値が大きいほど SST
+がわずかに 低いことを意味します。
+
+これらはシミュレーション例に基づく推定値であり、複数の外生変数を持つモデルを
+当てはめ、係数を確認する方法を示すためのものです。黒潮流路に関する新しい
+科学的証拠として解釈するものではありません。
 
 外生変数を含むモデルで `predict()`
-を用いる場合には、将来時点の外生変数の値が
-必要です。利用可能な将来の外生変数値がある場合には、`new_exo_data`
-に指定できます。 また、1
-時点先の簡易的な可視化・点検であれば、`exo_strategy = "last"` により、
-外生変数の最終観測値をそのまま持ち越した予測を実行できます。これは外生変数に対する
-持続性の仮定であり、PDO 指数そのものの予測モデルではありません。
+を用いる場合、将来時点の外生変数の値が
+必要です。利用可能な場合は、`exo_data` と同じ変数・同じ列順で
+`new_exo_data` に与えます。1時点先の簡易的な可視確認として、
+`exo_strategy = "last"` を指定すると、最後に観測された外生変数の行を
+将来値として持ち越す持続性仮定を用います。
 
 ``` r
 pred_with_last_exo <- predict(res_with, exo_strategy = "last")
 pred_with_last_exo
 ```
 
-    ##           Jan
-    ## 2026 16.41488
+    ##           Mar
+    ## 2023 18.37914
 
-### 時系列交差検証（tsCV）
+### 推定成分の比較
 
-時系列交差検証（tsCV）は、データの時間的な順序を保ちながら、標本外予測誤差に
-基づいてモデル性能を評価する方法です。そのため、モデルの妥当性について、
-追加的かつ独立した観点を提供します。
+2つのモデルの平滑化された点推定値を重ねて表示し、推定された長期トレンドと
+ドリフトを比較します。
 
-時系列交差検証では、拡張もしくはスライドする訓練期間に対してモデルを
-繰り返し当てはめ、その後続の観測値に対する予測性能を評価します。
-ランダムな交差検証とは異なり、未来から過去への情報漏洩が防がれるため、
-時系列データのモデル検証に適しています。
+``` r
+level_without <- get_level_ts(res_without)
+level_with <- get_level_ts(res_with)
+drift_without <- get_drift_ts(res_without)
+drift_with <- get_drift_ts(res_with)
 
-ここでは外生 PDO 変数を含むモデルと含まないモデルの交差検証指標を
-比較することで、PDO
-係数に認められた統計的なシグナルが、標本外予測性能にも
-反映されているかを評価します。
+component_compare <- rbind(
+  data.frame(
+    time = as.numeric(time(level_without)),
+    component = "Level component (°C)",
+    model = "Without exogenous variables",
+    estimate = as.numeric(level_without)
+  ),
+  data.frame(
+    time = as.numeric(time(level_with)),
+    component = "Level component (°C)",
+    model = "With Kuroshio variables",
+    estimate = as.numeric(level_with)
+  ),
+  data.frame(
+    time = as.numeric(time(drift_without)),
+    component = "Drift component (°C/year)",
+    model = "Without exogenous variables",
+    estimate = as.numeric(drift_without)
+  ),
+  data.frame(
+    time = as.numeric(time(drift_with)),
+    component = "Drift component (°C/year)",
+    model = "With Kuroshio variables",
+    estimate = as.numeric(drift_with)
+  )
+)
 
-外生 PDO 変数を含むモデルでは、テスト期間の PDO 観測値を外生変数として
-予測ステップに与えています。したがって、この tsCV は、各 テスト期間の
-PDO 値 が既知であるという条件下での conditional forecast、または
-hindcast 的な 評価に相当します。この設定は、PDO
-指数の説明力や再現性を評価する目的では 妥当です。
+component_compare$component <- factor(
+  component_compare$component,
+  levels = c("Level component (°C)", "Drift component (°C/year)")
+)
 
-一方で、実際の将来予測では、将来の PDO
-値は通常未知です。その場合には、将来の PDO シナリオを与える、PDO
-指数自体を別モデルで予測する、あるいは最終観測値を
-持ち越すような簡易仮定を用いる、といった対応が必要になります。したがって、
-以下の結果は、外生変数が既知である条件下での予測性能改善を示すものであり、
-実運用上の将来予測性能の改善をそのまま保証するものではありません。
+plt_component_compare <- ggplot(
+  component_compare,
+  aes(x = time, y = estimate, color = model)
+) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~ component, ncol = 1, scales = "free_y") +
+  labs(x = "Time (year)", y = "Estimate", color = "Model") +
+  theme_classic()
+
+plot(plt_component_compare)
+```
+
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+
+``` r
+mean_drift_year_without <- mean(drift_without, na.rm = TRUE)
+mean_drift_year_with <- mean(drift_with, na.rm = TRUE)
+
+mean_drift_year_without
+```
+
+    ## [1] 0.08777084
+
+``` r
+mean_drift_year_with
+```
+
+    ## [1] 0.04924515
+
+レベル成分では、両モデルとも、記録の開始期から 2008 年前後まで低下し、
+その後に上昇する大局的なパターンを示しています。ただし、外生変数ありモデルは、
+外生変数なしモデルと比べて、前半の水準を高めに、後半の水準をやや低めに
+推定しています。
+
+モデル間の違いは、ドリフト成分でより明瞭です。外生変数なしモデルでは、
+変化率に局所的な揺らぎがみられる一方、シミュレーション黒潮変数を含むモデルでは、
+負から正への移行がより滑らかに推定されています。このことは、ベースラインモデルの
+ドリフト成分に表れていた短期から中期的な変動の一部が、シミュレーション外生変数に
+よって説明されている可能性を示唆します。
+
+観測期間を通した SST
+の年あたりの変化率の推定値は、外生変数なしモデルでは
+0.0878、外生変数ありモデルでは 0.0492 となりました。
+
+このシミュレーション例は、外部要因を含めることで、推定される長期成分が
+変化しうることを示しています。
+
+次節では、この違いが条件付き予測性能にも反映されるかを時系列交差検証で
+確認します。
+
+### 時系列交差検証（tsCV）による条件付き予測性能の評価
+
+時系列交差検証（tsCV）は、時間順序を保ちながら標本外予測誤差を評価する
+方法です。モデルを訓練期間に繰り返し当てはめ、その後続の観測値に対する
+予測性能を評価するため、未来から過去への情報漏洩を避けることができます。
+
+ここでは、シミュレーション黒潮変数を含むモデルと含まないモデルを比較し、
+外生変数として追加した情報が標本外予測性能にも反映されるかを評価します。
+
+外生変数ありモデルでは、テスト期間のシミュレーション黒潮変数の値を
+予測ステップに与えています。したがって、この tsCV は、各テスト期間の
+外生変数値が既知であるという条件下での conditional forecast、または
+hindcast 的な評価に相当します。
+
+実際の将来予測では、将来の外生変数値は通常未知です。その場合には、
+将来シナリオを与える、外生変数自体を別モデルで予測する、あるいは
+最終観測値を持ち越すような簡易仮定を用いる、といった対応が必要になります。
+したがって、以下の結果は条件付き予測性能の評価として解釈してください。
 
 ``` r
 # (Optional) Load packages for parallel processing.
@@ -838,55 +1052,82 @@ if (interactive()) {
   future::plan(sequential)
 }
 
-
-# ts cross-validation of the model without exogenous variables
-
 ## Generate a list of training and test datasets with their indices
 # Procedure for constructing year-based time-series cross-validation folds:
 # 
-# First training data: January 1982–December 2017;
-# First test data: one year starting from January 2018
+# First training data: January 1998-December 2010;
+# First test data: January 2011-December 2011
 # 
-# Second training data: January 1983–December 2018;
-# Second test data: one year starting from January 2019
+# Second training data: January 1999-December 2011;
+# Second test data: January 2012-December 2012
 # ...
 # 
-# Eighth training data: January 1989–December 2024;
-# Eighth test data: one year starting from January 2025
+# Twelfth training data: January 2009-December 2021;
+# Twelfth test data: January 2022-December 2022
 #
 # These folds are automatically generated by the ts_train_test_split() function.
+# The final two observations in 2023 are not used because allow_partial = FALSE
+# keeps every test set as a complete 12-month period.
 
-# Generate training and test dataset for model without PDO index
+# Generate training and test dataset for model without exogenous variables
 folds_without <- ts_train_test_split(
-  temp_data = yamaguchi_sst_trim,
+  temp_data = sst_sim,
   exo_data = NULL,
-  initial = 432, # 432 monthly observations from Jan 1982 to Dec 2017
-  horizon = 12, # forecast 12 monthly time-series
-  step = 12, # training data is moved in one-year steps
+  initial = 156, # 156 monthly observations from Jan 1998 to Dec 2010
+  horizon = 12, # forecast 12 monthly observations
+  step = 12, # move the fixed-width window in one-year steps
   fixed_window = TRUE,
   allow_partial = FALSE
   )
 
-# Generate training and test dataset for model with PDO index
+# Generate training and test dataset for model with Kuroshio variables
 folds_with <- ts_train_test_split(
-  temp_data = yamaguchi_sst_trim,
-  exo_data = pdo_trim,
-  initial = 432, # 432 monthly observations from Jan 1982 to Dec 2017
-  horizon = 12, # forecast 12 monthly time-series
-  step = 12, # training data is moved in one-year steps
+  temp_data = sst_sim,
+  exo_data = exo_kuroshio,
+  initial = 156, # 156 monthly observations from Jan 1998 to Dec 2010
+  horizon = 12, # forecast 12 monthly observations
+  step = 12, # move the fixed-width window in one-year steps
   fixed_window = TRUE,
   allow_partial = FALSE
   )
 
+# Check the first fold
+start(folds_without[[1]]$train_ts)
+```
 
+    ## [1] 1998    1
+
+``` r
+end(folds_without[[1]]$train_ts)
+```
+
+    ## [1] 2010   12
+
+``` r
+start(folds_without[[1]]$test_ts)
+```
+
+    ## [1] 2011    1
+
+``` r
+end(folds_without[[1]]$test_ts)
+```
+
+    ## [1] 2011   12
+
+``` r
 # *****************************************
 # Executing time-series cross validation
 
 #-------------------------------------------------- 
-# Model without the exogenous variable of PDO index
+# Model without exogenous variables
 
 # Single processing
-# cv_without_results <- ts_cv_run(folds_without, ar_order = 1, use_season = TRUE)
+# cv_without_results <- ts_cv_run(
+#   folds_without,
+#   ar_order = 1,
+#   use_season = TRUE
+# )
 
 # Parallel processing
 cv_without_results <- future.apply::future_lapply(
@@ -906,7 +1147,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 
 
 #-------------------------------------------------- 
-# Model with the exogenous variable of PDO index
+# Model with simulated Kuroshio exogenous variables
 
 # Single processing
 # cv_with_results <- ts_cv_run(folds_with, ar_order = 1, use_season = TRUE)
@@ -942,8 +1183,8 @@ cv_comparison %>% knitr::kable()
 
 | model | n_folds | converged_n | converged_rate | mean_MAE | mean_MASE_naive | mean_MASE_seasonal |
 |:---|---:|---:|---:|---:|---:|---:|
-| Without | 8 | 8 | 1 | 0.6057671 | 0.2694420 | 0.7993162 |
-| With | 8 | 8 | 1 | 0.5498521 | 0.2443207 | 0.7241733 |
+| Without | 12 | 12 | 1 | 0.5375966 | 0.3137671 | 0.8001065 |
+| With | 12 | 12 | 1 | 0.5135379 | 0.2997563 | 0.7705862 |
 
 ``` r
 plt_MAE <- ggplot(data=cv_tbl,
@@ -959,150 +1200,60 @@ plt_MASE_seasonal <- ggplot(data=cv_tbl,
   geom_boxplot()
 
 
-plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal + patchwork::plot_layout(nrow=1)
+plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal +
+  patchwork::plot_layout(nrow = 1)
 
 plot(plt_tsCV)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
-時系列交差検証（tsCV）の解析結果は、外生変数を含むモデルが、外生変数を含まない
-モデルよりも良好であることを示しています。`compare_ts_cv()`
-によって作成された 比較表では、各モデルの fold
-数、収束率、および平均的な予測誤差指標を
-確認できます。一方で、箱ひげ図からは、検証期間ごとの誤差のばらつきを
-確認できます。このチュートリアルでは、実行時間を短縮するため、tsCV の
-反復回数を 8 回に設定しています。実際の検証では、十分な回数の反復を
-行ってください。
+3つの精度指標は、予測誤差を異なる観点から要約します。`MAE`
+は平均絶対誤差で、 応答変数と同じ単位、ここでは °C で表されます。`MASE`
+は、訓練データから
+計算される単純なベンチマークに対する、単位を持たないスケール化誤差です。
+いずれの指標も、小さいほど予測性能が高いことを意味します。
 
-外生変数ありモデルの平均 MAE は約 0.55 °C です。
-月別平均に基づく季節変動幅（約 13.6 °C） と比べると、これは約 4.0%
+このチュートリアルでは、`MASE_naive` は訓練系列の1期差分に基づく 非季節
+naive ベンチマークを用います。`MASE_seasonal` は、訓練系列の
+季節周期だけ離れた差分に基づく seasonal naive ベンチマークを用います。
+月別データでは、これは12か月差分に対応します。MASE が 1 未満であれば、
+平均的には対応する naive ベンチマークよりも良い予測性能を示します。
+
+`compare_ts_cv()` によって作成された比較表では、各モデルの fold 数、
+収束率、および平均的な予測誤差指標を確認できます。箱ひげ図からは、
+検証期間ごとの誤差のばらつきを確認できます。このチュートリアルでは 12
+個の年次テスト期間を用いており、この例題データ内で2つの
+モデル仕様を比較する実用的な基盤となります。正式なモデル評価では、
+時系列の長さ、予測期間、予測目的に応じて fold
+の数と構造を決めてください。
+
+外生変数ありモデルの平均 MAE は約 0.51 °C です。
+月別平均に基づく季節変動幅（約 9.9 °C） と比べると、これは約 5.2%
 に相当します。
 したがって、このデータセットにおける主要な季節変動スケールと比べれば、
 予測誤差は小さく、短期的な海洋モニタリングにおいて実用的な精度と
 解釈できる可能性があります。
 
-また、反復数は 8 fold に限られていますが、外生変数ありモデルは
-外生変数なしモデルに比べて平均 MAE を約 9.2% 低下させました。
-同様の改善は MASE 指標でも確認されます。ただし、この解釈はテスト期間の
-観測済み PDO を外生変数として与える conditional forecast / hindcast 的な
-評価設定に基づくものです。
+外生変数ありモデルは、外生変数なしモデルに比べて平均 MAE を約 4.5%
+低下させました。同様の改善は MASE
+指標でも確認されます。ただし、この解釈は、テスト期間の
+シミュレーション黒潮変数を外生変数として与える条件付き予測の設定に
+基づくものです。
 
-以上の結果を総合すると、状態空間モデルに外生変数として PDO
-指数を含めることが 一貫して支持されます。PDO
-係数は統計的に有意であり、温度変動に対する明確な
-効果を示しています。さらに、時系列交差検証により、この効果が標本外予測性能の
-向上にもつながっていることが確認されます。
-
-これらの相補的な証拠は、外生変数を含むモデルを採用するための頑健で
-多面的な根拠を提供します。
-
-本演習では単一の外生変数を用いましたが、`tempssm()` は多変量の外生変数を
-含むモデルにも対応しています。関心のあるユーザーは、同様のワークフローを
-他の環境・気候・生態学的な共変量にも拡張できます。その際には、モデル診断や
-標本外予測性能を確認しながら、対象データに応じたモデル構造を慎重に検討して
-ください。
-
-### 外生変数あり/なしモデルの推定パターンの比較
-
-長期トレンドとその変化率の推定パターンが、外生変数あり/なしモデルでどのように
-変わったかを見比べてみます。
-
-``` r
-plt_level_without_ts <- autoplot(res_without,
-                                 component=c("level")
-                                 ) +
-  labs(title="Model without the PDO index") +
-  theme_classic()
-
-plt_drift_without_ts <- autoplot(res_without, 
-                             component=c("drift")
-                             ) + 
-  labs(title="Model without the PDO index") +
-  theme_classic()
-
-plt_level_drift_without_ts <- plt_level_without_ts + 
-  plt_drift_without_ts + 
-  patchwork::plot_layout(ncol=1)
-
-plot(plt_level_drift_without_ts)
-```
-
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
-
-``` r
-plt_level_with_ts <- autoplot(res_with,
-                          component=c("level")
-                          )+ 
-  labs(title="Model with the PDO index") +
-  theme_classic()
-
-plt_drift_with_ts <- autoplot(res_with,
-                          component=c("drift")
-                          ) + 
-  labs(title="Model with the PDO index") + 
-  theme_classic()
-
-plt_level_drift_with_ts <- plt_level_with_ts + 
-  plt_drift_with_ts + 
-  patchwork::plot_layout(ncol=1)
-
-plot(plt_level_drift_with_ts)
-```
-
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-27-2.png)<!-- -->
-
-``` r
-#　Smoothing estimate of drift component
-mean_drift_year_without <- get_drift_ts(res_without) %>%
-  mean()
-print(mean_drift_year_without)
-```
-
-    ## [1] 0.03388663
-
-``` r
-mean_drift_year_with <- get_drift_ts(res_with) %>%
-  mean()
-print(mean_drift_year_with)
-```
-
-    ## [1] 0.01124586
-
-上の図の灰色の領域は、95% 信頼区間を示しています。
-
-外生変数なしモデルでは、長期トレンドおよぼその変化率のプロットに波打ったような
-パターンが読み取れますが、外生変数ありモデルでは長期トレンドおよびその変化率は
-より安定的なパターンとなっています。つまり、この波打ったようなパターンは
-外生変数のPDOがおよぼす影響であることが示唆されます。
-
-観測期間を通したSSTの年あたりの変化率の推定値は、外生変数なしモデルでは
-0.0339、外生変数ありモデルでは 0.0112 となりました。
-
-今回のケースでは、SSTのトレンドを正確に推定するにはPDO指数を組み込んだモデルの
-方が好ましいと考えられます。したがって外生変数なしモデルでは
-やや大きめに推定されていたSSTの上昇率が、外生変数ありモデルの導入によって、
-抑制的に推定されたことになります。
+係数推定、推定成分の比較、tsCV の結果をあわせて確認することで、
+外生変数ありモデルを多面的に評価できます。ここで用いたデータは
+シミュレーションデータであるため、黒潮変動に関する新しい科学的結論ではなく、
+ワークフローの例として解釈してください。同様の流れは、他の環境・気候・
+生態学的な共変量にも拡張できます。その際には、モデル診断、予測性能、
+将来の外生変数に関する仮定を明示的に確認することが重要です。
 
 # ユーザーのオリジナルデータの使用について
 
-## 簡単な例
+## CSV 形式
 
-`my_ts` はユーザーが用意した温度時系列データの `ts`
-オブジェクトです。直接`tempssm()`に渡すことができます。
-
-``` r
-## example of ts object (not run)
-## my_ts <- ts(rnorm(100), frequency = 12)
-res <- tempssm(my_ts)
-```
-
-## ユーザーのオリジナルデータの準備
-
-### CSV 形式
-
-月別温度時系列の CSV ファイルを、以下の列をもつ形式で準備します。 -
-Year - Month - Temp
+月別温度時系列の CSV ファイルでは、`Year`、`Month`、`Temp` という列を
+用意します。 - Year - Month - Temp
 
 例:
 
@@ -1119,14 +1270,14 @@ Year,Month,Temp
   必ず保持してください。
 - CSV ファイルはカンマ区切りで、UTF-8 エンコーディングとしてください。
 
-### CSV から時系列への変換
+## CSV から `ts` オブジェクトへの変換
 
-本パッケージに同梱するサンプル CSV ファイルは inst/extdata
-にあります。このサンプルデータセットには、北海道赤岳（1,840
-m）における月別気温観測値が含まれています。オリジナルデータは環境省の
-モニタリングサイト 1000 から入手可能です。
-（KOZ01.zip、<https://www.biodic.go.jp/moni1000/findings/data/index.html>
-）。
+本パッケージに同梱するサンプル CSV ファイルは `inst/extdata`
+にあります。 このサンプルデータセットには、北海道赤岳（1,840
+m）における月別気温観測値が
+含まれています。オリジナルデータは環境省のモニタリングサイト 1000
+（KOZ01.zip、<https://www.biodic.go.jp/moni1000/findings/data/index.html>）
+から入手可能です。
 
 ``` r
 path <- system.file("extdata", "example_monthly_temp.csv", package = "tempssm")
@@ -1138,12 +1289,14 @@ head(akadake_temp)
     ## 2010                                13.6   6.8   0.2  -6.8 -12.5
     ## 2011 -18.8
 
-`read_monthly_temp_ts()` 関数は、内部で base R の `ts()` 関数を
-用いて時系列オブジェクトを作成します。詳細は R 公式の `stats::ts`
-ドキュメントを参照してください：
+`read_monthly_temp_ts()` 関数は、このような CSV ファイルを読み込み、
+`tempssm()` で利用できる R の `ts` オブジェクトへ変換します。
+より細かな制御が必要な場合は、手動で `ts` オブジェクトを作成することも
+できます。詳細は R 公式の `stats::ts` ドキュメントを参照してください：
 <https://search.r-project.org/R/refmans/stats/html/ts.html>。
-より細かな制御が必要な場合は、手動で `ts` オブジェクトを作成することが
-できます。
+
+データがすでに R の `ts` オブジェクトとして保存されている場合は、
+そのまま `tempssm()` に渡すことができます。
 
 # 参考文献
 
@@ -1196,26 +1349,23 @@ Year,Month,Temp
 ```
 
 - 欠測した温度値には NA を使用し、対応する Year と Month の行は
-  必ず保持してください。\* CSV ファイルはカンマ区切りで、UTF-8
-  エンコーディング としてください。
+  必ず保持してください。
+- CSV ファイルはカンマ区切りで、UTF-8 エンコーディングとしてください。
 
-次の例では、パッケージに含まれるサンプル CSV ファイルを使用します。
+次の例では、パッケージに含まれるサンプル CSV ファイルを使用します。この
+ファイルには、北海道赤岳における月別気温観測値が含まれています。
 
 ``` r
-tmp_csv <- tempfile(fileext = ".csv")
-writeLines(
-  c("Year,Month,Temp",
-    "2001,1,10.4",
-    "2001,2,8.2",
-    "2001,3,NA",
-    "2001,4,13.6",
-    "2001,5,16.1"),
-   tmp_csv
- )
+path <- system.file("extdata", "example_monthly_temp.csv", package = "tempssm")
 
-# Read the CSV file and convert to a monthly ts object
-temp_ts <- read_monthly_temp_ts(tmp_csv)
+# Read the CSV file and convert it to a monthly ts object
+temp_ts <- read_monthly_temp_ts(path)
+head(temp_ts)
 ```
+
+    ##        Jan Feb Mar Apr May Jun Jul   Aug   Sep   Oct   Nov   Dec
+    ## 2010                                13.6   6.8   0.2  -6.8 -12.5
+    ## 2011 -18.8
 
 ## 2. `convert_monthly_df_to_ts()`
 
@@ -1306,7 +1456,7 @@ plt_niigata_sst_anomaly <- forecast::autoplot(niigata_sst_anomaly) +
 plot(plt_niigata_sst_anomaly) 
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 ## 5. `compute_monthly_climatology()`
 
@@ -1353,4 +1503,4 @@ plt_monthly_seasonal_cycle_niigata_sst <- ggplot(
 plot(plt_monthly_seasonal_cycle_niigata_sst)
 ```
 
-![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->

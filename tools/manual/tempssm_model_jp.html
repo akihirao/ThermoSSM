@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="平尾章・馬場真哉・市野川桃子" />
+
+<meta name="date" content="2026-07-29" />
+
+<title>tempssm モデル仕様</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">tempssm モデル仕様</h1>
+<h3 class="subtitle">Version 0.3.0</h3>
+<h4 class="author">平尾章・馬場真哉・市野川桃子</h4>
+<h4 class="date">2026-07-29</h4>
+
+
+
+<div id="概要" class="section level1">
+<h1>概要</h1>
+<p>この文書では、<code>tempssm</code>
+に実装されている線形ガウス状態空間モデルの定式化を
+説明します。本パッケージは温度時系列を対象とし、観測された変動を、長期トレンド、
+季節変動、自己回帰的依存性、および任意の外生効果の組み合わせとして表現します。</p>
+<p>モデル推定では、計算バックエンドとして <code>KFAS</code>
+パッケージを用います。 主要関数 <code>tempssm()</code>
+は、フィルタリング推定値と平滑化推定値の両方を返します。
+特に断らない限り、パッケージの要約、診断、プロットで示される結果は、
+平滑化推定値に基づいています。</p>
+</div>
+<div id="状態空間モデル" class="section level1">
+<h1>状態空間モデル</h1>
+<p>本パッケージでは、長期トレンド、季節変動、自己回帰成分を明示的に含む温度時系列を
+記述するために、基本構造時系列モデル（Basic Structural Time Series
+Model; BSTSM）
+を拡張したモデルを考えます。基本構造時系列モデルは、観測時系列を潜在的な
+トレンド成分、季節成分、不規則成分から構成されるものとして表す
+状態空間モデルの標準的な定式化の一つです（Harvey 1989）。 Baba et
+al. (2024) による 温度時系列への適用を踏まえ、<code>tempssm</code>
+では、この解釈しやすい分解を保ちつつ、
+自己回帰的依存性と任意の外生効果を加えています。これにより、
+長期的な温度変化、季節周期、短期的な変動を分けて検討しやすくしています。</p>
+<p>観測方程式は次のように表されます。</p>
+<p><span class="math display">\[
+y_t = \alpha_t + v_t. \tag{1}
+\]</span></p>
+<p>ここで、<span class="math inline">\(t\)</span> は時点、<span class="math inline">\(y_t\)</span> は観測された温度、<span class="math inline">\(\alpha_t\)</span> は潜在状態、<span class="math inline">\(v_t\)</span> は 観測誤差を表します。</p>
+<p>潜在状態は次のように分解されます。</p>
+<p><span class="math display">\[
+\alpha_t = \mu_t + s_t + r_t + E_t. \tag{2}
+\]</span></p>
+<p>ここで、<span class="math inline">\(\mu_t\)</span>
+は長期トレンド成分、<span class="math inline">\(s_t\)</span>
+は季節成分、<span class="math inline">\(r_t\)</span> は定常的な
+自己回帰成分、<span class="math inline">\(E_t\)</span>
+は外生変数の寄与を表します。</p>
+</div>
+<div id="長期トレンド成分" class="section level1">
+<h1>長期トレンド成分</h1>
+<p>レベル成分は、次の 2 次の確率過程に従います。</p>
+<p><span class="math display">\[
+\mu_t = 2\mu_{t-1} - \mu_{t-2} + \zeta_t,
+\qquad \zeta_t \sim \mathcal{N}(0, \sigma_\zeta^2). \tag{3}
+\]</span></p>
+<p>ここで、<span class="math inline">\(\zeta_t\)</span>
+は長期トレンド成分の過程誤差です。この定式化により、
+長期的な水準とその変化率が時間とともに変化することを許容します。</p>
+</div>
+<div id="季節成分" class="section level1">
+<h1>季節成分</h1>
+<p>季節成分は、総和ゼロ制約をもつモデルとして表されます。</p>
+<p><span class="math display">\[
+s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
+\qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
+\]</span></p>
+<p>ここで、<span class="math inline">\(\omega_t\)</span>
+は季節成分の過程誤差、<span class="math inline">\(f\)</span>
+は季節周期を表します。例えば、 月別データでは <span class="math inline">\(f = 12\)</span>
+です。この定式化により季節効果が識別可能となり、
+異なる時間分解能をもつ時系列に対応したモデルを構築できます。</p>
+<p>1つの完全な季節周期にわたって総和ゼロ制約を課すことで、季節成分は長期的な
+ドリフトを導入することなく、基礎となる長期トレンドからの反復的な偏差を捉えます。
+季節成分を含まないモデルでは、季節項 <span class="math inline">\(s_t\)</span> はゼロとし、状態方程式から
+省略されます。</p>
+</div>
+<div id="自己回帰成分" class="section level1">
+<h1>自己回帰成分</h1>
+<p>自己回帰成分は、<span class="math inline">\(l\)</span>
+次の自己回帰（AR）過程に従います。</p>
+<p><span class="math display">\[
+r_t = \phi_1 r_{t-1} + \phi_2 r_{t-2} + \cdots +
+\phi_l r_{t-l} + \tau_t,
+\qquad \tau_t \sim \mathcal{N}(0, \sigma_\tau^2). \tag{5}
+\]</span></p>
+<p>ここで、<span class="math inline">\(\tau_t\)</span>
+は自己回帰成分の過程誤差を表します。過程誤差項 （<span class="math inline">\(\zeta_t\)</span>、<span class="math inline">\(\omega_t\)</span>、および <span class="math inline">\(\tau_t\)</span>）は互いに独立で、正規分布に従うと
+仮定します。</p>
+<p>自己回帰成分は、長期トレンドや季節構造を考慮した後に残る短期的な系列依存性を
+吸収することを主な目的としています。応用解析では、低次の AR
+構造を出発点とし、
+残差診断や予測性能を確認しながら、必要に応じて高次のモデルを検討することが
+有用です。</p>
+</div>
+<div id="外生成分" class="section level1">
+<h1>外生成分</h1>
+<p>外生成分は次のように定義されます。</p>
+<p><span class="math display">\[
+E_t = \beta_1 x_{1,t} + \beta_2 x_{2,t} + \cdots + \beta_m x_{m,t}.
+\tag{6}
+\]</span></p>
+<p>外生項 <span class="math inline">\(E_t\)</span>
+は外部要因の影響を表します。外部要因には、大規模な気候指数、
+地域的な環境変数、あるいは観測された温度時系列に関連する物理的根拠をもつ
+予測変数などが含まれます。各外生変数は、時間に依存しない回帰係数 （<span class="math inline">\(\beta_1, \beta_2, \ldots,
+\beta_m\)</span>）を通じて線形にモデルへ組み込まれ、
+その寄与の大きさと方向を潜在状態成分と同時に推定できます。</p>
+<p>外生変数を含むモデルで観測期間後の予測を行うには、将来の外生変数値、または
+それらに対する明示的な仮定が必要です。</p>
+</div>
+<div id="推定パラメータ数" class="section level1">
+<h1>推定パラメータ数</h1>
+<p>観測データにモデルを適用する際、推定されるパラメータの総数（<span class="math inline">\(k\)</span>）は、
+自己回帰成分の次数と、モデルに含まれる外生変数の数に依存します。</p>
+<p>例えば、2次の自己回帰成分をもち、外生共変量を含まないモデルでは、
+観測誤差分散、長期トレンド・季節・自己回帰成分に対応する過程誤差分散、
+および 1 次・2 次の自己回帰係数（<span class="math inline">\(\phi_1\)</span> と <span class="math inline">\(\phi_2\)</span>）の計 6 個の
+パラメータが推定されます。</p>
+<p>一般に、<span class="math inline">\(l\)</span> 次の自己回帰成分と
+<span class="math inline">\(m\)</span>
+個の外生変数をもつ場合、パラメータの総数は</p>
+<p><span class="math display">\[
+k = 4 + l + m
+\]</span></p>
+<p>です。</p>
+</div>
+<div id="パラメータ推定" class="section level1">
+<h1>パラメータ推定</h1>
+<p>パラメータ推定手順の中核的な実装は、Baba et al. (2024)
+によって提供された 補足コードに基づいています。パラメータ推定は、Helske
+(2017) が推奨する 2段階の最適化戦略によって行われます。</p>
+<p>第 1 段階では、ユーザー指定の初期値を用いて Nelder-Mead 法 （Nelder
+&amp; Mead, 1965）によりモデルパラメータを推定します。得られた推定値を、
+第 2 段階の BFGS アルゴリズム（Shanno, 1970）による最適化の初期値として
+用います。</p>
+<p><code>tempssm()</code> は、デフォルトでは KFAS の周辺尤度 (marginal
+likelihood) を用いて
+パラメータ推定を行います。一方で、<code>marginal = FALSE</code>
+を明示すれば、散漫尤度 (diffuse likelihood)
+も利用できます。選択された尤度タイプは推定済みの <code>tempssm</code>
+オブジェクトに保存され、<code>logLik()</code> や <code>summary()</code>
+などの 下流メソッドでも一貫して用いられます。</p>
+</div>
+<div id="参考文献" class="section level1">
+<h1>参考文献</h1>
+<p>Baba, S., Ishii, H., and Yoshiyama, T. (2024). Estimating sea
+temperature trends using a linear Gaussian state-space model in
+Jogashima, Kanagawa, Japan. <em>Bulletin of the Japanese Society of
+Fisheries Oceanography</em>, 88(3), 190-199. （日本語、英語要旨あり。）
+<a href="https://doi.org/10.34423/jsfo.88.3_190" class="uri">https://doi.org/10.34423/jsfo.88.3_190</a></p>
+<p>Baba, S. (2024).
+線形ガウス状態空間モデルを用いた海水温トレンド推定のための補足コードおよび
+テストデータ。 GitHub リポジトリ: <a href="https://github.com/logics-of-blue/sea-temperature-trend-jogashima" class="uri">https://github.com/logics-of-blue/sea-temperature-trend-jogashima</a></p>
+<p>Harvey, A. C. (1989). <em>Forecasting, Structural Time Series Models
+and the Kalman Filter</em>. Cambridge University Press.</p>
+<p>Helske, J. (2017). KFAS: R における指数型分布族状態空間モデル。
+<em>Journal of Statistical Software</em>, 78(10), 1-39. <a href="https://doi.org/10.18637/jss.v078.i10" class="uri">https://doi.org/10.18637/jss.v078.i10</a></p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

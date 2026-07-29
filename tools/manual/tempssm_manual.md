@@ -16,11 +16,10 @@ package as the computational backend (Helske, 2017).
 - Represents temperature dynamics using interpretable latent components:
   long-term trend, seasonal variation, autoregressive dependence, and
   optional exogenous effects.
-- Supports arbitrary integer seasonal frequencies, while the current
-  examples and validation focus primarily on monthly temperature data.
+- Supports arbitrary seasonal frequencies, while the current examples
+  and validation focus primarily on monthly temperature data.
 - Allows users to specify an arbitrary order of the autoregressive
-  component (default: AR(1))
-- Provides S3 methods for summaries, diagnostics, accessors, and plots.
+  component (default: AR(1)).
 - Includes time-series cross-validation tools for model evaluation.
 
 # Input Data Format
@@ -31,6 +30,10 @@ for regularly spaced time series (see the `stats::ts` documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). The
 package also provides utility functions for converting common tabular
 and observational data formats into `ts` objects before model fitting.
+
+The seasonal cycle used by `tempssm()` is taken from the `frequency`
+attribute of the input `ts` object. For example, `frequency = 12`
+represents monthly data.
 
 # Prior Art and Scope
 
@@ -57,31 +60,48 @@ into a reusable R package interface with input validation, documented S3
 methods, tests, diagnostics, cross-validation utilities, and examples
 for broader temperature time-series analysis.
 
-The next section gives a brief model overview. The mathematical
-formulation is described separately in the package vignette
-`model-specification`.
-
 # Model Overview
 
-`tempssm` uses a linear Gaussian state-space model to represent
-temperature variation as the sum of a long-term trend, seasonal
-variation, autoregressive dependence, and optional exogenous effects.
-The computational backend is `KFAS`, and the fitted `tempssm` object
-stores both filtering and smoothing estimates. Unless otherwise stated,
-this manual interprets summary statistics, diagnostics, and plots based
-on smoothed state estimates.
+The model implemented in `tempssm` can be viewed as an extension of the
+Basic Structural Time Series Model (BSTSM), a standard state-space
+formulation that represents an observed time series using latent trend,
+seasonal, and irregular components. Following the temperature
+time-series application of Baba et al. (2024), `tempssm` keeps this
+interpretable decomposition and adds autoregressive dependence and
+optional exogenous effects. This makes it useful for separating
+long-term temperature change, seasonal cycles, and short-term
+departures.
 
-The detailed mathematical formulation is separated from this
-tutorial-style manual to reduce duplication and improve maintainability.
-See the package vignette `model-specification` for the observation
-equation, state equations, seasonal constraint, autoregressive and
-exogenous components, parameter count, and estimation procedure. In an
-installed package, it can be opened with
-`vignette("model-specification", package = "tempssm")`.
+The model is estimated with `KFAS`, and `tempssm()` returns both
+filtering and smoothing estimates. Unless otherwise stated, the
+summaries, diagnostics, and plots in this vignette use smoothed state
+estimates.
 
-# How to Use
+The full mathematical specification, including the observation equation,
+state decomposition, seasonal constraint, autoregressive component,
+exogenous component, parameter count, and estimation procedure, is
+described in the separate model specification document, available as a
+PDF in the package repository:
 
-## Set Environment
+<https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.pdf>
+
+# Tutorial Workflow
+
+This tutorial demonstrates a typical workflow for applying `tempssm` to
+monthly environmental temperature time series. Exercise I uses the
+simulated sea surface temperature (SST) dataset `sst_sim` to fit a
+baseline state-space model without exogenous variables, inspect latent
+components, check residual diagnostics, and obtain short-term
+predictions. Exercise II extends the same workflow by adding simulated
+marine-environment variables and evaluating whether they improve model
+interpretation and conditional predictive performance using diagnostics
+and time-series cross-validation.
+
+The aim is not to draw new scientific conclusions from the simulated
+datasets, but to show how the package can be used to structure model
+fitting, diagnostics, prediction, and model comparison workflows.
+
+## Setup
 
 Load the following R packages to run the examples below. If any packages
 are not installed, please install them as needed.
@@ -100,77 +120,76 @@ library(ggplot2)
 library(patchwork)
 ```
 
-## Exercise I: Applying a State-Space Model to a Univariate Temperature Time Series
+## Exercise I: Baseline Model for a Univariate Temperature Series
 
-### Objective
+Exercise I introduces the basic workflow for fitting a univariate model,
+visualizing latent components, checking residual diagnostics, and making
+short-term predictions without exogenous variables.
 
-In Exercise I, we apply a linear Gaussian state-space model to a
-univariate temperature time series. This exercise introduces basic
-modeling without exogenous variables and examines the role of
-autoregressive dynamics.
+### Load the Simulated SST Dataset
 
-### Loading the Sea Surface Temperature (SST) Dataset
+The package includes `sst_sim`, a simulated monthly sea surface
+temperature (SST) dataset.
 
-A sample sea surface temperature (SST) dataset is included in the
-package.
-
-- **Dataset**: Monthly sea surface temperature (SST) off Yamaguchi
-  Pref., Japan\
+- **Dataset**: Simulated monthly SST off Jogashima, Japan\
 - **Unit**: °C\
-- **Period**: February 2002 to December 2023
+- **Period**: January 1998 to February 2023
 
-This dataset was created by aggregating daily SST data obtained from the
-Japan Meteorological Agency website
-(<https://www.jma.go.jp/jma/indexe.html>) into monthly values.
+The dataset was generated from a state-space model analysis of sea
+temperature off Jogashima reported by Baba et al. (2024). It is used
+here as a reproducible response series for demonstrating the basic
+`tempssm` workflow. Exercise II combines the same simulated SST series
+with simulated marine-environment variables.
 
 ``` r
-data(yamaguchi_sst) # load a ts object of SST off Niigata
-head(yamaguchi_sst)
+data(sst_sim) # load a ts object of SST off Jogashima
+head(sst_sim)
 ```
 
-    ##           Jan      Feb      Mar      Apr      May      Jun
-    ## 1982 14.85516 13.36500 13.55645 14.29933 17.72419 21.53000
+    ##        Jan   Feb   Mar   Apr   May   Jun
+    ## 1998 16.19 13.82 16.44 16.49 19.70 21.83
 
 ``` r
-summary(yamaguchi_sst)
+summary(sst_sim)
 ```
 
     ##       Temp      
-    ##  Min.   :11.45  
-    ##  1st Qu.:15.13  
-    ##  Median :18.84  
-    ##  Mean   :19.54  
-    ##  3rd Qu.:23.63  
-    ##  Max.   :29.49
+    ##  Min.   :11.17  
+    ##  1st Qu.:16.22  
+    ##  Median :18.39  
+    ##  Mean   :18.23  
+    ##  3rd Qu.:20.11  
+    ##  Max.   :26.10
 
-### Plotting the Monthly SST Time Series
+### Plot the Monthly SST Series
 
 We begin by visualizing the monthly SST time series to examine its
 overall structure, including apparent trends, seasonal variability, and
 the presence or absence of missing observations.
 
 ``` r
-plt_yamaguchi_sst <- forecast::autoplot(yamaguchi_sst) +
+plt_sst_sim <- forecast::autoplot(sst_sim) +
   labs(y = expression(Temp.~(degree*C)), 
        x = "Time (year)") +
-  ggtitle("Monthly SST off Yamaguchi, Japan") +
+  ggtitle("Monthly SST off Jogashima, Japan") +
   theme_classic()
 
-plot(plt_yamaguchi_sst)
+plot(plt_sst_sim)
 ```
 
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-The overall mean SST is approximately 19.5 °C, and a clear seasonal
-pattern is visible. The series contains no missing observations.
-Although SST appears to increase over the study period, year-to-year
-variability is also evident, making the long-term trend difficult to
-assess from the raw time series alone.
+The overall mean SST is approximately 18.2 °C, and a clear seasonal
+pattern is visible. The series contains 0 missing observations. The raw
+time series suggests that SST may have decreased gradually from the
+beginning of the record to around 2008 and then increased thereafter.
+However, interannual variability is also evident, making the long-term
+pattern difficult to assess from the raw series alone.
 
-### Applying a Linear Gaussian State-Space Model
+### Fit the Baseline State-Space Model
 
 When a `ts` object containing temperature time-series data (here,
-`yamaguchi_sst`) is passed to the core function `tempssm()`, model
+`sst_sim`) is passed to the core function `tempssm()`, model
 construction and parameter estimation are performed together. The
 returned S3 object of class `tempssm` (here, `res_ar1`) stores the
 filtering and smoothing estimates, as well as the constructed model and
@@ -179,52 +198,57 @@ model.
 
 ``` r
 # model with first-order autoregressive component
-res_ar1 <- tempssm(yamaguchi_sst) # (ar_order=1: default)
+res_ar1 <- tempssm(sst_sim) # (ar_order=1: default)
 summary(res_ar1)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst)
+    ## tempssm(temp_data = sst_sim)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -437.2 
+    ##   Log-likelihood : -198.19 
     ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 4.542027e-14 
-    ##   State (Q trend): 9.936473e-08 
-    ##   State (Q season): 8.408352e-56 
-    ##   State (Q ar): 0.3145626 
+    ##   Observation (H): 0.07496416 
+    ##   State (Q trend): 4.937122e-06 
+    ##   State (Q season): 0.0001763538 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6202321
+    ##   Coefficient of AR1: 0.7579372
 
 From the summary output, confirm that the model has converged
-(`Converged: TRUE`). The output also reports statistics such as the
-number of parameters (`k`), the log-likelihood, the likelihood type, and
-the number of diffuse initial states. The parameter estimates include
-the observation error variance (`H`), the process error variance of the
-long-term trend component (`Q trend`), the process error variance of the
-seasonal component (`Q season`), the process error variance of the
-autoregressive component, and the first-order autoregressive coefficient
-(`AR1`).
+(`Converged: TRUE`). The output also reports the number of parameters
+(`k`), the log-likelihood, the likelihood type, and the number of
+diffuse initial states.
 
-The log-likelihood and the associated number of estimated parameters can
-also be extracted directly from the fitted `tempssm` object using
-`logLik()`.
+The parameter estimates correspond to the error variances and
+autoregressive coefficients in the fitted state-space model. `H` is the
+observation error variance, representing variability in the observed
+temperature series that is not explained by the latent states. The `Q`
+terms are process error variances for the latent components: `Q trend`
+controls stochastic variation in the long-term trend, `Q season`
+controls variation in the seasonal component, and the autoregressive
+process variance controls variation in the short-term autoregressive
+component. The coefficient `AR1` represents first-order autoregressive
+dependence in that short-term component.
+
+The log-likelihood and parameter count can also be extracted directly
+with `logLik()`.
 
 ``` r
 ll <- logLik(res_ar1)
 ll
 ```
 
-    ## 'log Lik.' -437.1989 (df=5)
+    ## 'log Lik.' -198.1929 (df=5)
 
 ``` r
 attr(ll, "df") # number of parameters
@@ -232,24 +256,22 @@ attr(ll, "df") # number of parameters
 
     ## [1] 5
 
-By default, `tempssm()` uses the KFAS marginal likelihood for parameter
-estimation. The diffuse likelihood remains available by explicitly
-setting `marginal = FALSE`. The selected likelihood type is stored in
-the fitted `tempssm` object and is used consistently by downstream
-methods such as `logLik()` and `summary()`.
+By default, `tempssm()` uses the KFAS marginal likelihood. The diffuse
+likelihood remains available with `marginal = FALSE`, and the selected
+likelihood type is retained by `logLik()` and `summary()`.
 
-The package intentionally does not compute AIC for `tempssm` objects.
-The log-likelihood and parameter count remain available through
-`logLik()` for users who need them for their own model-assessment
+The package intentionally does not compute AIC for `tempssm` objects
+because AIC comparisons for state-space models can require care when
+likelihood type, diffuse initialization, or latent-state structure
+differs across models. This manual instead emphasizes residual
+diagnostics and time-series cross-validation. The log-likelihood and
+parameter count remain available for users who need them in their own
 workflows.
 
-### Plotting Long-Term Trend, Drift, Seasonal, and Autoregressive Components
+### Plot Latent Components
 
-We extract the corresponding latent components from the state-space
-model and visualize the estimated long-term evolution of temperature
-levels and their rate of change (drift). Plotting seasonal variation and
-autoregressive dependence as well makes the underlying trend structure
-easier to examine.
+The component plot visualizes the estimated long-term level, drift,
+seasonal variation, and autoregressive dependence.
 
 ``` r
 # plot all components at once
@@ -258,56 +280,71 @@ plot(res_ar1)
 
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-The long-term trend in the upper-left panel indicates an increasing SST
-pattern over the study period. In this example, the average annual rate
-of SST increase over the study period is approximately 0.034 °C.
+    ## [1] 0.08777084
 
-However, the rate of SST change itself also appears to vary over time.
-Focusing on the rate of change (drift) in the upper-right panel, the
-rate of change declines to zero or near zero during the 2000s and then
-increases after 2010. The shaded gray areas represent 95% confidence
-intervals for the estimated latent states and illustrate the uncertainty
-associated with each estimated component.
+The long-term trend in the upper-left panel suggests that SST decreased
+during the first part of the study period and then increased after
+around 2008. In this example, the average annual rate of SST change over
+the full period is approximately 0.088 °C.
 
-The standard plotting interface is `plot(res)`. The ggplot2-style
-interface `autoplot(res)` is also available and produces the same
-component plot by default. To obtain a ggplot object for an individual
-component, specify the `component` argument in `autoplot()` as follows.
+This full-period average should be interpreted together with the
+time-varying drift component. In the upper-right panel, the drift is
+negative before around 2008 and becomes positive thereafter,
+corresponding to the shift from a decreasing to an increasing long-term
+SST pattern. The shaded gray areas show 95% confidence intervals for the
+estimated latent states.
+
+For scripted workflows, `plot_tempssm_components()` returns the same
+component plot as a `ggplot` object. Individual components can be
+selected with the `component` argument.
 
 ``` r
-# plot each of components at once
-plt_level <- autoplot(res_ar1, component = c("level"))
-plt_drift <- autoplot(res_ar1, component = c("drift"))
-plt_season <- autoplot(res_ar1, component = c("season"))
-plt_ar <- autoplot(res_ar1, component = c("ar"))
+# extract individual component plots
+plt_level <- plot_tempssm_components(res_ar1, component = c("level"))
+plt_drift <- plot_tempssm_components(res_ar1, component = c("drift"))
+plt_season <- plot_tempssm_components(res_ar1, component = c("season"))
+plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 ```
 
 ### Model Diagnostics
 
-The package provides diagnostic tools for checking whether the fitted
-model has left notable structure in the residuals. In particular,
-residual time-series plots, residual autocorrelation, residual
-distributions, and Ljung-Box tests can be used to assess remaining
-temporal dependence and departures from the Gaussian error assumption.
+Residual diagnostics help check whether notable structure remains after
+model fitting. Here we inspect the residual series, residual
+autocorrelation, residual distribution, and a Ljung-Box test.
 
 ``` r
-plot_tempssm_residual_diagnostics(res_ar1)
+r <- get_tempssm_residuals(res_ar1)
+lb_lag <- frequency(res_ar1$temp_data)
+forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ```
 
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-In the model diagnostic plot, the upper panel shows the residual time
-series, the lower-left panel shows the residual autocorrelation plot
-(ACF plot), and the lower-right panel shows the residual frequency
-distribution. These plots should be checked for any notable residual
-patterns.
+    ## 
+    ##  Ljung-Box test
+    ## 
+    ## data:  Residuals
+    ## Q* = 9.6827, df = 12, p-value = 0.6438
+    ## 
+    ## Model df: 0.   Total lags used: 12
 
-In this example, the ACF plot shows an isolated spike around lag 5 and
-lag 27, but there is no clear sequence of successive significant lags or
-repeated seasonal pattern. Such isolated spikes can occur when many lags
-are inspected, so they should be interpreted together with the Ljung-Box
-test and the residual time-series plot rather than used as the sole
-basis for changing the model.　
+Here, `get_tempssm_residuals()` extracts standardized recursive
+residuals, and `forecast::checkresiduals()` displays the residual
+series, ACF plot, histogram, and Ljung-Box test. The lag is set to the
+seasonal frequency of the input data; for monthly data, this uses lag
+12.
+
+In this example, the ACF plot does not show a clear sequence of
+successive significant lags or a repeated seasonal pattern. Isolated
+spikes can occur when many lags are inspected, so they should be
+interpreted together with the Ljung-Box test and the residual
+time-series plot rather than used as the sole basis for changing the
+model.
+
+For a compact tabular summary of the Ljung-Box test and residual
+kurtosis, use `diagnose_residuals()`. The wrapper
+`plot_tempssm_residual_diagnostics()` is also available when a single
+function call for diagnostic plots is preferred.
 
 ``` r
 diag <- diagnose_residuals(res_ar1)
@@ -317,15 +354,12 @@ print(diag)
     ## # A tibble: 1 × 4
     ##   lb_stat lb_lag lb_pvalue kurtosis
     ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    18.1     12     0.111     3.70
+    ## 1    9.68     12     0.644     3.26
 
-The `lb_stat`, `lb_lag`, and `lb_pvalue` columns returned by
-`diagnose_residuals()` correspond to the Ljung-Box test statistic, the
-lag used in the test, and the corresponding P-value. For monthly time
-series, the default Ljung-Box lag is the seasonal frequency, so the
-default test evaluates residual autocorrelation up to lag 12. In this
-example, the Ljung-Box test does not indicate significant residual
-autocorrelation up to lag 12.
+The `lb_stat`, `lb_lag`, and `lb_pvalue` columns correspond to the
+Ljung-Box test statistic, the lag used in the test, and the P-value. For
+monthly time series, the default lag is 12. In this example, the test
+does not indicate significant residual autocorrelation up to lag 12.
 
 If residual autocorrelation at longer lags is of concern, the lag can be
 specified manually. For example, the following code repeats the
@@ -343,56 +377,54 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1 lag 12    18.1     12    0.111      3.70
-    ## 2 lag 24    30.8     24    0.158      3.70
-    ## 3 lag 36    48.9     36    0.0746     3.70
+    ## 1 lag 12    9.68     12     0.644     3.26
+    ## 2 lag 24   19.5      24     0.725     3.26
+    ## 3 lag 36   27.9      36     0.831     3.26
 
-These diagnostics should be interpreted together with the residual ACF
-plot. A small number of isolated ACF spikes can occur by chance when
-many lags are inspected, whereas repeated or periodic spikes may suggest
-remaining temporal structure.
+Interpret these tests together with the residual ACF plot. Isolated ACF
+spikes can occur by chance, whereas repeated or periodic spikes may
+suggest remaining temporal structure.
 
-### Examining the Autoregressive (AR) Order
+### Examine the Autoregressive Order
 
-In this manual, the default AR(1) specification is used as the working
-model. The autoregressive component is included to absorb short-term
-serial dependence that is not represented by the latent level, drift,
-and seasonal components. A higher AR order should therefore not be
-treated as an automatic improvement. Instead, the AR order can be
-adjusted when residual diagnostics suggest that notable autocorrelation
-remains.
+This manual uses the default AR(1) specification as the working model.
+The autoregressive component absorbs short-term serial dependence not
+represented by the level, drift, and seasonal components. A higher AR
+order should be considered when residual diagnostics suggest that
+notable autocorrelation remains, rather than treated as an automatic
+improvement.
 
 For example, if residual autocorrelation remains after fitting the AR(1)
 model, users can fit an AR(2) model and repeat the same diagnostics.
 
 ``` r
 # Optional sensitivity check with a second-order autoregressive component
-res_ar2 <- tempssm(yamaguchi_sst, ar_order = 2)
+res_ar2 <- tempssm(sst_sim, ar_order = 2)
 summary(res_ar2)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst, ar_order = 2)
+    ## tempssm(temp_data = sst_sim, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -434.26 
+    ##   Log-likelihood : -198.19 
     ##   k              : 6 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.120908 
-    ##   State (Q trend): 2.206262e-07 
-    ##   State (Q season): 5.525557e-16 
-    ##   State (Q ar): 0.1044204 
+    ##   Observation (H): 0.05517452 
+    ##   State (Q trend): 4.945287e-06 
+    ##   State (Q season): 0.0001859987 
+    ##   State (Q ar): 0.149755 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 2 
-    ##   Coefficient of AR1: 1.185818 
-    ##   Coefficient of AR2: -0.4790522
+    ##   Coefficient of AR1: 0.6553237 
+    ##   Coefficient of AR2: 0.07430046
 
 ``` r
 plot_tempssm_residual_diagnostics(res_ar2)
@@ -412,26 +444,18 @@ diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1 lag 12    9.93     12     0.623     3.66
-    ## 2 lag 24   24.0      24     0.461     3.66
-    ## 3 lag 36   43.9      36     0.170     3.66
+    ## 1 lag 12    9.61     12     0.650     3.26
+    ## 2 lag 24   19.4      24     0.729     3.26
+    ## 3 lag 36   27.9      36     0.831     3.26
 
-In a sensitivity check with an AR(2) specification, the short-lag
-residual autocorrelation was also limited, but the residual ACF showed a
-negative spike around lag 24, 26, 27. This pattern suggests that
-increasing the AR order does not necessarily improve all aspects of the
-residual structure. Therefore, the AR(2) model should be treated as a
-model requiring additional diagnostic attention rather than as an
-automatic improvement over the AR(1) baseline.
+In this example, the AR(2) diagnostics are similar to those from the
+AR(1) model, so we proceed with AR(1) as the baseline specification.
 
-In the present example, the residual diagnostics do not provide strong
-evidence that a higher AR order is needed, so we proceed with the AR(1)
-model as the baseline specification.
+### Extract Estimated Components
 
-### Estimated Parameters and Latent-State Components
-
-The long-term trend component and its rate of change (drift) can be
-extracted as `ts` objects as follows. r
+The fitted `tempssm` object contains smoothed state estimates returned
+by `KFAS`. The matrix `res_ar1$kfs$alphahat` stores the level, drift,
+seasonal states, and autoregressive state.
 
 ``` r
 # Smoothing estimates
@@ -440,32 +464,37 @@ head(alpha_hat)
 ```
 
     ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 1982 18.96708 0.002442910  -4.388514  -1.989138  0.8440593  3.3269013
-    ## Feb 1982 18.96952 0.002442962  -5.783514  -4.388514 -1.9891376  0.8440593
-    ## Mar 1982 18.97197 0.002442995  -5.905440  -5.783514 -4.3885143 -1.9891376
-    ## Apr 1982 18.97441 0.002443203  -4.593786  -5.905440 -5.7835140 -4.3885143
-    ## May 1982 18.97685 0.002443328  -1.903379  -4.593786 -5.9054404 -5.7835140
-    ## Jun 1982 18.97930 0.002443456   1.457171  -1.903379 -4.5937863 -5.9054404
+    ## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553992
+    ## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451
+    ## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344
+    ## Apr 1998 18.60118 -0.01911003 -2.0508949 -2.8244535 -5.0256252 -2.0428374
+    ## May 1998 18.58207 -0.01914415  0.2882283 -2.0508949 -2.8244535 -5.0256252
+    ## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
-    ## Jan 1982  6.1507774  7.6637613  5.1211012  1.4571706  -1.903379   -4.593786
-    ## Feb 1982  3.3269013  6.1507774  7.6637613  5.1211012   1.457171   -1.903379
-    ## Mar 1982  0.8440593  3.3269013  6.1507774  7.6637613   5.121101    1.457171
-    ## Apr 1982 -1.9891376  0.8440593  3.3269013  6.1507774   7.663761    5.121101
-    ## May 1982 -4.3885143 -1.9891376  0.8440593  3.3269013   6.150777    7.663761
-    ## Jun 1982 -5.7835140 -4.3885143 -1.9891376  0.8440593   3.326901    6.150777
-    ##          sea_dummy11      arima1
-    ## Jan 1982   -5.905440  0.27659369
-    ## Feb 1982   -4.593786  0.17898925
-    ## Mar 1982   -1.903379  0.48992423
-    ## Apr 1982    1.457171 -0.08129112
-    ## May 1982    5.121101  0.65071819
-    ## Jun 1982    7.663761  1.09353211
+    ## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949
+    ## Feb 1998  0.9553992  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283
+    ## Mar 1998  0.5642451  0.9553992  1.6282639  4.9410126  2.4937014   1.9925949
+    ## Apr 1998 -0.9196344  0.5642451  0.9553992  1.6282639  4.9410126   2.4937014
+    ## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553992  1.6282639   4.9410126
+    ## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553992   1.6282639
+    ##          sea_dummy11     arima1
+    ## Jan 1998  -2.8244535 -0.2178662
+    ## Feb 1998  -2.0508949  0.1519895
+    ## Mar 1998   0.2882283  0.4187224
+    ## Apr 1998   1.9925949  0.2408084
+    ## May 1998   2.4937014  0.7185730
+    ## Jun 1998   4.9410126  1.0167731
+
+For routine use, helper functions extract individual components as `ts`
+objects with the original time index. The level component represents the
+estimated long-term temperature level, while the drift component
+represents its rate of change per year.
 
 ``` r
-#　Smoothing estimate of level component
+# Smoothing estimate of level component
 level_ts <- get_level_ts(res_ar1)
 
-#　Smoothing estimate of drift component
+# Smoothing estimate of drift component
 drift_ts <- get_drift_ts(res_ar1)
 
 # Average drift rate per year across the full period
@@ -473,11 +502,14 @@ mean_drift_year <- mean(drift_ts)
 print(mean_drift_year)
 ```
 
-    ## [1] 0.03365529
+    ## [1] 0.08777084
 
-The average annual rate of SST increase was estimated to be 0.0337 °C.
+The average annual rate of SST change was estimated to be 0.0878 °C over
+the full period. Because the estimated drift changes sign over time,
+this value should be interpreted as a model-based summary of the whole
+study period rather than as a constant warming rate.
 
-### Short-Term Prediction
+### Make Short-Term Predictions
 
 A fitted `tempssm` object can also be passed to `predict()` to obtain
 short-term predictions. By default, `predict(res)` returns a
@@ -490,8 +522,8 @@ pred_1 <- predict(res_ar1)
 pred_1
 ```
 
-    ##           May
-    ## 2026 18.71037
+    ##           Mar
+    ## 2023 18.33035
 
 Predictions for multiple future time points can be requested by setting
 the `n.ahead` argument.
@@ -502,11 +534,11 @@ pred_12
 ```
 
     ##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug
-    ## 2026                                     18.71037 22.01798 25.65128 28.17714
-    ## 2027 16.12028 14.72978 14.61284 15.92978                                    
+    ## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694
+    ## 2024 19.09319 16.16926                                                      
     ##           Sep      Oct      Nov      Dec
-    ## 2026 26.65593 23.82915 21.34670 18.51594
-    ## 2027
+    ## 2023 22.69098 22.00902 21.74806 20.19190
+    ## 2024
 
 Prediction uncertainty can also be returned by setting the `interval`
 argument. With `interval = "confidence"`, the returned lower and upper
@@ -528,18 +560,18 @@ pred_12_pi
 ```
 
     ##               fit      lwr      upr
-    ## May 2026 18.71037 17.58819 19.83255
-    ## Jun 2026 22.01798 20.68625 23.34972
-    ## Jul 2026 25.65128 24.24035 27.06221
-    ## Aug 2026 28.17714 26.73244 29.62184
-    ## Sep 2026 26.65593 25.19542 28.11643
-    ## Oct 2026 23.82915 22.36046 25.29783
-    ## Nov 2026 21.34670 19.87329 22.82011
-    ## Dec 2026 18.51594 17.03948 19.99240
-    ## Jan 2027 16.12028 14.64169 17.59886
-    ## Feb 2027 14.72978 13.24938 16.21017
-    ## Mar 2027 14.61284 13.13087 16.09480
-    ## Apr 2027 15.92978 14.44637 17.41319
+    ## Mar 2023 18.33035 17.35029 19.31042
+    ## Apr 2023 18.96985 17.85360 20.08610
+    ## May 2023 21.33710 20.13453 22.53967
+    ## Jun 2023 23.08522 21.82425 24.34619
+    ## Jul 2023 23.51856 22.21551 24.82161
+    ## Aug 2023 26.03694 24.70183 27.37204
+    ## Sep 2023 22.69098 21.33016 24.05179
+    ## Oct 2023 22.00902 20.62664 23.39141
+    ## Nov 2023 21.74806 20.34682 23.14929
+    ## Dec 2023 20.19190 18.77359 21.61020
+    ## Jan 2024 19.09319 17.65904 20.52734
+    ## Feb 2024 16.16926 14.72135 17.61717
 
 These predictions should be interpreted as model-based extrapolations
 rather than definitive forecasts. Uncertainty generally increases as the
@@ -547,229 +579,290 @@ prediction horizon becomes longer, and long-horizon predictions can be
 sensitive to model assumptions about trend, seasonality, and
 autoregressive dependence.
 
-## Exercise II: Applying a State-Space Model to a Temperature Time Series with an Exogenous Variable
+## Exercise II: Model With Exogenous Variables
 
-### Objective
+We extend the state-space modeling framework to examine the effect of
+exogenous factors on temperature variation. Specifically, we use
+simulated marine-environment variables related to the Kuroshio path as
+exogenous variables for the simulated SST series introduced in Exercise
+I.
 
-We extend the state-space modeling framework to examine the effect of an
-exogenous factor on temperature variation. Specifically, we examine the
-effect of the Pacific Decadal Oscillation (PDO) as an exogenous variable
-on SST observed off Yamaguchi Prefecture, Japan.
+### Load Simulated Marine-Environment Variables
 
-### Loading the PDO Index Dataset: PDO Index as an Exogenous Variable
+Two simulated exogenous-variable datasets are included in the package.
 
-- **Data**: Monthly Pacific Decadal Oscillation (PDO) index (JMA)\
-- **Period**: January 1901 to December 2025
+- **`kuroshio_a_sim`**: monthly binary indicator of the Kuroshio A-type
+  path\
+- **`distance_sim`**: monthly offshore-distance index of the Kuroshio
+  path\
+- **Period**: January 1998 to February 2023
 
-The Pacific Decadal Oscillation (PDO) index is defined as the projection
-of monthly mean sea surface temperature (SST) anomalies onto the leading
-empirical orthogonal function (EOF) of SST variability over the North
-Pacific north of 20°N. The EOF is computed using SST anomalies for
-1901–2000, defined relative to the 1901–2000 monthly climatology. To
-remove the global warming signal, the global-mean SST anomaly is
-subtracted from each grid point prior to the EOF analysis. In this
-package, we use the PDO index provided by the Japan Meteorological
-Agency (JMA), available at
-<https://www.data.jma.go.jp/kaiyou/data/shindan/b_1/pdo/pdo.txt>.
+Both datasets are provided as univariate `ts` objects with
+`frequency = 12`. They are simulated monthly datasets based on the
+Kuroshio-related variables used in Baba et al. (2024). The original data
+used in that study had finer time resolution for some variables, but the
+simulated datasets in this package are represented as monthly time
+series for use with `tempssm` examples.
 
 ``` r
-data(pdo) # load a ts object of PDO index
-head(pdo)
+data(kuroshio_a_sim)
+data(distance_sim)
+
+head(kuroshio_a_sim)
 ```
 
-    ##          Jan     Feb     Mar     Apr     May     Jun
-    ## 1901  1.0040  0.7403  0.9011 -0.0109 -0.2325 -0.6810
-
-### Intersecting the Temperature and PDO Time Series
-
-For state-space modeling with exogenous variables, all input time series
-must share a common and aligned time index. In this step, the
-temperature and PDO time series are restricted to their overlapping
-period by trimming the leading and trailing portions so that both
-datasets cover the same time span.
-
-The function `tempssm::trim_ts_overlap()` is used to align the two `ts`
-objects on a shared timeline and returns time series containing only the
-common period.
+    ##      Jan Feb Mar Apr May Jun
+    ## 1998   0   0   0   0   0   0
 
 ``` r
-# Generate an object on a shared timeline
-trimmed_series <- trim_ts_overlap(yamaguchi_sst,
-                                  pdo,
-                                  temp_name = "Temp",
-                                  exo_name = "PDO")
-
-yamaguchi_sst_trim <- trimmed_series$temperature
-pdo_trim <- trimmed_series$exogenous
-
-start(yamaguchi_sst_trim)
+head(distance_sim)
 ```
 
-    ## [1] 1982    1
+    ##      Jan Feb Mar Apr May Jun
+    ## 1998 116 148  49 131  45  40
 
 ``` r
-end(yamaguchi_sst_trim)
+summary(kuroshio_a_sim)
 ```
 
-    ## [1] 2025   12
+    ##    kuroshio_a    
+    ##  Min.   :0.0000  
+    ##  1st Qu.:0.0000  
+    ##  Median :0.0000  
+    ##  Mean   :0.2483  
+    ##  3rd Qu.:0.0000  
+    ##  Max.   :1.0000
 
 ``` r
-start(pdo_trim)
+summary(distance_sim)
 ```
 
-    ## [1] 1982    1
+    ##     distance     
+    ##  Min.   : 10.00  
+    ##  1st Qu.: 26.00  
+    ##  Median : 43.00  
+    ##  Mean   : 55.65  
+    ##  3rd Qu.: 84.00  
+    ##  Max.   :150.00
+
+### Check Time-Series Alignment
+
+For state-space modeling with exogenous variables, the response and
+exogenous time series must share a common and aligned time index. In
+this example, `sst_sim`, `kuroshio_a_sim`, and `distance_sim` already
+have the same monthly time span and frequency.
 
 ``` r
-end(pdo_trim)
+series_info <- tibble::tibble(
+  series = c("sst_sim", "kuroshio_a_sim", "distance_sim"),
+  start = c(
+    paste(start(sst_sim), collapse = "-"),
+    paste(start(kuroshio_a_sim), collapse = "-"),
+    paste(start(distance_sim), collapse = "-")
+  ),
+  end = c(
+    paste(end(sst_sim), collapse = "-"),
+    paste(end(kuroshio_a_sim), collapse = "-"),
+    paste(end(distance_sim), collapse = "-")
+  ),
+  frequency = c(
+    frequency(sst_sim),
+    frequency(kuroshio_a_sim),
+    frequency(distance_sim)
+  ),
+  missing = c(
+    sum(is.na(sst_sim)),
+    sum(is.na(kuroshio_a_sim)),
+    sum(is.na(distance_sim))
+  )
+)
+
+series_info
 ```
 
-    ## [1] 2025   12
+    ## # A tibble: 3 × 5
+    ##   series         start  end    frequency missing
+    ##   <chr>          <chr>  <chr>      <dbl>   <int>
+    ## 1 sst_sim        1998-1 2023-2        12       0
+    ## 2 kuroshio_a_sim 1998-1 2023-2        12       0
+    ## 3 distance_sim   1998-1 2023-2        12       0
 
-### Plotting Time Series of SST and the PDO Index
+If user-supplied time series have different start or end points,
+`trim_ts_overlap()` can be used to restrict the response and exogenous
+series to their shared overlapping period before fitting the model.
 
-We visualize the time-series structures of SST and the PDO index.
+### Plot the Response and Exogenous Variables
+
+We visualize the simulated SST series together with the two simulated
+Kuroshio variables to inspect the overall structure of the dataset.
 
 ``` r
-plt_yamaguchi_sst_trim <- forecast::autoplot(yamaguchi_sst_trim) +
-  labs(y = expression(Temp.~(degree*C)), 
-       x = "Time (year)") +
-  ggtitle("Monthly SST off Yamaguchi, Japan") +
+plt_sst_exo <- forecast::autoplot(sst_sim) +
+  labs(y = expression(Temp.~(degree*C)), x = "Time (year)") +
+  ggtitle("Simulated monthly SST") +
   theme_classic()
 
-
-plt_pdo <- forecast::autoplot(pdo_trim) +
-  labs(x = "Time (year)", y = "PDO index") +
-  ggtitle("PDO index") +
+plt_kuroshio_a <- forecast::autoplot(kuroshio_a_sim) +
+  labs(x = "Time (year)", y = "A-type indicator") +
+  ggtitle("Simulated Kuroshio A-type path") +
+  scale_y_continuous(breaks = c(0, 1)) +
   theme_classic()
 
-plt_yamaguchi_sst_trim + plt_pdo + patchwork::plot_layout(ncol=1)
+plt_distance <- forecast::autoplot(distance_sim) +
+  labs(x = "Time (year)", y = "Offshore distance") +
+  ggtitle("Simulated Kuroshio offshore distance") +
+  theme_classic()
+
+plt_sst_exo + plt_kuroshio_a + plt_distance +
+  patchwork::plot_layout(ncol = 1)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
 
-The PDO index data used in this exercise contain no missing values. When
-using your own exogenous-variable data, however, make sure that the
-exogenous variables do not contain missing values before fitting the
-model. `tempssm()` does not allow missing values in exogenous variables,
-and model fitting will stop with an error if such data are supplied. If
-necessary, apply appropriate preprocessing, such as imputation, before
-the analysis.
+The simulated exogenous variables used here contain no missing values.
+When using your own exogenous data, missing values must be handled
+before model fitting because `tempssm()` does not allow missing
+exogenous values. In contrast, missing values in the dependent
+temperature series are allowed and are treated as unobserved responses
+during Kalman filtering and smoothing.
 
-In contrast, missing values in the dependent temperature time series are
-allowed. In the state-space model, these missing values are treated as
-unobserved responses, and model estimation proceeds through Kalman
-filtering and smoothing.
+### Reuse the Baseline Model
 
-### Applying a Model Without an Exogenous Variable
-
-We first apply a baseline state-space model that does not include any
-exogenous variables. This model serves as a reference case in which
-temperature variation is explained solely by the latent long-term trend,
-seasonal cycle, and autoregressive dependence. Although the same model
-was already fitted in Exercise I, here we explicitly specify the
-dependent-variable argument and store the returned object as
-`res_without`.
+Exercise II uses the same response series as Exercise I, so we reuse the
+previously fitted AR(1) model as the reference model without exogenous
+variables.
 
 ``` r
-res_without <- tempssm(temp_data = yamaguchi_sst_trim, ar_order = 1) 
+res_without <- res_ar1
 summary(res_without)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst_trim, ar_order = 1)
+    ## tempssm(temp_data = sst_sim)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -435.46 
+    ##   Log-likelihood : -198.19 
     ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 2.019273e-14 
-    ##   State (Q trend): 1.118445e-07 
-    ##   State (Q season): 2.312771e-149 
-    ##   State (Q ar): 0.3164652 
+    ##   Observation (H): 0.07496416 
+    ##   State (Q trend): 4.937122e-06 
+    ##   State (Q season): 0.0001763538 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6205502
+    ##   Coefficient of AR1: 0.7579372
+
+This keeps the comparison focused on the additional information
+introduced by the simulated Kuroshio variables.
+
+### Combine Exogenous Variables
+
+The `exo_data` argument of `tempssm()` can accept either a univariate
+`ts` object or a multivariate `ts` object. Because this exercise uses
+two exogenous variables, we combine `kuroshio_a_sim` and `distance_sim`
+into a single multivariate `ts` object before fitting the model.
 
 ``` r
-plot_tempssm_residual_diagnostics(res_without)
+exo_kuroshio <- cbind(kuroshio_a_sim, distance_sim)
+colnames(exo_kuroshio) <- c("kuroshio_a", "distance")
+
+head(exo_kuroshio)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+    ##          kuroshio_a distance
+    ## Jan 1998          0      116
+    ## Feb 1998          0      148
+    ## Mar 1998          0       49
+    ## Apr 1998          0      131
+    ## May 1998          0       45
+    ## Jun 1998          0       40
 
 ``` r
-diag_res_without <- diagnose_residuals(res_without)
-print(diag_res_without)
+start(exo_kuroshio)
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    17.0     12     0.149     3.68
-
-The residual diagnostics for this AR(1) baseline model do not indicate
-significant residual autocorrelation up to lag 12. This result suggests
-that the default first-order autoregressive structure is a reasonable
-starting point for the model without the exogenous variable.
-
-This baseline model provides a useful benchmark for evaluating the
-additional explanatory power of the PDO index introduced in the next
-section.
-
-### Applying a Model With an Exogenous Variable
-
-We construct a model that uses the PDO index as a univariate exogenous
-variable. In the `tempssm()` function, the PDO data (`pdo_trim`) are
-supplied to the exogenous-variable argument (`exo_data`). The
-temperature time series (`yamaguchi_sst_trim`) is supplied to the
-dependent-variable argument (`temp_data`), which was implicit in the
-previous examples.
+    ## [1] 1998    1
 
 ``` r
-res_with <- tempssm(temp_data = yamaguchi_sst_trim,
-                    exo_data = pdo_trim,
-                    ar_order = 1) 
+end(exo_kuroshio)
+```
+
+    ## [1] 2023    2
+
+``` r
+frequency(exo_kuroshio)
+```
+
+    ## [1] 12
+
+``` r
+colnames(exo_kuroshio)
+```
+
+    ## [1] "kuroshio_a" "distance"
+
+``` r
+sum(is.na(exo_kuroshio))
+```
+
+    ## [1] 0
+
+The resulting object has class `mts`, the multivariate form of base R’s
+`ts` class. Each column is treated as a separate exogenous variable, and
+the column names are used as labels in summaries and coefficient tables.
+
+### Fit a Model With Exogenous Variables
+
+We next fit a model with the two simulated Kuroshio variables supplied
+through `exo_data`.
+
+``` r
+res_with <- tempssm(
+  temp_data = sst_sim,
+  exo_data = exo_kuroshio,
+  ar_order = 1
+)
 summary(res_with)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = yamaguchi_sst_trim, exo_data = pdo_trim, 
-    ##     ar_order = 1)
+    ## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 1)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -390.99 
-    ##   k              : 6 
-    ##   Diffuse states : 14 
+    ##   Log-likelihood : -154.38 
+    ##   k              : 7 
+    ##   Diffuse states : 15 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 1.490122e-25 
-    ##   State (Q trend): 7.158619e-20 
-    ##   State (Q season): 2.316533e-82 
-    ##   State (Q ar): 0.2695508 
+    ##   Observation (H): 0.003184407 
+    ##   State (Q trend): 4.132733e-06 
+    ##   State (Q season): 0.0006818023 
+    ##   State (Q ar): 0.1556755 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6566528 
-    ## Exogenous variable    PDO 
-    ## Estimated coefficient     -0.4476073 
-    ## Lower CI  -0.5372882 
-    ## Upper CI  -0.3579264
+    ##   Coefficient of AR1: 0.6585956 
+    ## Exogenous variable    kuroshio_a distance 
+    ## Estimated coefficient     0.5110124 -0.007070968 
+    ## Lower CI  0.1658023 -0.008467629 
+    ## Upper CI  0.8562225 -0.005674308
 
 ``` r
 plot_tempssm_residual_diagnostics(res_with)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-22-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
 diag_res_with <- diagnose_residuals(res_with)
@@ -779,82 +872,181 @@ print(diag_res_with)
     ## # A tibble: 1 × 4
     ##   lb_stat lb_lag lb_pvalue kurtosis
     ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    5.53     12     0.938     3.69
+    ## 1    6.50     12     0.889     3.07
 
-The residual diagnostics for the model with the PDO index also do not
-indicate significant residual autocorrelation up to lag 12. Thus, for
-both models considered here, the AR(1) specification provides an
-adequate working autoregressive structure according to these residual
-checks.
+The residual diagnostics for this model also do not indicate significant
+residual autocorrelation up to lag 12. Thus, AR(1) remains a reasonable
+working specification for both models considered here.
 
-We then examine the model estimates. The estimated coefficient for the
-exogenous PDO index is negative (-0.45), and its 95% confidence interval
-does not include zero, ranging from -0.54 to -0.36. This indicates a
-statistically significant negative relationship between local SST off
-Yamaguchi Prefecture and PDO variability.
+We then examine the estimated coefficients for the exogenous variables.
 
-Specifically, after accounting for the underlying long-term trend,
-seasonal cycle, and autoregressive dependence, the model suggests that a
-one-unit increase in the PDO index is associated with an average
-decrease of approximately 0.45 °C in monthly SST. This result implies
-that positive phases of the PDO systematically contribute to cooler
-conditions at the study site.
+``` r
+exo_coef
+```
 
-Importantly, the effect of this exogenous variable is identified as an
-additional factor beyond the internal dynamics of the temperature time
-series, rather than as an artifact of improved representation of the
-long-term trend or temporal dependence. Compared with the baseline model
-without exogenous variables, the statistical significance of the PDO
-coefficient indicates that the PDO acts as an independent large-scale
-climate driver influencing local temperature variation.
+    ##     Variable  Coefficient          lwr          upr
+    ## 1 kuroshio_a  0.511012406  0.165802340  0.856222472
+    ## 2   distance -0.007070968 -0.008467629 -0.005674308
 
-For models with exogenous variables, future values of the exogenous
-variables are needed when calling `predict()`. If such values are
-available, they can be passed through `new_exo_data`. For a simple
+The coefficient table summarizes the estimated association between SST
+and each simulated Kuroshio variable after accounting for the latent
+components. In this fitted model, the estimated coefficient for
+`kuroshio_a` is 0.51 °C, with a 95% confidence interval from 0.17 to
+0.86. Because `kuroshio_a` is coded as a binary indicator, this
+coefficient can be read as the estimated SST difference between A-type
+and non-A-type conditions, conditional on the other model components and
+on `distance`.
+
+The estimated coefficient for `distance` is -0.007 °C per one-unit
+increase in the distance index, with a 95% confidence interval from
+-0.008 to -0.006. This means that larger values of the simulated
+distance index are associated with slightly lower SST, conditional on
+the latent components and `kuroshio_a`.
+
+Because these are simulated example datasets, these coefficient
+interpretations should be treated as an illustration of how to fit and
+inspect a model with multiple exogenous variables, rather than as new
+scientific evidence about the Kuroshio path.
+
+For models with exogenous variables, future exogenous values are needed
+when calling `predict()`. They can be supplied with `new_exo_data`,
+using the same variables and column order as `exo_data`. For a simple
 one-step-ahead visual check, `exo_strategy = "last"` carries the final
-observed exogenous value forward. This is a persistence assumption for
-the exogenous variable, not a separate forecast model for the PDO index.
+observed row forward as a persistence assumption.
 
 ``` r
 pred_with_last_exo <- predict(res_with, exo_strategy = "last")
 pred_with_last_exo
 ```
 
-    ##           Jan
-    ## 2026 16.41488
+    ##           Mar
+    ## 2023 18.37914
 
-### Time-Series Cross-Validation (tsCV)
+### Compare Estimated Components
 
-Time-series cross-validation (tsCV) evaluates model performance based on
-out-of-sample prediction errors while respecting the temporal ordering
-of the data. It therefore provides an additional and independent
-perspective on model adequacy.
+We compare the estimated long-term trend and drift between the two
+models by overlaying their smoothed point estimates.
 
-In time-series cross-validation, the model is repeatedly fitted to
-expanding or sliding training windows, and predictive performance is
-evaluated on subsequent observations. Unlike random cross-validation,
-this procedure prevents information leakage from the future to the past
-and is therefore suitable for model validation with temporal data.
+``` r
+level_without <- get_level_ts(res_without)
+level_with <- get_level_ts(res_with)
+drift_without <- get_drift_ts(res_without)
+drift_with <- get_drift_ts(res_with)
+
+component_compare <- rbind(
+  data.frame(
+    time = as.numeric(time(level_without)),
+    component = "Level component (°C)",
+    model = "Without exogenous variables",
+    estimate = as.numeric(level_without)
+  ),
+  data.frame(
+    time = as.numeric(time(level_with)),
+    component = "Level component (°C)",
+    model = "With Kuroshio variables",
+    estimate = as.numeric(level_with)
+  ),
+  data.frame(
+    time = as.numeric(time(drift_without)),
+    component = "Drift component (°C/year)",
+    model = "Without exogenous variables",
+    estimate = as.numeric(drift_without)
+  ),
+  data.frame(
+    time = as.numeric(time(drift_with)),
+    component = "Drift component (°C/year)",
+    model = "With Kuroshio variables",
+    estimate = as.numeric(drift_with)
+  )
+)
+
+component_compare$component <- factor(
+  component_compare$component,
+  levels = c("Level component (°C)", "Drift component (°C/year)")
+)
+
+plt_component_compare <- ggplot(
+  component_compare,
+  aes(x = time, y = estimate, color = model)
+) +
+  geom_line(linewidth = 0.8) +
+  facet_wrap(~ component, ncol = 1, scales = "free_y") +
+  labs(x = "Time (year)", y = "Estimate", color = "Model") +
+  theme_classic()
+
+plot(plt_component_compare)
+```
+
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+
+``` r
+mean_drift_year_without <- mean(drift_without, na.rm = TRUE)
+mean_drift_year_with <- mean(drift_with, na.rm = TRUE)
+
+mean_drift_year_without
+```
+
+    ## [1] 0.08777084
+
+``` r
+mean_drift_year_with
+```
+
+    ## [1] 0.04924515
+
+The level components show a similar broad pattern in both models: SST
+declines from the beginning of the record to around 2008 and then
+increases toward the end of the period. However, the model with the
+simulated Kuroshio variables estimates a higher level during the early
+period and a slightly lower level toward the end, compared with the
+model without exogenous variables.
+
+The difference between the two models is clearer in the drift component.
+The model without exogenous variables shows more local fluctuation in
+the rate of change, whereas the model with the simulated Kuroshio
+variables gives a smoother transition from negative to positive drift.
+This suggests that some short- to medium-term variation represented in
+the baseline model’s drift component is instead captured by the
+simulated exogenous variables.
+
+The estimated annual rate of SST change over the observation period is
+0.0878 in the model without exogenous variables and 0.0492 in the model
+with exogenous variables.
+
+This simulated example illustrates that estimated long-term components
+can change when external drivers are included.
+
+The next section evaluates whether this difference is also reflected in
+out-of-sample predictive performance under a conditional forecasting
+setting.
+
+### Evaluate Conditional Predictive Performance With tsCV
+
+Time-series cross-validation (tsCV) evaluates out-of-sample prediction
+errors while respecting temporal order. The model is repeatedly fitted
+to training windows, and predictions are evaluated on subsequent
+observations, avoiding information leakage from the future to the past.
 
 Here, by comparing cross-validation metrics for models with and without
-the exogenous PDO variable, we assess whether the statistical signal
-found in the PDO coefficient is also reflected in out-of-sample
-predictive performance.
+the simulated Kuroshio variables, we assess whether the additional
+exogenous information is reflected in out-of-sample predictive
+performance.
 
-For the model with the PDO index, the test-period PDO values are
-supplied to the forecast step as exogenous variables. Therefore, this
-tsCV setting evaluates conditional forecasts, or hindcasts, under the
-assumption that the PDO values during each test period are known. This
-is appropriate when the aim is to assess the explanatory or
-reconstructive value of the PDO index.
+For the model with the simulated Kuroshio variables, the test-period
+values of those variables are supplied to the forecast step as exogenous
+variables. Therefore, this tsCV setting evaluates conditional forecasts,
+or hindcasts, under the assumption that the Kuroshio-variable values
+during each test period are known. This is appropriate when the aim is
+to assess the explanatory or reconstructive value of the exogenous
+variables.
 
-For real-time future forecasting, however, future PDO values are usually
-unknown. In that setting, users must either provide future PDO
-scenarios, forecast the PDO index with a separate model, or use a
-simplified assumption such as carrying the last observed value forward.
-The results below should therefore be interpreted as evidence for
-improved conditional predictive performance, not as a direct guarantee
-of operational forecast improvement.
+For real-time future forecasting, however, future exogenous-variable
+values are usually unknown. In that setting, users must either provide
+future scenarios, forecast the exogenous variables with separate models,
+or use a simplified assumption such as carrying the last observed value
+forward. The results below should therefore be interpreted as evidence
+for improved conditional predictive performance, not as a direct
+guarantee of operational forecast improvement.
 
 ``` r
 # (Optional) Load packages for parallel processing.
@@ -873,54 +1065,82 @@ if (interactive()) {
 }
 
 
-# ts cross-validation of the model without exogenous variables
-
 ## Generate a list of training and test datasets with their indices
 # Procedure for constructing year-based time-series cross-validation folds:
 # 
-# First training data: January 1982–December 2017;
-# First test data: one year starting from January 2018
+# First training data: January 1998-December 2010;
+# First test data: January 2011-December 2011
 # 
-# Second training data: January 1983–December 2018;
-# Second test data: one year starting from January 2019
+# Second training data: January 1999-December 2011;
+# Second test data: January 2012-December 2012
 # ...
 # 
-# Eighth training data: January 1989–December 2024;
-# Eighth test data: one year starting from January 2025
+# Twelfth training data: January 2009-December 2021;
+# Twelfth test data: January 2022-December 2022
 #
 # These folds are automatically generated by the ts_train_test_split() function.
+# The final two observations in 2023 are not used because allow_partial = FALSE
+# keeps every test set as a complete 12-month period.
 
-# Generate training and test dataset for model without PDO index
+# Generate training and test dataset for model without exogenous variables
 folds_without <- ts_train_test_split(
-  temp_data = yamaguchi_sst_trim,
+  temp_data = sst_sim,
   exo_data = NULL,
-  initial = 432, # 432 monthly observations from Jan 1982 to Dec 2017
-  horizon = 12, # forecast 12 monthly time-series
-  step = 12, # training data is moved in one-year steps
+  initial = 156, # 156 monthly observations from Jan 1998 to Dec 2010
+  horizon = 12, # forecast 12 monthly observations
+  step = 12, # move the fixed-width window in one-year steps
   fixed_window = TRUE,
   allow_partial = FALSE
   )
 
-# Generate training and test dataset for model with PDO index
+# Generate training and test dataset for model with Kuroshio variables
 folds_with <- ts_train_test_split(
-  temp_data = yamaguchi_sst_trim,
-  exo_data = pdo_trim,
-  initial = 432, # 432 monthly observations from Jan 1982 to Dec 2017
-  horizon = 12, # forecast 12 monthly time-series
-  step = 12, # training data is moved in one-year steps
+  temp_data = sst_sim,
+  exo_data = exo_kuroshio,
+  initial = 156, # 156 monthly observations from Jan 1998 to Dec 2010
+  horizon = 12, # forecast 12 monthly observations
+  step = 12, # move the fixed-width window in one-year steps
   fixed_window = TRUE,
   allow_partial = FALSE
   )
 
+# Check the first fold
+start(folds_without[[1]]$train_ts)
+```
 
+    ## [1] 1998    1
+
+``` r
+end(folds_without[[1]]$train_ts)
+```
+
+    ## [1] 2010   12
+
+``` r
+start(folds_without[[1]]$test_ts)
+```
+
+    ## [1] 2011    1
+
+``` r
+end(folds_without[[1]]$test_ts)
+```
+
+    ## [1] 2011   12
+
+``` r
 # *****************************************
 # Executing time-series cross validation
 
 #-------------------------------------------------- 
-# Model without the exogenous variable of PDO index
+# Model without exogenous variables
 
 # Single processing
-# cv_without_results <- ts_cv_run(folds_without, ar_order = 1, use_season = TRUE)
+# cv_without_results <- ts_cv_run(
+#   folds_without,
+#   ar_order = 1,
+#   use_season = TRUE
+# )
 
 # Parallel processing
 cv_without_results <- future.apply::future_lapply(
@@ -940,7 +1160,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 
 
 #-------------------------------------------------- 
-# Model with the exogenous variable of PDO index
+# Model with simulated Kuroshio exogenous variables
 
 # Single processing
 # cv_with_results <- ts_cv_run(folds_with, ar_order = 1, use_season = TRUE)
@@ -976,8 +1196,8 @@ cv_comparison %>% knitr::kable()
 
 | model | n_folds | converged_n | converged_rate | mean_MAE | mean_MASE_naive | mean_MASE_seasonal |
 |:---|---:|---:|---:|---:|---:|---:|
-| Without | 8 | 8 | 1 | 0.6057671 | 0.2694420 | 0.7993162 |
-| With | 8 | 8 | 1 | 0.5498521 | 0.2443207 | 0.7241733 |
+| Without | 12 | 12 | 1 | 0.5375966 | 0.3137671 | 0.8001065 |
+| With | 12 | 12 | 1 | 0.5135379 | 0.2997563 | 0.7705862 |
 
 ``` r
 plt_MAE <- ggplot(data=cv_tbl,
@@ -993,158 +1213,68 @@ plt_MASE_seasonal <- ggplot(data=cv_tbl,
   geom_boxplot()
 
 
-plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal + patchwork::plot_layout(nrow=1)
+plt_tsCV <- plt_MAE + plt_MASE_naive + plt_MASE_seasonal +
+  patchwork::plot_layout(nrow = 1)
 
 plot(plt_tsCV)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
-The tsCV results show that the model with the exogenous variable
-performs better than the model without it. The comparison table produced
-by `compare_ts_cv()` summarizes the number of folds, convergence rates,
-and mean prediction-error metrics for each model, while the boxplots
-show how the fold-level errors vary across validation periods. In this
-tutorial, the number of tsCV iterations is set to 8 to reduce execution
-time. In actual validation, please use a sufficient number of
-iterations.
+The three accuracy metrics summarize prediction errors from
+complementary viewpoints. `MAE` is the mean absolute error and is
+expressed in degrees Celsius. `MASE` is a unit-free scaled error measure
+relative to a simple benchmark computed from the training data. Smaller
+values indicate better predictive performance for all three metrics.
 
-The mean MAE of the model with the exogenous variable is approximately
-0.55 °C. Relative to the seasonal amplitude based on monthly mean SST
-(about 13.6 °C), this corresponds to roughly 4.0%. Thus, the prediction
-error is small compared with the dominant seasonal scale of variation in
-this data set, and may be practically useful for short-term marine
+In this tutorial, `MASE_naive` uses a non-seasonal naive benchmark based
+on one-step changes in the training series. `MASE_seasonal` uses a
+seasonal naive benchmark based on changes separated by the seasonal
+frequency of the training series; for monthly data, this corresponds to
+changes over 12 months. Values below 1 indicate that the model performs
+better than the corresponding naive benchmark on average.
+
+The comparison table produced by `compare_ts_cv()` summarizes the number
+of folds, convergence rates, and mean prediction-error metrics for each
+model. The boxplots show how fold-level errors vary across validation
+periods. In this tutorial, tsCV uses 12 annual test periods, providing a
+practical basis for comparing the two model specifications within this
+example dataset. For formal model assessment, fold design should be
+chosen according to the time-series length, prediction horizon, and
+intended forecasting task.
+
+The mean MAE of the model with exogenous variables is approximately 0.51
+°C. Relative to the seasonal amplitude based on monthly mean SST (about
+9.9 °C), this corresponds to roughly 5.2%. Thus, the prediction error is
+small compared with the dominant seasonal scale of variation in this
+data set, and may be practically useful for short-term marine
 monitoring.
 
-Although the number of validation folds is limited to 8, the model with
-the exogenous variable reduces the mean MAE by approximately 9.2%
-compared with the model without the exogenous variable. Similar
-improvements are also seen in the MASE metrics. This interpretation
-should be kept conditional on the tsCV setting used here, in which
-observed PDO values during the test periods are supplied as exogenous
-variables.
+The model with the exogenous variables reduces the mean MAE by
+approximately 4.5% compared with the model without exogenous variables.
+Similar improvements are also seen in the MASE metrics. This
+interpretation should be kept conditional on the tsCV setting used here,
+in which the test-period values of the simulated Kuroshio variables are
+supplied as exogenous variables.
 
-Taken together, the results consistently support including the PDO index
-as an exogenous variable in the state-space model. The PDO coefficient
-is statistically significant, indicating a clear effect on temperature
-variation. Time-series cross-validation further indicates that this
-effect is accompanied by better out-of-sample predictive performance.
-
-These complementary lines of evidence provide robust and multifaceted
-support for adopting the exogenous-variable model.
-
-Although this exercise used a single exogenous variable, `tempssm()`
-also supports models with multiple exogenous variables supplied as
-multivariate time-series data. Users interested in broader applications
-can extend the same workflow to other environmental, climatic, or
-ecological covariates. In doing so, model structure should be considered
-carefully for the target data, while checking model diagnostics and
-out-of-sample predictive performance.
-
-### Comparing Estimation Patterns Between Models With and Without the Exogenous Variable
-
-We compare how the estimated patterns of the long-term trend and its
-rate of change differ between the models with and without the exogenous
-variable.
-
-``` r
-plt_level_without_ts <- autoplot(res_without,
-                                 component=c("level")
-                                 ) +
-  labs(title="Model without the PDO index") +
-  theme_classic()
-
-plt_drift_without_ts <- autoplot(res_without, 
-                             component=c("drift")
-                             ) + 
-  labs(title="Model without the PDO index") +
-  theme_classic()
-
-plt_level_drift_without_ts <- plt_level_without_ts + 
-  plt_drift_without_ts + 
-  patchwork::plot_layout(ncol=1)
-
-plot(plt_level_drift_without_ts)
-```
-
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
-
-``` r
-plt_level_with_ts <- autoplot(res_with,
-                          component=c("level")
-                          )+ 
-  labs(title="Model with the PDO index") +
-  theme_classic()
-
-plt_drift_with_ts <- autoplot(res_with,
-                          component=c("drift")
-                          ) + 
-  labs(title="Model with the PDO index") + 
-  theme_classic()
-
-plt_level_drift_with_ts <- plt_level_with_ts + 
-  plt_drift_with_ts + 
-  patchwork::plot_layout(ncol=1)
-
-plot(plt_level_drift_with_ts)
-```
-
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-27-2.png)<!-- -->
-
-``` r
-#　Smoothing estimate of drift component
-mean_drift_year_without <- get_drift_ts(res_without) %>%
-  mean()
-print(mean_drift_year_without)
-```
-
-    ## [1] 0.03388663
-
-``` r
-mean_drift_year_with <- get_drift_ts(res_with) %>%
-  mean()
-print(mean_drift_year_with)
-```
-
-    ## [1] 0.01124586
-
-The gray areas in the plots above show 95% confidence intervals.
-
-In the model without an exogenous variable, the plots of the long-term
-trend and its rate of change show a wavelike pattern. In contrast, in
-the model with the exogenous variable, the long-term trend and its rate
-of change show a more stable pattern. This suggests that the wavelike
-pattern reflects the influence of the exogenous PDO variable.
-
-The estimated annual rate of SST change over the observation period is
-0.0339 in the model without the exogenous variable and 0.0112 in the
-model with the exogenous variable.
-
-In this case, the model incorporating the PDO index is considered
-preferable for accurately estimating the SST trend. Thus, the SST
-warming rate, which was estimated somewhat higher in the model without
-the exogenous variable, is estimated more conservatively after
-introducing the model with the exogenous variable.
+Together, the coefficient estimates, component comparison, and tsCV
+results illustrate how exogenous-variable models can be assessed.
+Because the datasets are simulated, the emphasis is on the workflow
+rather than on drawing new scientific conclusions about Kuroshio
+variability. The same workflow can be extended to other environmental,
+climatic, or ecological covariates, while keeping model diagnostics,
+predictive performance, and forecasting assumptions explicit.
 
 # Using Your Own Data
 
-## Quick Example
+## CSV Format
 
-`my_ts` is a user-supplied `ts` object containing temperature
-time-series data. It can be passed directly to `tempssm()`.
+For monthly temperature data stored in a CSV file, prepare columns named
+`Year`, `Month`, and `Temp`.
 
-``` r
-## example of ts object (not run)
-## my_ts <- ts(rnorm(100), frequency = 12)
-res <- tempssm(my_ts)
-```
-
-## Preparing Your Own Dataset
-
-### CSV Format
-
-Prepare a CSV file of monthly temperature time series with the following
-columns: - Year - Month - Temp
+- Year
+- Month
+- Temp
 
 Example:
 
@@ -1161,7 +1291,7 @@ Year,Month,Temp
   corresponding Year and Month entries.
 - The CSV file must be comma-separated and UTF-8 encoded.
 
-### Converting CSV to a Time Series
+## Convert CSV to a `ts` Object
 
 An example CSV file included in this package is available in
 inst/extdata. The example dataset contains monthly air temperature
@@ -1180,11 +1310,14 @@ head(akadake_temp)
     ## 2010                                13.6   6.8   0.2  -6.8 -12.5
     ## 2011 -18.8
 
-The `read_monthly_temp_ts()` function internally uses the base R `ts()`
-function to create a time-series object. See the `stats::ts`
-documentation for details:
-<https://search.r-project.org/R/refmans/stats/html/ts.html>. If finer
-control is needed, you can construct the `ts` object manually.
+The `read_monthly_temp_ts()` function reads this type of CSV file and
+converts it into an R `ts` object for use with `tempssm()`. If finer
+control is needed, you can also construct a `ts` object manually; see
+the `stats::ts` documentation for details:
+<https://search.r-project.org/R/refmans/stats/html/ts.html>.
+
+If your data are already stored as an R `ts` object, you can pass them
+directly to `tempssm()`.
 
 # References
 
@@ -1240,23 +1373,21 @@ Year,Month,Temp
   corresponding Year and Month entries.
 - The CSV file must be comma-separated and UTF-8 encoded.
 
-The following example uses a sample CSV file included in the package.
+The following example uses the sample CSV file included in the package.
+It contains monthly air temperature observations from Mt. Akadake,
+Hokkaido, Japan.
 
 ``` r
-tmp_csv <- tempfile(fileext = ".csv")
-writeLines(
-  c("Year,Month,Temp",
-    "2001,1,10.4",
-    "2001,2,8.2",
-    "2001,3,NA",
-    "2001,4,13.6",
-    "2001,5,16.1"),
-   tmp_csv
- )
+path <- system.file("extdata", "example_monthly_temp.csv", package = "tempssm")
 
-# Read the CSV file and convert to a monthly ts object
-temp_ts <- read_monthly_temp_ts(tmp_csv)
+# Read the CSV file and convert it to a monthly ts object
+temp_ts <- read_monthly_temp_ts(path)
+head(temp_ts)
 ```
+
+    ##        Jan Feb Mar Apr May Jun Jul   Aug   Sep   Oct   Nov   Dec
+    ## 2010                                13.6   6.8   0.2  -6.8 -12.5
+    ## 2011 -18.8
 
 ## 2. `convert_monthly_df_to_ts()`
 
@@ -1348,7 +1479,7 @@ plt_niigata_sst_anomaly <- forecast::autoplot(niigata_sst_anomaly) +
 plot(plt_niigata_sst_anomaly) 
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
 
 ## 5. `compute_monthly_climatology()`
 
@@ -1395,4 +1526,4 @@ plt_monthly_seasonal_cycle_niigata_sst <- ggplot(
 plot(plt_monthly_seasonal_cycle_niigata_sst)
 ```
 
-![](tempssm_manual_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
+![](tempssm_manual_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
