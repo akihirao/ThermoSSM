@@ -46,9 +46,6 @@
 - [`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
   : Residual diagnostics for tempssm models
 
-- [`fuji_temp`](https://akihirao.github.io/tempssm/reference/fuji_temp.md)
-  : Monthly mean air temperature at the summit of Mt. Fuji
-
 - [`get_ar_ts()`](https://akihirao.github.io/tempssm/reference/get_ar_ts.md)
   : Extract autoregressive components as a time series
 

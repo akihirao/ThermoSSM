@@ -72,16 +72,18 @@ environmental temperature time series.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
-    <p>Japan Meteorological Agency (JMA). Data obtained from the JMA website:
-<a href="https://www.jma.go.jp/jma/indexe.html" class="external-link">https://www.jma.go.jp/jma/indexe.html</a></p>
+    <p>Created by processing content from the Japan Meteorological Agency (JMA),
+Past Weather Data Download page:
+<a href="https://www.data.jma.go.jp/risk/obsdl/index.php" class="external-link">https://www.data.jma.go.jp/risk/obsdl/index.php</a>
+Values with JMA quality flags below 8 were treated as <code>NA</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The time series represents monthly mean air temperature, in degrees
 Celsius, at the summit of Mt. Fuji. The observation period spans from
-July 1932 to June 2026. Missing values are encoded as <code>NA</code>. Values
-with JMA quality flags below 8, where 8 indicates a normal value with no
-quality problem, are treated as <code>NA</code>.</p>
+July 1932 to June 2026. Missing values in the source data and values with
+JMA quality flags below 8, where 8 indicates a normal value with no quality
+problem, are encoded as <code>NA</code>.</p>
     </div>
 
     <div class="section level2">
