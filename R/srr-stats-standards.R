@@ -45,7 +45,7 @@
 #'
 #' @srrstats {G5.1} Fixed data sets created for package examples and tests
 #' are exported through the package `data/` directory and documented with
-#' roxygen data objects. These include `fuji_temp`, `hmo_temp`, `nao`,
+#' roxygen data objects. These include `hmo_temp`, `nao`,
 #' `niigata_sst`, `pdo`, `soi`, `sst_yamaguchi`, `temp_MtFuji`, and
 #' `yamaguchi_sst`. Unit tests verify that all of these data sets can be
 #' loaded with `data(..., package = "tempssm")` and are regular monthly `ts`

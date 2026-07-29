@@ -13,8 +13,10 @@ A \code{ts} object with:
 }
 }
 \source{
-Japan Meteorological Agency (JMA). Data obtained from the JMA website:
-\url{https://www.jma.go.jp/jma/indexe.html}
+Created by processing content from the Japan Meteorological Agency (JMA),
+Past Weather Data Download page:
+\url{https://www.data.jma.go.jp/risk/obsdl/index.php}
+Values with JMA quality flags below 8 were treated as \code{NA}.
 }
 \usage{
 temp_MtFuji
@@ -28,9 +30,9 @@ environmental temperature time series.
 \details{
 The time series represents monthly mean air temperature, in degrees
 Celsius, at the summit of Mt. Fuji. The observation period spans from
-July 1932 to June 2026. Missing values are encoded as \code{NA}. Values
-with JMA quality flags below 8, where 8 indicates a normal value with no
-quality problem, are treated as \code{NA}.
+July 1932 to June 2026. Missing values in the source data and values with
+JMA quality flags below 8, where 8 indicates a normal value with no quality
+problem, are encoded as \code{NA}.
 }
 \examples{
 data(temp_MtFuji)

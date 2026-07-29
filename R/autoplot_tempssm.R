@@ -165,10 +165,12 @@ ggplot2::autoplot
       data <- as.data.frame(plot$data)
       data$component_id <- component_name
       data$component <- factor(facet_label, levels = facet_labels)
-      data$line_width <- if (component_name %in% c("level", "drift")) {
-        1.2
-      } else {
-        0.5
+      if (!"line_width" %in% names(data)) {
+        data$line_width <- if (component_name %in% c("level", "drift")) {
+          1.2
+        } else {
+          0.5
+        }
       }
       data
     },

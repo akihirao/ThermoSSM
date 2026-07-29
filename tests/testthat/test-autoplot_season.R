@@ -25,6 +25,22 @@ test_that("autoplot_season uses compact unit label by default", {
 })
 
 
+test_that("autoplot_season thins lines for long seasonal series", {
+  short_plot <- autoplot_season(res_tempssm, ci = FALSE)
+
+  long_res <- res_tempssm
+  long_res$temp_data <- ts(
+    rep(0, 600),
+    start = start(res_tempssm$temp_data),
+    frequency = frequency(res_tempssm$temp_data)
+  )
+  long_plot <- autoplot_season(long_res, ci = FALSE)
+
+  expect_identical(unique(short_plot$data$line_width), 0.5)
+  expect_lt(unique(long_plot$data$line_width), 0.5)
+})
+
+
 test_that("autoplot_season checks inputs correctly", {
   expect_error(
     autoplot_season(NULL),

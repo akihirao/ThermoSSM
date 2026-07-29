@@ -4,12 +4,12 @@ subtitle: "Version `r packageVersion('tempssm')`"
 author: "Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette: default
+#  rmarkdown::html_vignette: default
 #  pdf_document:
 #    latex_engine: lualatex
 #    ##toc: true
-#  md_document:
-#    variant: gfm+tex_math_dollars
+  md_document:
+    variant: gfm+tex_math_dollars
 vignette: >
   %\VignetteIndexEntry{tempssm: State-space modeling for temperature time series in R}
   %\VignetteEngine{knitr::rmarkdown}
@@ -123,9 +123,12 @@ series observed at the summit of Mt. Fuji, Japan.
 - **Unit**: Degrees Celsius
 - **Period**: July 1932 to June 2026
 
-The data were obtained from the Japan Meteorological Agency (JMA). Values with
-JMA quality flags below 8, where 8 indicates a normal value with no quality
-problem, are treated as missing values.
+The dataset was created by processing content from the Japan Meteorological
+Agency (JMA), Past Weather Data Download page:
+<https://www.data.jma.go.jp/risk/obsdl/index.php>. The series may contain
+missing values from the source data; values with JMA quality flags below 8,
+where 8 indicates a normal value with no quality problem, are also treated as
+missing values.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 data(temp_MtFuji) # load a ts object of temperature at Mt. Fuji
@@ -144,7 +147,7 @@ overall structure, including apparent trends, seasonal variability, and whether
 missing observations are present.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-plt_fuji_temp <- forecast::autoplot(temp_MtFuji) +
+plt_mtfuji_temp <- forecast::autoplot(temp_MtFuji) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
@@ -152,19 +155,19 @@ plt_fuji_temp <- forecast::autoplot(temp_MtFuji) +
   ggplot2::ggtitle("Monthly air temperature at the summit of Mt. Fuji") +
   ggplot2::theme_classic()
 
-plot(plt_fuji_temp)
+plot(plt_mtfuji_temp)
 ```
 
 ```{r echo = FALSE}
-fuji_temp_mean <- mean(temp_MtFuji, na.rm = TRUE)
-fuji_temp_missing <- sum(is.na(temp_MtFuji))
+mtfuji_temp_mean <- mean(temp_MtFuji, na.rm = TRUE)
+mtfuji_temp_missing <- sum(is.na(temp_MtFuji))
 ```
 
-The overall mean air temperature is 
-approximately `r sprintf("%.1f", fuji_temp_mean)` °C, and a clear annual 
-seasonal pattern is visible. The series contains `r fuji_temp_missing` missing 
-observations. Although the observed temperature appears to increase gradually 
-over the long term, year-to-year variation and strong seasonality make 
+The overall mean air temperature is approximately
+`r sprintf("%.1f", mtfuji_temp_mean)` °C, and a clear annual seasonal pattern
+is visible. The series contains `r mtfuji_temp_missing` missing observations.
+Although the observed temperature appears to increase gradually over the long
+term, year-to-year variation and strong seasonality make 
 the underlying trend difficult to assess from the raw time series alone.
 
 # Fit a State-Space Model

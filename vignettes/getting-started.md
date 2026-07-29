@@ -110,9 +110,12 @@ time series observed at the summit of Mt. Fuji, Japan.
 - **Unit**: Degrees Celsius
 - **Period**: July 1932 to June 2026
 
-The data were obtained from the Japan Meteorological Agency (JMA).
-Values with JMA quality flags below 8, where 8 indicates a normal value
-with no quality problem, are treated as missing values.
+The dataset was created by processing content from the Japan
+Meteorological Agency (JMA), Past Weather Data Download page:
+<https://www.data.jma.go.jp/risk/obsdl/index.php>. The series may
+contain missing values from the source data; values with JMA quality
+flags below 8, where 8 indicates a normal value with no quality problem,
+are also treated as missing values.
 
 ``` r
 data(temp_MtFuji) # load a ts object of temperature at Mt. Fuji
@@ -140,7 +143,7 @@ examine its overall structure, including apparent trends, seasonal
 variability, and whether missing observations are present.
 
 ``` r
-plt_fuji_temp <- forecast::autoplot(temp_MtFuji) +
+plt_mtfuji_temp <- forecast::autoplot(temp_MtFuji) +
   ggplot2::labs(
     y = expression(Temperature ~ (degree * C)),
     x = "Time (year)"
@@ -148,7 +151,7 @@ plt_fuji_temp <- forecast::autoplot(temp_MtFuji) +
   ggplot2::ggtitle("Monthly air temperature at the summit of Mt. Fuji") +
   ggplot2::theme_classic()
 
-plot(plt_fuji_temp)
+plot(plt_mtfuji_temp)
 ```
 
 ![](getting-started_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->

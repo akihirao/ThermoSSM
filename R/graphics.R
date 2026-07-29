@@ -122,6 +122,29 @@
 }
 
 
+#' Choose line width for dense seasonal component plots
+#'
+#' @inheritParams .tempssm_check_accessor_input
+#' @param default Numeric scalar used for short time series.
+#' @param threshold Numeric scalar giving the number of seasonal cycles above
+#'   which the line width starts to decrease.
+#' @param minimum Numeric scalar giving the lower bound for line width.
+#'
+#' @return A numeric scalar.
+#' @noRd
+.tempssm_season_linewidth <- function(res, default = 0.5, threshold = 40,
+                                      minimum = 0.2) {
+  frequency <- stats::frequency(res$temp_data)
+  n_cycles <- NROW(res$temp_data) / frequency
+
+  if (!is.finite(n_cycles) || n_cycles <= threshold) {
+    return(default)
+  }
+
+  max(minimum, default * sqrt(threshold / n_cycles))
+}
+
+
 #' Combine autoregressive states into a single plotted component
 #'
 #' @inheritParams .tempssm_check_component_plot_input
@@ -221,6 +244,9 @@
     value_name = value_name,
     ci = ci
   )
+  if (!is.null(linewidth)) {
+    component_tidy$line_width <- linewidth
+  }
 
   plot_title <- .tempssm_component_plot_title(
     title,
@@ -434,7 +460,8 @@ autoplot_season <- function(res,
     value_name = "season",
     title = "Seasonal component",
     ci_title = "Seasonal component",
-    debug_name = "season"
+    debug_name = "season",
+    linewidth = .tempssm_season_linewidth(res)
   )
 }
 

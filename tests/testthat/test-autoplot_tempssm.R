@@ -72,6 +72,27 @@ test_that("faceted component labels include component-specific units", {
 })
 
 
+test_that("faceted component plots retain adaptive seasonal line width", {
+  long_res <- res_tempssm
+  long_res$temp_data <- ts(
+    rep(0, 600),
+    start = start(res_tempssm$temp_data),
+    frequency = frequency(res_tempssm$temp_data)
+  )
+
+  p <- autoplot(long_res, ci = FALSE)
+  season_line_width <- unique(
+    p$data$line_width[p$data$component_id == "season"]
+  )
+  level_line_width <- unique(
+    p$data$line_width[p$data$component_id == "level"]
+  )
+
+  expect_lt(season_line_width, 0.5)
+  expect_identical(level_line_width, 1.2)
+})
+
+
 test_that("default AR panel sums all states for higher-order models", {
   res_ar2 <- tempssm(temp_ts_test, ar_order = 2)
   p <- autoplot(res_ar2, ci = FALSE)
