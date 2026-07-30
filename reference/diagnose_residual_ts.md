@@ -3,7 +3,7 @@
 Compute a Ljung–Box residual autocorrelation diagnostic for a residual
 vector or residual `ts` object. This function is useful after extracting
 time-preserving residuals with
-`get_tempssm_residuals(res, keep_time = TRUE)`.
+[`get_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.md).
 
 ## Usage
 
@@ -52,7 +52,7 @@ if (FALSE) { # \dontrun{
 data(sst_niigata)
 res <- tempssm(sst_niigata)
 
-r <- get_tempssm_residuals(res, keep_time = TRUE)
+r <- get_tempssm_residuals(res)
 diagnose_residual_ts(r)
 diagnose_residual_ts(r, lb_lag = 24)
 } # }

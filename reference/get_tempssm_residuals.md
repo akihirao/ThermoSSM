@@ -5,7 +5,7 @@ Extract standardized recursive residuals
 ## Usage
 
 ``` r
-get_tempssm_residuals(res, keep_time = FALSE)
+get_tempssm_residuals(res, keep_time = TRUE)
 ```
 
 ## Arguments
@@ -17,16 +17,16 @@ get_tempssm_residuals(res, keep_time = FALSE)
 
 - keep_time:
 
-  Logical scalar; if FALSE, only finite residuals are returned as a
-  numeric vector. If TRUE, the residuals are returned as a `ts` object
+  Logical scalar; if TRUE, the residuals are returned as a `ts` object
   with the same start and frequency as the input temperature series;
-  non-finite residuals are retained as `NA`.
+  non-finite residuals are retained as `NA`. If FALSE, only finite
+  residuals are returned as a numeric vector.
 
 ## Value
 
-If `keep_time = FALSE`, a numeric vector of finite standardized
-recursive residuals. If `keep_time = TRUE`, a `ts` object preserving the
-time index of the input temperature series.
+By default, a `ts` object preserving the time index of the input
+temperature series. If `keep_time = FALSE`, a numeric vector of finite
+standardized recursive residuals.
 
 ## Examples
 
@@ -35,7 +35,7 @@ if (FALSE) { # \dontrun{
 data(sst_niigata)
 res <- tempssm(sst_niigata)
 
-residuals <- get_tempssm_residuals(res)
-residuals_ts <- get_tempssm_residuals(res, keep_time = TRUE)
+residuals_ts <- get_tempssm_residuals(res)
+residuals <- get_tempssm_residuals(res, keep_time = FALSE)
 } # }
 ```

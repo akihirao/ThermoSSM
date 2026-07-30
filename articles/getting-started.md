@@ -278,7 +278,7 @@ temporal dependence and departures from the Gaussian error assumption.
 
 ``` r
 
-r <- get_tempssm_residuals(res, keep_time = TRUE)
+r <- get_tempssm_residuals(res)
 plot_tempssm_residuals(r, frequency = frequency(res$temp_data))
 ```
 
@@ -286,14 +286,14 @@ plot_tempssm_residuals(r, frequency = frequency(res$temp_data))
 
 ``` r
 
-diag <- diagnose_residuals(res)
+diag <- diagnose_residual_ts(r)
 diag
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    4.40     12     0.975     4.39
+    ## # A tibble: 1 × 8
+    ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
+    ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
+    ## 1    4.48     12    12     0.973     4.39  1128        24     1104
 
 Here,
 [`get_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.md)
@@ -302,7 +302,7 @@ extracts standardized recursive residuals.
 displays the residual time series in the upper panel, the ACF plot in
 the lower-left panel, and the residual frequency distribution in the
 lower-right panel.
-[`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
+[`diagnose_residual_ts()`](https://akihirao.github.io/tempssm/reference/diagnose_residual_ts.md)
 returns a compact table with the Ljung-Box test and residual kurtosis.
 For monthly data, the default Ljung-Box lag is 12. These plots and the
 test result should be checked for any notable residual patterns. In this

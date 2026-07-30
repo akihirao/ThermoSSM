@@ -327,21 +327,21 @@ distributions, and Ljung-Box tests can be used to assess remaining
 temporal dependence and departures from the Gaussian error
 assumption.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res</span>, keep_time <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">r</span>, frequency <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/time.html" class="external-link">frequency</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">temp_data</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residuals.html">diagnose_residuals</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span></span>
 <span><span class="va">diag</span></span></code></pre></div>
-<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 4</span></span></span>
-<span><span class="co">##   lb_stat lb_lag lb_pvalue kurtosis</span></span>
-<span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>    4.40     12     0.975     4.39</span></span></code></pre>
+<pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
+<span><span class="co">##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite</span></span>
+<span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>    4.48     12    12     0.973     4.39  <span style="text-decoration: underline;">1</span>128        24     <span style="text-decoration: underline;">1</span>104</span></span></code></pre>
 <p>Here, <code><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals()</a></code> extracts standardized
 recursive residuals. <code><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals()</a></code> displays the
 residual time series in the upper panel, the ACF plot in the lower-left
 panel, and the residual frequency distribution in the lower-right panel.
-<code><a href="../reference/diagnose_residuals.html">diagnose_residuals()</a></code> returns a compact table with the
+<code><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts()</a></code> returns a compact table with the
 Ljung-Box test and residual kurtosis. For monthly data, the default
 Ljung-Box lag is 12. These plots and the test result should be checked
 for any notable residual patterns. In this example, the Ljung-Box test
