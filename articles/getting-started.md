@@ -279,39 +279,38 @@ temporal dependence and departures from the Gaussian error assumption.
 ``` r
 
 r <- get_tempssm_residuals(res)
-lb_lag <- frequency(res$temp_data)
-forecast::checkresiduals(r, lag = lb_lag, test = "LB")
+plot_tempssm_residuals(r, frequency = frequency(res$temp_data))
 ```
 
 ![](getting-started_files/figure-html/unnamed-chunk-7-1.png)
 
-    ## 
-    ##  Ljung-Box test
-    ## 
-    ## data:  Residuals
-    ## Q* = 4.4043, df = 12, p-value = 0.975
-    ## 
-    ## Model df: 0.   Total lags used: 12
+``` r
+
+diag <- diagnose_residuals(res)
+diag
+```
+
+    ## # A tibble: 1 × 4
+    ##   lb_stat lb_lag lb_pvalue kurtosis
+    ##     <dbl>  <dbl>     <dbl>    <dbl>
+    ## 1    4.40     12     0.975     4.39
 
 Here,
 [`get_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.md)
-extracts standardized recursive residuals, and
-[`forecast::checkresiduals()`](https://pkg.robjhyndman.com/forecast/reference/checkresiduals.html)
-displays their time-series plot, ACF plot, histogram, and Ljung-Box
-test. The three plots appear in the upper, lower-left, and lower-right
-panels, respectively. The lag is set to the seasonal frequency of the
-input data; for monthly data, this uses lag 12. These plots and the test
-result should be checked for any notable residual patterns. In this
+extracts standardized recursive residuals.
+[`plot_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_residuals.md)
+displays the residual time series in the upper panel, the ACF plot in
+the lower-left panel, and the residual frequency distribution in the
+lower-right panel.
+[`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
+returns a compact table with the Ljung-Box test and residual kurtosis.
+For monthly data, the default Ljung-Box lag is 12. These plots and the
+test result should be checked for any notable residual patterns. In this
 example, the Ljung-Box test indicated no significant residual
 autocorrelation up to lag 12 (P \> 0.05).
 
-For tabular residual diagnostic summaries, see
-[`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
-in the detailed manual.
-
-For repeated checks across many fitted models, the convenience wrapper
-`plot_tempssm_residual_diagnostics(res)` provides the same type of
-residual diagnostic plot.
+For more detailed discussion of residual diagnostics, see the detailed
+manual.
 
 ## Extract Components
 
