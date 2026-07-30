@@ -4,12 +4,12 @@ subtitle: "Version `r packageVersion('tempssm')`"
 author: "Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa"
 date: "`r Sys.Date()`"
 output:
-#  rmarkdown::html_vignette: default
+  rmarkdown::html_vignette: default
 #  pdf_document:
 #    latex_engine: lualatex
 #    ##toc: true
-  md_document:
-    variant: gfm+tex_math_dollars
+#  md_document:
+#    variant: gfm+tex_math_dollars
 vignette: >
   %\VignetteIndexEntry{tempssm: State-space modeling for temperature time series in R}
   %\VignetteEngine{knitr::rmarkdown}

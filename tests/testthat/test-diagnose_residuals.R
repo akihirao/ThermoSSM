@@ -135,6 +135,94 @@ test_that("diagnose_residuals validates Ljung-Box lag values", {
 })
 
 
+test_that("diagnose_residual_ts matches Box.test for complete residuals", {
+  r <- stats::ts(
+    sin(seq_len(60) / 4) + cos(seq_len(60) / 7),
+    start = c(2000, 1),
+    frequency = 12
+  )
+
+  diag <- diagnose_residual_ts(r, lb_lag = 12)
+  lb <- stats::Box.test(r, type = "Ljung-Box", lag = 12)
+
+  expect_s3_class(diag, "tbl_df")
+  expect_identical(diag$lb_lag, 12L)
+  expect_identical(diag$lb_df, 12L)
+  expect_identical(diag$n, 60L)
+  expect_identical(diag$n_missing, 0L)
+  expect_identical(diag$n_finite, 60L)
+  expect_equal(diag$lb_stat, unname(lb$statistic), tolerance = 1e-10)
+  expect_equal(diag$lb_pvalue, lb$p.value, tolerance = 1e-10)
+})
+
+
+test_that(
+  "diagnose_residual_ts handles missing residuals with time structure",
+  {
+  r <- stats::ts(
+    sin(seq_len(60) / 4) + cos(seq_len(60) / 7),
+    start = c(2000, 1),
+    frequency = 12
+  )
+  r[c(5, 20)] <- NA_real_
+
+  expect_message(
+    diag <- diagnose_residual_ts(r),
+    "available-pair autocorrelations"
+  )
+
+  expect_s3_class(diag, "tbl_df")
+  expect_identical(diag$lb_lag, 12L)
+  expect_identical(diag$n, 60L)
+  expect_identical(diag$n_missing, 2L)
+  expect_identical(diag$n_finite, 58L)
+  expect_true(is.finite(diag$lb_stat))
+  expect_true(is.finite(diag$lb_pvalue))
+  }
+)
+
+
+test_that("diagnose_residual_ts follows frequency for default lag", {
+  r <- stats::ts(seq_len(20), start = c(2000, 1), frequency = 4)
+  diag <- diagnose_residual_ts(r)
+
+  expect_identical(diag$lb_lag, 4L)
+})
+
+
+test_that("diagnose_residual_ts validates inputs", {
+  expect_error(
+    diagnose_residual_ts(1),
+    "at least two residual values"
+  )
+
+  expect_error(
+    diagnose_residual_ts(c(1, Inf)),
+    "infinite or NaN residual values"
+  )
+
+  expect_error(
+    diagnose_residual_ts(c(1, NA)),
+    "at least two finite residual"
+  )
+
+  expect_error(
+    diagnose_residual_ts(c(1, 2, 3), frequency = 0),
+    "frequency.*positive numeric"
+  )
+
+  expect_error(
+    diagnose_residual_ts(c(1, 2, 3), lb_lag = 0),
+    "lb_lag.*positive integer"
+  )
+
+  expect_error(
+    diagnose_residual_ts(c(1, 2, 3), lb_lag = 3),
+    "lb_lag.*smaller than the number of finite residuals"
+  )
+})
+
+
 test_that(".kurtosis removes missing values when requested", {
   x <- c(1, 2, NA, 3, 4)
 

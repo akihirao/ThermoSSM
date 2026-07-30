@@ -252,6 +252,268 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 }
 
 
+#' Resolve frequency for residual time-series diagnostics
+#'
+#' @param r Numeric vector or \code{ts} object of residuals.
+#' @param frequency Positive numeric scalar or \code{NULL}.
+#'
+#' @return Numeric scalar.
+#'
+#' @keywords internal
+#' @noRd
+.resolve_residual_ts_frequency <- function(r, frequency) {
+  if (is.null(frequency)) {
+    if (stats::is.ts(r)) {
+      return(stats::frequency(r))
+    }
+
+    return(12)
+  }
+
+  .tempssm_check_length_one(frequency, "frequency")
+  .tempssm_check_numeric(frequency, "frequency")
+  .tempssm_check_no_undefined(frequency, "frequency")
+
+  if (!is.finite(frequency) || frequency < 1) {
+    cli::cli_abort(
+      "{.arg frequency} for residual diagnostics must be a positive numeric."
+    )
+  }
+
+  frequency
+}
+
+
+#' Resolve Ljung--Box lag for residual time-series diagnostics
+#'
+#' @param lb_lag Positive integer scalar or \code{NULL}.
+#' @param frequency Positive numeric scalar.
+#' @param n_finite Integer scalar giving the number of finite residuals.
+#'
+#' @return Integer scalar.
+#'
+#' @keywords internal
+#' @noRd
+.resolve_residual_ts_ljung_box_lag <- function(lb_lag,
+                                               frequency,
+                                               n_finite) {
+  if (n_finite < 2L) {
+    cli::cli_abort(
+      "{.arg r} must contain at least two finite residual values."
+    )
+  }
+
+  max_lag <- n_finite - 1L
+  if (is.null(lb_lag)) {
+    default_lag <- as.integer(round(frequency))
+    return(min(default_lag, max_lag))
+  }
+
+  .tempssm_check_length_one(lb_lag, "lb_lag")
+  .tempssm_check_numeric(lb_lag, "lb_lag")
+  .tempssm_check_no_undefined(lb_lag, "lb_lag")
+
+  if (!.tempssm_is_integerish(lb_lag) || lb_lag < 1L) {
+    cli::cli_abort(
+      paste0(
+        "{.arg lb_lag} for residual time-series diagnostics must be a ",
+        "positive integer."
+      )
+    )
+  }
+
+  lb_lag <- as.integer(round(lb_lag))
+  if (lb_lag > max_lag) {
+    cli::cli_abort(
+      "{.arg lb_lag} must be smaller than the number of finite residuals."
+    )
+  }
+
+  lb_lag
+}
+
+
+#' Inform users about missing residual time-series diagnostics
+#'
+#' @param r Numeric vector or \code{ts} object of residuals.
+#'
+#' @return Invisibly returns NULL.
+#'
+#' @keywords internal
+#' @noRd
+.inform_missing_residual_ts_diagnostics <- function(r) {
+  n_missing <- sum(is.na(r))
+  if (n_missing == 0L) {
+    return(invisible(NULL))
+  }
+
+  n <- length(r)
+  pct <- 100 * n_missing / n
+
+  cli::cli_inform(
+    c(
+      "The residual series includes missing values.",
+      "i" = paste0(
+        "Series length: {n}; missing residuals: {n_missing} ",
+        "({sprintf('%.1f', pct)}%)."
+      ),
+      "i" = paste0(
+        "Ljung-Box statistics use available-pair autocorrelations ",
+        "while preserving the time structure."
+      )
+    )
+  )
+
+  invisible(NULL)
+}
+
+
+#' Validate residual time-series diagnostics inputs
+#'
+#' @param r Numeric vector or \code{ts} object of residuals.
+#' @param lb_lag Positive integer scalar or \code{NULL}.
+#' @param frequency Positive numeric scalar or \code{NULL}.
+#'
+#' @return A list of validated inputs.
+#'
+#' @keywords internal
+#' @noRd
+.validate_residual_ts_diagnostics_inputs <- function(r,
+                                                     lb_lag,
+                                                     frequency) {
+  .tempssm_check_numeric(r, "r")
+  if (length(r) < 2L) {
+    cli::cli_abort(
+      "{.arg r} must contain at least two residual values for diagnostics."
+    )
+  }
+  if (any(is.infinite(r) | is.nan(r))) {
+    cli::cli_abort(
+      "{.arg r} must not contain infinite or NaN residual values."
+    )
+  }
+
+  n_finite <- sum(is.finite(r))
+  frequency <- .resolve_residual_ts_frequency(r, frequency)
+  lb_lag <- .resolve_residual_ts_ljung_box_lag(
+    lb_lag = lb_lag,
+    frequency = frequency,
+    n_finite = n_finite
+  )
+  .inform_missing_residual_ts_diagnostics(r)
+
+  list(
+    r = r,
+    lb_lag = lb_lag,
+    frequency = frequency,
+    n_finite = n_finite
+  )
+}
+
+
+#' Compute Ljung--Box statistics from available-pair residual ACF
+#'
+#' @param r Numeric vector or \code{ts} object of residuals.
+#' @param lb_lag Positive integer scalar.
+#' @param n_finite Integer scalar giving the number of finite residuals.
+#'
+#' @return A named list with Ljung--Box statistics.
+#'
+#' @keywords internal
+#' @noRd
+.available_pair_ljung_box <- function(r, lb_lag, n_finite) {
+  acf_df <- .residual_acf_data(r, lag_max = lb_lag)
+  acf_lag <- as.integer(round(acf_df$lag))
+  use_lag <- acf_lag <= lb_lag &
+    acf_lag < n_finite &
+    is.finite(acf_df$acf)
+
+  if (!any(use_lag)) {
+    cli::cli_abort(
+      "At least one finite residual autocorrelation is required."
+    )
+  }
+
+  rho <- acf_df$acf[use_lag]
+  lag <- acf_lag[use_lag]
+  lb_stat <- n_finite * (n_finite + 2) *
+    sum((rho^2) / (n_finite - lag))
+  lb_df <- length(rho)
+  lb_pvalue <- stats::pchisq(lb_stat, df = lb_df, lower.tail = FALSE)
+
+  list(
+    lb_stat = lb_stat,
+    lb_df = lb_df,
+    lb_pvalue = lb_pvalue
+  )
+}
+
+
+#' Ljung--Box diagnostics for residual time series
+#'
+#' @description
+#' Compute a Ljung--Box residual autocorrelation diagnostic for a residual
+#' vector or residual \code{ts} object. This function is useful after
+#' extracting time-preserving residuals with
+#' \code{get_tempssm_residuals(res, keep_time = TRUE)}.
+#'
+#' @param r Numeric vector or \code{ts} object of residuals. Missing values are
+#'   allowed.
+#' @param lb_lag Positive integer scalar or \code{NULL}. Lag used for the
+#'   Ljung--Box diagnostic. If \code{NULL}, the frequency of \code{r} is used
+#'   when \code{r} is a \code{ts} object; otherwise \code{frequency} is used.
+#' @param frequency Positive numeric scalar or \code{NULL}. Used to choose the
+#'   default \code{lb_lag} when \code{r} is not a \code{ts} object. If
+#'   \code{NULL}, non-\code{ts} input uses 12.
+#'
+#' @return
+#' A \code{tibble} with one row containing the Ljung--Box statistic, lag,
+#' degrees of freedom, p-value, kurtosis, and residual missingness counts.
+#'
+#' @details
+#' If \code{r} contains no missing values, the Ljung--Box statistic is
+#' equivalent to \code{stats::Box.test(r, type = "Ljung-Box")}. If \code{r}
+#' contains missing values, the time positions are retained and
+#' autocorrelations are computed from available pairs at each lag. The returned
+#' statistic should then be interpreted as a Ljung--Box-type residual
+#' autocorrelation diagnostic rather than as the exact result of
+#' \code{stats::Box.test()} applied to a complete series.
+#'
+#' @examples
+#' \dontrun{
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
+#'
+#' r <- get_tempssm_residuals(res, keep_time = TRUE)
+#' diagnose_residual_ts(r)
+#' diagnose_residual_ts(r, lb_lag = 24)
+#' }
+#' @export
+diagnose_residual_ts <- function(r, lb_lag = NULL, frequency = NULL) {
+  inputs <- .validate_residual_ts_diagnostics_inputs(
+    r = r,
+    lb_lag = lb_lag,
+    frequency = frequency
+  )
+
+  r <- inputs[["r"]]
+  lb_lag <- inputs[["lb_lag"]]
+  n_finite <- inputs[["n_finite"]]
+  lb <- .available_pair_ljung_box(r, lb_lag, n_finite)
+
+  tibble::tibble(
+    lb_stat = lb[["lb_stat"]],
+    lb_lag = lb_lag,
+    lb_df = lb[["lb_df"]],
+    lb_pvalue = lb[["lb_pvalue"]],
+    kurtosis = .kurtosis(r, na.rm = TRUE),
+    n = length(r),
+    n_missing = sum(is.na(r)),
+    n_finite = n_finite
+  )
+}
+
+
 #' Build residual diagnostic plot file paths
 #'
 #' @param prefix Character scalar used as the path prefix. If a file extension
