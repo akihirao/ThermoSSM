@@ -55,8 +55,8 @@ cross-validation but does not compute evaluation metrics.</p>
 <span>  <span class="va">folds</span>,</span>
 <span>  ar_order <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  use_season <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  parallel <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  workers <span class="op">=</span> <span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  parallel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  workers <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  progress <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  marginal <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -87,13 +87,14 @@ considered? Defaults to <code>TRUE</code>.</p></dd>
 <dt id="arg-parallel">parallel<a class="anchor" aria-label="anchor" href="#arg-parallel"></a></dt>
 <dd><p>Logical scalar; if <code>TRUE</code>, folds are evaluated in parallel using the
 <span class="pkg">future.apply</span> framework. If <code>FALSE</code>, folds are processed
-sequentially. Default is <code>TRUE</code>.</p></dd>
+sequentially. Default is <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
 <dd><p>Integer scalar specifying the number of parallel workers to use when
-<code>parallel = TRUE</code>. The default uses all available cores as
-returned by <code><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></code>.</p></dd>
+<code>parallel = TRUE</code>. If <code>NULL</code> and <code>parallel = TRUE</code>, all
+available cores returned by <code><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></code> are used.
+This argument is ignored for execution when <code>parallel = FALSE</code>.</p></dd>
 
 
 <dt id="arg-progress">progress<a class="anchor" aria-label="anchor" href="#arg-progress"></a></dt>
@@ -122,7 +123,10 @@ the output of <code><a href="ts_cv_run_fold.html">ts_cv_run_fold()</a></code>.</
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The requested <span class="pkg">future</span> execution plan is used only while folds are
 evaluated. The plan that was active before calling this function is restored
-on exit, including when fold evaluation raises an error.</p>
+on exit, including when fold evaluation raises an error. Calling
+<code>ts_cv_run()</code> does not require attaching <span class="pkg">future</span> or
+<span class="pkg">future.apply</span> with <code><a href="https://rdrr.io/r/base/library.html" class="external-link">library()</a></code>, but these suggested packages must
+be installed when <code>parallel = TRUE</code>.</p>
     </div>
 
     <div class="section level2">
@@ -142,9 +146,11 @@ on exit, including when fold evaluation raises an error.</p>
 <span class="r-in"><span><span class="va">cv_results</span> <span class="op">&lt;-</span> <span class="fu">ts_cv_run</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  <span class="va">folds</span>,</span></span>
 <span class="r-in"><span>  ar_order <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  use_season <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>  parallel <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span>  use_season <span class="op">=</span> <span class="cn">TRUE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Optional parallel execution:</span></span></span>
+<span class="r-in"><span><span class="co"># cv_results &lt;- ts_cv_run(folds, parallel = TRUE, workers = 2)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># inspect first fold result</span></span></span>
 <span class="r-in"><span><span class="va">cv_results</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>

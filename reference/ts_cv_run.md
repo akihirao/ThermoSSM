@@ -13,8 +13,8 @@ ts_cv_run(
   folds,
   ar_order = 1,
   use_season = TRUE,
-  parallel = TRUE,
-  workers = future::availableCores(),
+  parallel = FALSE,
+  workers = NULL,
   progress = FALSE,
   marginal = TRUE
 )
@@ -44,13 +44,16 @@ ts_cv_run(
 
   Logical scalar; if `TRUE`, folds are evaluated in parallel using the
   future.apply framework. If `FALSE`, folds are processed sequentially.
-  Default is `TRUE`.
+  Default is `FALSE`.
 
 - workers:
 
   Integer scalar specifying the number of parallel workers to use when
-  `parallel = TRUE`. The default uses all available cores as returned by
-  [`availableCores`](https://parallelly.futureverse.org/reference/availableCores.html).
+  `parallel = TRUE`. If `NULL` and `parallel = TRUE`, all available
+  cores returned by
+  [`availableCores`](https://parallelly.futureverse.org/reference/availableCores.html)
+  are used. This argument is ignored for execution when
+  `parallel = FALSE`.
 
 - progress:
 
@@ -81,6 +84,9 @@ the output of
 The requested future execution plan is used only while folds are
 evaluated. The plan that was active before calling this function is
 restored on exit, including when fold evaluation raises an error.
+Calling `ts_cv_run()` does not require attaching future or future.apply
+with [`library()`](https://rdrr.io/r/base/library.html), but these
+suggested packages must be installed when `parallel = TRUE`.
 
 ## Examples
 
@@ -100,9 +106,11 @@ folds <- ts_train_test_split(
 cv_results <- ts_cv_run(
   folds,
   ar_order = 1,
-  use_season = TRUE,
-  parallel = TRUE
+  use_season = TRUE
 )
+
+# Optional parallel execution:
+# cv_results <- ts_cv_run(folds, parallel = TRUE, workers = 2)
 
 # inspect first fold result
 cv_results[[1]]
