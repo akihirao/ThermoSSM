@@ -278,7 +278,7 @@ temporal dependence and departures from the Gaussian error assumption.
 
 ``` r
 
-r <- get_tempssm_residuals(res)
+r <- get_tempssm_residuals(res, keep_time = TRUE)
 plot_tempssm_residuals(r, frequency = frequency(res$temp_data))
 ```
 

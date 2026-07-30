@@ -20,6 +20,7 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/compute_temp_anomaly.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/convert_monthly_df_to_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/daily_zoo_to_monthly_ts.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/diagnose_residual_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/diagnose_residuals.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/distance_sim.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_ar_ts.html</loc></url>

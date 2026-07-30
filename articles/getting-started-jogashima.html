@@ -338,7 +338,7 @@ distributions, and Ljung-Box tests can be used to assess remaining
 temporal dependence and departures from the Gaussian error
 assumption.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res</span>, keep_time <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">r</span>, frequency <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/time.html" class="external-link">frequency</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">temp_data</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="getting-started-jogashima_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">

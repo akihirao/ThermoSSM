@@ -43,6 +43,9 @@
 
   Convert a daily zoo object to a monthly `ts` object
 
+- [`diagnose_residual_ts()`](https://akihirao.github.io/tempssm/reference/diagnose_residual_ts.md)
+  : Ljung–Box diagnostics for residual time series
+
 - [`diagnose_residuals()`](https://akihirao.github.io/tempssm/reference/diagnose_residuals.md)
   : Residual diagnostics for tempssm models
 

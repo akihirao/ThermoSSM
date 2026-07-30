@@ -45,7 +45,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_tempssm_residuals</span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">get_tempssm_residuals</span><span class="op">(</span><span class="va">res</span>, keep_time <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -55,10 +55,19 @@
 <dl><dt id="arg-res">res<a class="anchor" aria-label="anchor" href="#arg-res"></a></dt>
 <dd><p>An object of class <code>"tempssm"</code> returned by <code><a href="tempssm.html">tempssm()</a></code>.</p></dd>
 
+
+<dt id="arg-keep-time">keep_time<a class="anchor" aria-label="anchor" href="#arg-keep-time"></a></dt>
+<dd><p>Logical scalar; if FALSE, only finite residuals are
+returned as a numeric vector. If TRUE, the residuals are returned as a
+<code>ts</code> object with the same start and frequency as the input
+temperature series; non-finite residuals are retained as <code>NA</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A numeric vector of standardized recursive residuals.</p>
+    <p>If <code>keep_time = FALSE</code>, a numeric vector of finite standardized
+recursive residuals. If <code>keep_time = TRUE</code>, a <code>ts</code> object
+preserving the time index of the input temperature series.</p>
     </div>
 
     <div class="section level2">
@@ -68,6 +77,7 @@
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_niigata</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">residuals</span> <span class="op">&lt;-</span> <span class="fu">get_tempssm_residuals</span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">residuals_ts</span> <span class="op">&lt;-</span> <span class="fu">get_tempssm_residuals</span><span class="op">(</span><span class="va">res</span>, keep_time <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
