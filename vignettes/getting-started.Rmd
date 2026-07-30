@@ -4,12 +4,12 @@ subtitle: "Version `r packageVersion('tempssm')`"
 author: "Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette: default
+#  rmarkdown::html_vignette: default
 #  pdf_document:
 #    latex_engine: lualatex
 #    ##toc: true
-#  md_document:
-#    variant: gfm+tex_math_dollars
+  md_document:
+    variant: gfm+tex_math_dollars
 vignette: >
   %\VignetteIndexEntry{tempssm: State-space modeling for temperature time series in R}
   %\VignetteEngine{knitr::rmarkdown}
@@ -41,12 +41,14 @@ using the `KFAS` package as the computational backend (Helske, 2017).
 
 # Input Data Format
 
-The core modeling functions in `tempssm` expect input time series to be
-supplied as R `ts` objects. The `ts` class is base R's standard format for
-regularly spaced time series (see the `stats::ts` documentation:
+R `ts` objects are the primary input format for `tempssm`. The temperature
+series passed to `tempssm()` should be supplied as a univariate `ts` object,
+and optional exogenous variables can be supplied as univariate or multivariate
+`ts` objects. The `ts` class is base R's standard format for regularly spaced
+time series (see the `stats::ts` documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). The package also
-provides utility functions for converting common tabular and observational data
-formats into `ts` objects before model fitting.
+provides utility functions for converting common tabular and observational
+data formats into `ts` objects before model fitting.
 
 The seasonal cycle used by `tempssm()` is taken from the `frequency` attribute
 of the input `ts` object. For example, `frequency = 12` represents monthly

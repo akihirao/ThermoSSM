@@ -12,7 +12,7 @@
 
 <meta name="author" content="Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa" />
 
-<meta name="date" content="2026-07-29" />
+<meta name="date" content="2026-07-30" />
 
 <title>tempssm: State-space modeling for temperature time series in R</title>
 
@@ -344,7 +344,7 @@ temperature time series in R</h1>
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">Akira S. Hirao, Shinya Baba, and Momoko
 Ichinokawa</h4>
-<h4 class="date">2026-07-29</h4>
+<h4 class="date">2026-07-30</h4>
 
 
 
@@ -378,10 +378,13 @@ evaluation.</li>
 </div>
 <div id="input-data-format" class="section level1">
 <h1>Input Data Format</h1>
-<p>The core modeling functions in <code>tempssm</code> expect input time
-series to be supplied as R <code>ts</code> objects. The <code>ts</code>
-class is base R’s standard format for regularly spaced time series (see
-the <code>stats::ts</code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).
+<p>R <code>ts</code> objects are the primary input format for
+<code>tempssm</code>. The temperature series passed to
+<code>tempssm()</code> should be supplied as a univariate
+<code>ts</code> object, and optional exogenous variables can be supplied
+as univariate or multivariate <code>ts</code> objects. The
+<code>ts</code> class is base R’s standard format for regularly spaced
+time series (see the <code>stats::ts</code> documentation: <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>).
 The package also provides utility functions for converting common
 tabular and observational data formats into <code>ts</code> objects
 before model fitting.</p>

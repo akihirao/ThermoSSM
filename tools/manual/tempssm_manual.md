@@ -24,9 +24,12 @@ package as the computational backend (Helske, 2017).
 
 # Input Data Format
 
-The core modeling functions in `tempssm` expect input time series to be
-supplied as R `ts` objects. The `ts` class is base R’s standard format
-for regularly spaced time series (see the `stats::ts` documentation:
+R `ts` objects are the primary input format for `tempssm`. The
+temperature series passed to `tempssm()` should be supplied as a
+univariate `ts` object, and optional exogenous variables can be supplied
+as univariate or multivariate `ts` objects. The `ts` class is base R’s
+standard format for regularly spaced time series (see the `stats::ts`
+documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). The
 package also provides utility functions for converting common tabular
 and observational data formats into `ts` objects before model fitting.

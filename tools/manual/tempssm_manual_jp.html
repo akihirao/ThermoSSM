@@ -12,7 +12,7 @@
 
 <meta name="author" content="平尾章・馬場真哉・市野川桃子" />
 
-<meta name="date" content="2026-07-29" />
+<meta name="date" content="2026-07-30" />
 
 <title>tempssm 詳細マニュアル</title>
 
@@ -342,7 +342,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">tempssm 詳細マニュアル</h1>
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">平尾章・馬場真哉・市野川桃子</h4>
-<h4 class="date">2026-07-29</h4>
+<h4 class="date">2026-07-30</h4>
 
 
 
@@ -372,10 +372,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="入力データ形式" class="section level1">
 <h1>入力データ形式</h1>
-<p><code>tempssm</code>
-のコアとなるモデル推定関数では、入力時系列データを R の <code>ts</code>
-オブジェクトとして与えることを前提としています。<code>ts</code>
-クラスは、 等間隔の時系列を扱うための base R の標準的な形式です（R
+<p>R の <code>ts</code> オブジェクトは、<code>tempssm</code>
+の主要な入力データ形式です。 <code>tempssm()</code>
+に渡す温度時系列は、単変量の <code>ts</code> オブジェクトとして
+与えます。任意で指定する外生変数は、単変量または多変量の <code>ts</code>
+オブジェクトとして与えることができます。<code>ts</code>
+クラスは、等間隔の 時系列を扱うための base R の標準的な形式です（R
 公式の <code>stats::ts</code> ドキュメントを参照： <a href="https://search.r-project.org/R/refmans/stats/html/ts.html" class="uri">https://search.r-project.org/R/refmans/stats/html/ts.html</a>）。
 本パッケージには、表形式データや観測データをモデル適用前に
 <code>ts</code>
