@@ -26,10 +26,14 @@ package as the computational backend (Helske, 2017).
 
 ## Input Data Format
 
-The core modeling functions in `tempssm` expect input time series to be
-supplied as R `ts` objects. The `ts` class is base R’s standard format
-for regularly spaced time series (see the
-[`stats::ts`](https://rdrr.io/r/stats/ts.html) documentation:
+R `ts` objects are the primary input format for `tempssm`. The
+temperature series passed to
+[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
+should be supplied as a univariate `ts` object, and optional exogenous
+variables can be supplied as univariate or multivariate `ts` objects.
+The `ts` class is base R’s standard format for regularly spaced time
+series (see the [`stats::ts`](https://rdrr.io/r/stats/ts.html)
+documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). The
 package also provides utility functions for converting common tabular
 and observational data formats into `ts` objects before model fitting.
@@ -217,9 +221,9 @@ summary(res)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496414 
-    ##   State (Q trend): 4.937125e-06 
-    ##   State (Q season): 0.0001763537 
+    ##   Observation (H): 0.07496413 
+    ##   State (Q trend): 4.937123e-06 
+    ##   State (Q season): 0.0001763536 
     ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
@@ -350,10 +354,10 @@ head(alpha_hat)
     ##          sea_dummy11     arima1
     ## Jan 1998  -2.8244535 -0.2178663
     ## Feb 1998  -2.0508949  0.1519894
-    ## Mar 1998   0.2882283  0.4187224
+    ## Mar 1998   0.2882283  0.4187225
     ## Apr 1998   1.9925949  0.2408083
     ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167731
+    ## Jun 1998   4.9410126  1.0167732
 
 ``` r
 

@@ -24,13 +24,22 @@ package as the computational backend (Helske, 2017).
 
 ## Input Data Format
 
-Core modeling functions expect input time series to be supplied as R
-`ts` objects. The `ts` class is base R’s standard format for regularly
-spaced time series (see the
-[`stats::ts`](https://rdrr.io/r/stats/ts.html) documentation:
+R `ts` objects are the primary input format for `tempssm`. The
+temperature series passed to
+[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
+should be supplied as a univariate `ts` object, and optional exogenous
+variables can be supplied as univariate or multivariate `ts` objects.
+The `ts` class is base R’s standard format for regularly spaced time
+series (see the [`stats::ts`](https://rdrr.io/r/stats/ts.html)
+documentation:
 <https://search.r-project.org/R/refmans/stats/html/ts.html>). Utility
 functions are included to help convert common tabular or observational
 data into `ts` objects before fitting.
+
+The seasonal cycle used by
+[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
+is taken from the `frequency` attribute of the input `ts` object. For
+example, `frequency = 12` represents monthly data.
 
 ## Prior Art and Scope
 
@@ -39,6 +48,13 @@ time series with linear Gaussian state-space models. It brings together
 model construction, component extraction, uncertainty summaries,
 residual diagnostics, visualization, and time-series cross-validation in
 a single R package interface tailored to temperature applications.
+
+The model can be viewed as an extension of a basic structural
+time-series model, in which the observed temperature series is
+decomposed into latent components such as a long-term trend, seasonal
+variation, autoregressive dependence, and optional exogenous effects.
+The mathematical formulation is described in the model specification
+vignette linked below.
 
 The package builds on established statistical methodology, including
 linear Gaussian state-space modeling, Kalman filtering, and Kalman
