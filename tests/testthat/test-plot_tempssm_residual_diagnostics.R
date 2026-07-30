@@ -1,8 +1,9 @@
 # tests/testthat/test-plot_tempssm_residual_diagnostics.R
 
 test_that("plot_tempssm_residual_diagnostics runs without error", {
-  expect_silent(
-    plot_tempssm_residual_diagnostics(res_tempssm, save = FALSE)
+  expect_message(
+    plot_tempssm_residual_diagnostics(res_tempssm, save = FALSE),
+    "The residual series includes missing values"
   )
 })
 
@@ -25,6 +26,47 @@ test_that("plot_tempssm_residuals returns selected panels", {
 })
 
 
+test_that("residual series plot uses ts time axis when available", {
+  r <- stats::ts(c(1, NA, 2, 3), start = c(2000, 1), frequency = 12)
+  df <- .residual_series_data(r)
+  p <- .plot_residual_series(r)
+  x_scale <- .residual_series_x_scale(r)
+
+  expect_identical(df$time, as.numeric(stats::time(r)))
+  expect_identical(p$labels$x, "Time")
+  expect_s3_class(x_scale, "ScaleContinuousPosition")
+})
+
+
+test_that("plot_tempssm_residuals preserves ts time axis after validation", {
+  r <- stats::ts(c(1, NA, 2, 3), start = c(2000, 1), frequency = 12)
+
+  expect_message(
+    p <- plot_tempssm_residuals(r, panel = "series"),
+    "The residual series includes missing values"
+  )
+
+  expect_identical(p$data$time, as.numeric(stats::time(r))[-2])
+})
+
+
+test_that("residual series plot uses index for non-ts input", {
+  r <- c(1, NA, 2, 3)
+  df <- .residual_series_data(r)
+
+  expect_identical(df$time, seq_along(r))
+})
+
+
+test_that("residual time-axis scale reflects the ts range", {
+  r <- stats::ts(seq_len(36), start = c(2001, 1), frequency = 12)
+  breaks <- .residual_series_x_breaks(r)
+
+  expect_gte(min(breaks), min(as.numeric(stats::time(r))))
+  expect_lte(max(breaks), max(as.numeric(stats::time(r))))
+})
+
+
 test_that("residual ACF default lag uses two cycles plus extra lags", {
   r <- get_tempssm_residuals(res_tempssm)
 
@@ -41,6 +83,15 @@ test_that("residual ACF data excludes lag zero", {
 
   expect_false(any(acf_df$lag == 0))
   expect_identical(min(acf_df$lag), 1)
+  expect_identical(max(acf_df$lag), 27)
+})
+
+
+test_that("residual ACF can use available pairs with missing values", {
+  r <- stats::ts(c(rnorm(15), NA, rnorm(20)), frequency = 12)
+  acf_df <- .residual_acf_data(r, lag_max = 27L)
+
+  expect_false(any(acf_df$lag == 0))
   expect_identical(max(acf_df$lag), 27)
 })
 
@@ -77,6 +128,11 @@ test_that("residual histogram overlays a normal curve", {
 test_that("plot_tempssm_residuals validates inputs", {
   r <- get_tempssm_residuals(res_tempssm)
 
+  expect_message(
+    plot_tempssm_residuals(c(1, NA, 0, 0.5), panel = "histogram"),
+    "The residual series includes missing values"
+  )
+
   expect_error(
     plot_tempssm_residuals(1),
     "at least two residual values"
@@ -84,7 +140,12 @@ test_that("plot_tempssm_residuals validates inputs", {
 
   expect_error(
     plot_tempssm_residuals(c(1, Inf)),
-    "finite residual values"
+    "infinite or NaN residual values"
+  )
+
+  expect_error(
+    plot_tempssm_residuals(c(1, NA)),
+    "at least two non-missing values"
   )
 
   expect_error(

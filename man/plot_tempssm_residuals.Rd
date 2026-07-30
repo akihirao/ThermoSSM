@@ -46,6 +46,15 @@ Otherwise, returns a \code{ggplot} object for the selected panel.
 \description{
 Plot residuals from tempssm models
 }
+\details{
+Missing residuals are allowed. The residual time-series panel preserves
+their positions as gaps and uses the \code{ts} time axis when \code{r} is a
+\code{ts} object, including axis tick marks based on that time range. The
+ACF panel preserves the time structure and uses available pairs for each
+lag, and the histogram and normal curve use finite residuals. When missing
+residuals are detected, an informational message reports the series length
+and the number and percentage of missing values.
+}
 \examples{
 \dontrun{
 data(sst_niigata)

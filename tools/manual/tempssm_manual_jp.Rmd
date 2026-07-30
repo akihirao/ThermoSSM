@@ -290,7 +290,7 @@ plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 時間依存性や正規誤差仮定からの大きな逸脱がないかを確認できます。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-r <- get_tempssm_residuals(res_ar1)
+r <- get_tempssm_residuals(res_ar1, keep_time = TRUE)
 plot_tempssm_residuals(r, frequency = frequency(res_ar1$temp_data))
 ```
 

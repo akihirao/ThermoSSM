@@ -289,7 +289,7 @@ fitting. Here we inspect the residual series, residual autocorrelation,
 residual distribution, and a Ljung-Box test.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-r <- get_tempssm_residuals(res_ar1)
+r <- get_tempssm_residuals(res_ar1, keep_time = TRUE)
 plot_tempssm_residuals(r, frequency = frequency(res_ar1$temp_data))
 ```
 

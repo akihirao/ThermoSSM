@@ -27,6 +27,16 @@ Compute residual diagnostic statistics for a fitted tempssm model.
 The output is returned as a tidy tibble suitable for meta-analysis
 across many fitted models.
 }
+\details{
+The Ljung--Box test and kurtosis are computed from finite standardized
+recursive residuals. If the fitted response series contains missing values
+or if non-finite residuals occur during filtering, the Ljung--Box test is a
+diagnostic summary of the available finite residual sequence rather than a
+strict test on the original equally spaced time index. To inspect residual
+autocorrelation while preserving the original time structure, use
+\code{get_tempssm_residuals(res, keep_time = TRUE)} with
+\code{plot_tempssm_residuals()}.
+}
 \examples{
 \dontrun{
 data(sst_niigata)

@@ -13,6 +13,16 @@ test_that("diagnose_residuals returns a tibble", {
 })
 
 
+test_that("diagnose_residuals informs about missing residual handling", {
+  expect_message(
+    diag <- diagnose_residuals(res_tempssm),
+    "available finite residual sequence"
+  )
+
+  expect_s3_class(diag, "tbl_df")
+})
+
+
 test_that("diagnose_residuals uses seasonal frequency as default LB lag", {
   diag <- diagnose_residuals(res_tempssm)
 

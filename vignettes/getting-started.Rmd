@@ -243,7 +243,7 @@ Ljung-Box tests can be used to assess remaining temporal dependence and
 departures from the Gaussian error assumption.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-r <- get_tempssm_residuals(res)
+r <- get_tempssm_residuals(res, keep_time = TRUE)
 plot_tempssm_residuals(r, frequency = frequency(res$temp_data))
 diag <- diagnose_residuals(res)
 diag

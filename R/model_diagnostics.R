@@ -1,7 +1,15 @@
 #' Extract standardized recursive residuals
 #'
 #' @inheritParams get_level_ts
-#' @return A numeric vector of standardized recursive residuals.
+#' @param keep_time Logical scalar; if FALSE, only finite residuals are
+#'   returned as a numeric vector. If TRUE, the residuals are returned as a
+#'   \code{ts} object with the same start and frequency as the input
+#'   temperature series; non-finite residuals are retained as \code{NA}.
+#'
+#' @return
+#' If \code{keep_time = FALSE}, a numeric vector of finite standardized
+#' recursive residuals. If \code{keep_time = TRUE}, a \code{ts} object
+#' preserving the time index of the input temperature series.
 #'
 #' @examples
 #' \dontrun{
@@ -9,16 +17,42 @@
 #' res <- tempssm(sst_niigata)
 #'
 #' residuals <- get_tempssm_residuals(res)
+#' residuals_ts <- get_tempssm_residuals(res, keep_time = TRUE)
 #' }
 #' @export
-get_tempssm_residuals <- function(res) {
+get_tempssm_residuals <- function(res, keep_time = FALSE) {
   if (!inherits(res, "tempssm")) {
     cli::cli_abort(
       "`res` must be an object of class {.cls tempssm}."
     )
   }
 
+  .tempssm_check_length_one(keep_time, "keep_time")
+  .tempssm_check_logical(keep_time, "keep_time")
+  if (!is.logical(keep_time) || is.na(keep_time)) {
+    cli::cli_abort("{.arg keep_time} must be a logical scalar.")
+  }
+
   r <- stats::rstandard(res$kfs, type = "recursive")
+  if (keep_time) {
+    if (length(r) != length(res$temp_data)) {
+      cli::cli_abort(
+        "Time-preserving residuals require residuals and input data to have ",
+        "the same length."
+      )
+    }
+
+    r[!is.finite(r)] <- NA_real_
+
+    return(
+      stats::ts(
+        as.numeric(r),
+        start = stats::start(res$temp_data),
+        frequency = stats::frequency(res$temp_data)
+      )
+    )
+  }
+
   r[is.finite(r)]
 }
 
@@ -84,6 +118,41 @@ get_tempssm_residuals <- function(res) {
 }
 
 
+#' Inform users about missing residual handling in tabular diagnostics
+#'
+#' @param residual_ts A \code{ts} object of time-preserving residuals.
+#'
+#' @return Invisibly returns NULL.
+#'
+#' @keywords internal
+#' @noRd
+.inform_missing_residual_diagnostics <- function(residual_ts) {
+  n_missing <- sum(is.na(residual_ts))
+  if (n_missing == 0L) {
+    return(invisible(NULL))
+  }
+
+  n <- length(residual_ts)
+  pct <- 100 * n_missing / n
+
+  cli::cli_inform(
+    c(
+      "The residual series includes missing values.",
+      "i" = paste0(
+        "Series length: {n}; missing residuals: {n_missing} ",
+        "({sprintf('%.1f', pct)}%)."
+      ),
+      "i" = paste0(
+        "Ljung-Box statistics are computed from the available finite ",
+        "residual sequence."
+      )
+    )
+  )
+
+  invisible(NULL)
+}
+
+
 #' Residual diagnostics for tempssm models
 #'
 #' @description
@@ -103,6 +172,16 @@ get_tempssm_residuals <- function(res) {
 #' including Ljung--Box test results and kurtosis. The \code{lb_lag} column
 #' gives the lag used in the Ljung--Box test. If \code{JB_test = TRUE},
 #' Jarque--Bera test statistics are also included.
+#'
+#' @details
+#' The Ljung--Box test and kurtosis are computed from finite standardized
+#' recursive residuals. If the fitted response series contains missing values
+#' or if non-finite residuals occur during filtering, the Ljung--Box test is a
+#' diagnostic summary of the available finite residual sequence rather than a
+#' strict test on the original equally spaced time index. To inspect residual
+#' autocorrelation while preserving the original time structure, use
+#' \code{get_tempssm_residuals(res, keep_time = TRUE)} with
+#' \code{plot_tempssm_residuals()}.
 #'
 #' @examples
 #' \dontrun{
@@ -132,6 +211,9 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
   if (!is.logical(JB_test) || is.na(JB_test)) {
     cli::cli_abort("{.arg JB_test} must be a logical scalar.")
   }
+
+  residual_ts <- get_tempssm_residuals(res, keep_time = TRUE)
+  .inform_missing_residual_diagnostics(residual_ts)
 
   r <- get_tempssm_residuals(res)
 
@@ -208,20 +290,62 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
   if (length(r) < 2L) {
     cli::cli_abort("{.arg r} must contain at least two residual values.")
   }
-  if (!all(is.finite(r))) {
-    cli::cli_abort("{.arg r} must contain only finite residual values.")
+  if (any(is.infinite(r) | is.nan(r))) {
+    cli::cli_abort(
+      "{.arg r} must not contain infinite or NaN residual values."
+    )
+  }
+  if (sum(!is.na(r)) < 2L) {
+    cli::cli_abort("{.arg r} must contain at least two non-missing values.")
   }
 
   panel <- match.arg(panel, c("all", "series", "acf", "histogram"))
   frequency <- .resolve_residual_plot_frequency(r, frequency)
   lag_max <- .resolve_residual_plot_lag_max(r, frequency, lag_max)
+  .inform_missing_residuals(r)
 
   list(
-    r = as.numeric(r),
+    r = r,
     panel = panel,
     frequency = frequency,
     lag_max = lag_max
   )
+}
+
+
+#' Inform users about missing residual handling
+#'
+#' @inheritParams .validate_residual_plot_inputs
+#'
+#' @return Invisibly returns NULL.
+#'
+#' @keywords internal
+#' @noRd
+.inform_missing_residuals <- function(r) {
+  n_missing <- sum(is.na(r))
+  if (n_missing == 0L) {
+    return(invisible(NULL))
+  }
+
+  n <- length(r)
+  pct <- 100 * n_missing / n
+
+  cli::cli_inform(
+    c(
+      "The residual series includes missing values.",
+      "i" = paste0(
+        "Series length: {n}; missing residuals: {n_missing} ",
+        "({sprintf('%.1f', pct)}%)."
+      ),
+      "i" = paste0(
+        "The ACF panel preserves the time structure and uses ",
+        "available pairs for each lag."
+      ),
+      "i" = "The histogram and normal curve use finite residuals."
+    )
+  )
+
+  invisible(NULL)
 }
 
 
@@ -294,14 +418,63 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #'
 #' @param r Numeric vector of residuals.
 #'
-#' @return A data frame with residual index and value columns.
+#' @return A data frame with time, residual, and segment columns.
 #'
 #' @keywords internal
 #' @noRd
 .residual_series_data <- function(r) {
+  residual <- as.numeric(r)
+  time <- if (stats::is.ts(r)) {
+    as.numeric(stats::time(r))
+  } else {
+    seq_along(r)
+  }
+
   data.frame(
-    index = seq_along(r),
-    residual = as.numeric(r)
+    time = time,
+    residual = residual,
+    segment = cumsum(is.na(residual)) + 1L
+  )
+}
+
+
+#' Build x-axis breaks for residual time-series plots
+#'
+#' @inheritParams .residual_series_data
+#'
+#' @return Numeric vector of breaks.
+#'
+#' @keywords internal
+#' @noRd
+.residual_series_x_breaks <- function(r) {
+  time_range <- range(.residual_series_data(r)$time)
+  breaks <- pretty(time_range)
+  breaks[breaks >= time_range[1L] & breaks <= time_range[2L]]
+}
+
+
+#' Build x-axis scale for residual time-series plots
+#'
+#' @inheritParams .residual_series_data
+#'
+#' @return A ggplot2 scale object.
+#'
+#' @keywords internal
+#' @noRd
+.residual_series_x_scale <- function(r) {
+  time_range <- range(.residual_series_data(r)$time)
+  breaks <- .residual_series_x_breaks(r)
+
+  if (stats::is.ts(r)) {
+    labels <- format(breaks, trim = TRUE, scientific = FALSE)
+  } else {
+    labels <- breaks
+  }
+
+  ggplot2::scale_x_continuous(
+    breaks = breaks,
+    labels = labels,
+    limits = time_range
   )
 }
 
@@ -316,10 +489,19 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' @keywords internal
 #' @noRd
 .residual_acf_data <- function(r, lag_max) {
-  acf_obj <- stats::acf(r, lag.max = lag_max, plot = FALSE)
+  acf_obj <- stats::acf(
+    r,
+    lag.max = lag_max,
+    plot = FALSE,
+    na.action = stats::na.pass
+  )
+  lag <- as.numeric(acf_obj$lag[, 1L, 1L])
+  if (stats::is.ts(r)) {
+    lag <- lag * stats::frequency(r)
+  }
 
   acf_df <- data.frame(
-    lag = as.numeric(acf_obj$lag[, 1L, 1L]),
+    lag = lag,
     acf = as.numeric(acf_obj$acf[, 1L, 1L])
   )
 
@@ -337,12 +519,17 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' @noRd
 .plot_residual_series <- function(r) {
   df <- .residual_series_data(r)
+  df_finite <- df[is.finite(df$residual), , drop = FALSE]
 
-  ggplot2::ggplot(df, ggplot2::aes(x = .data[["index"]],
-                                   y = .data[["residual"]])) +
-    ggplot2::geom_line(linewidth = 0.3) +
+  ggplot2::ggplot(df_finite, ggplot2::aes(x = .data[["time"]],
+                                          y = .data[["residual"]])) +
+    ggplot2::geom_line(
+      ggplot2::aes(group = .data[["segment"]]),
+      linewidth = 0.3
+    ) +
     ggplot2::geom_point(size = 0.5) +
-    ggplot2::labs(title = "Residuals", x = NULL, y = NULL) +
+    .residual_series_x_scale(r) +
+    ggplot2::labs(title = "Residuals", x = "Time", y = NULL) +
     ggplot2::theme_gray()
 }
 
@@ -389,6 +576,7 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' @noRd
 .residual_normal_curve_data <- function(r, bins = 30L) {
   r <- as.numeric(r)
+  r <- r[is.finite(r)]
   r_range <- range(r)
   bin_width <- diff(r_range) / bins
   sd_r <- stats::sd(r)
@@ -415,6 +603,7 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' @noRd
 .plot_residual_histogram <- function(r) {
   df <- data.frame(residual = as.numeric(r))
+  df <- df[is.finite(df$residual), , drop = FALSE]
   normal_df <- .residual_normal_curve_data(r, bins = 30L)
 
   ggplot2::ggplot(df, ggplot2::aes(x = .data[["residual"]])) +
@@ -504,6 +693,15 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' @return
 #' Invisibly returns NULL when \code{panel = "all"} or \code{save = TRUE}.
 #' Otherwise, returns a \code{ggplot} object for the selected panel.
+#'
+#' @details
+#' Missing residuals are allowed. The residual time-series panel preserves
+#' their positions as gaps and uses the \code{ts} time axis when \code{r} is a
+#' \code{ts} object, including axis tick marks based on that time range. The
+#' ACF panel preserves the time structure and uses available pairs for each
+#' lag, and the histogram and normal curve use finite residuals. When missing
+#' residuals are detected, an informational message reports the series length
+#' and the number and percentage of missing values.
 #'
 #' @examples
 #' \dontrun{
@@ -598,21 +796,21 @@ plot_tempssm_residuals <- function(r,
 plot_tempssm_residual_diagnostics <- function(res,
                                               save = FALSE,
   prefix = "residuals") {
-  r <- get_tempssm_residuals(res)
+  r <- get_tempssm_residuals(res, keep_time = TRUE)
 
   plot_tempssm_residuals(
     r,
-    frequency = stats::frequency(res$temp_data),
     save = save,
     prefix = prefix
   )
 
   if (save) {
     paths <- .residual_diagnostic_paths(prefix)
+    r_finite <- r[is.finite(r)]
 
     grDevices::png(paths[["qq"]], 600, 400)
-    stats::qqnorm(r)
-    stats::qqline(r)
+    stats::qqnorm(r_finite)
+    stats::qqline(r_finite)
     grDevices::dev.off()
   }
 
