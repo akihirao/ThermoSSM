@@ -24,16 +24,17 @@ vignette: >
 
 # 概要
 
-`tempssm` は、気温・水温など、環境中で観測される温度時系列に対して
+`tempssm` は、気温や水温など、環境中で観測される温度時系列データに対して
 状態空間モデルを適用するための R パッケージです。長期トレンド、季節変動、
-自己回帰的依存性、および任意の外生効果が、観測された時間変動にどのように
-寄与しているかを評価するための実用的な枠組みを提供します。計算バックエンド
-として `KFAS` R パッケージ（Helske, 2017）を用い、カルマンフィルタリング
-および平滑化によって推定される線形ガウス状態空間モデルを適用します。
+自己回帰的依存性、および任意の外生効果が、観測された温度の時間変動に
+どのように寄与しているかを評価するための実用的な枠組みを提供します。
+計算バックエンドとして `KFAS` R パッケージ（Helske, 2017）を用い、
+カルマンフィルタリングおよび平滑化によって推定される線形ガウス状態空間モデルを
+適用します。
 
 # 主な特徴
 
-- 環境中で観測される温度時系列に線形ガウス状態空間モデルを適用
+- 環境中で観測される温度時系列データに線形ガウス状態空間モデルを適用
 - 温度の動態を解釈しやすい潜在成分として表現：
   長期トレンド、季節変動、自己回帰構造、および任意の外生効果
 - 任意の季節周期に対応
@@ -43,8 +44,8 @@ vignette: >
 
 # 入力データ形式
 
-R の `ts` オブジェクトは、`tempssm` の主要な入力データ形式です。
-`tempssm()` に渡す温度時系列は、単変量の `ts` オブジェクトとして
+R の `ts` オブジェクトが、`tempssm` の主要な入力データ形式です。
+`tempssm()` に渡す温度時系列データは、単変量の `ts` オブジェクトとして
 与えます。任意で指定する外生変数は、単変量または多変量の `ts`
 オブジェクトとして与えることができます。`ts` クラスは、等間隔の
 時系列を扱うための base R の標準的な形式です（R 公式の
@@ -70,7 +71,7 @@ R における状態空間モデルの汎用的な枠組みを提供する `KFAS
 行われます。
 
 初期実装は、線形ガウス状態空間モデルを用いて海水温トレンドを解析した 
-Baba et al. (2024) に付随する補足コードに基づいています。この補足コードは
+馬場ら (2024) に付随する補足コードに基づいています。この補足コードは
 以下で公開されています。
 
 <https://github.com/logics-of-blue/sea-temperature-trend-jogashima>
@@ -88,11 +89,9 @@ Baba et al. (2024) に付随する補足コードに基づいています。こ�
 
 `tempssm` で用いるモデルは、基本構造時系列モデル
 （Basic Structural Time Series Model; BSTSM）を拡張したものとして
-位置づけられます。基本構造時系列モデルは、観測時系列を潜在的な
-トレンド成分、季節成分、不規則成分から構成されるものとして表す
-状態空間モデルの標準的な定式化の一つです。Baba et al. (2024) による
-温度時系列への適用を踏まえ、`tempssm` では、この解釈しやすい分解を保ちつつ、
-自己回帰的依存性と任意の外生効果を加えています。これにより、
+位置づけられます。BSTSMは、観測時系列を潜在的なトレンド成分、季節成分、
+不規則成分から構成されるものとして表す状態空間モデルの標準的な定式化の
+一つです。馬場ら (2024) による温度時系列への適用を踏まえ、`tempssm` では、BSTSMに自己回帰的依存性と任意の外生効果を加えています。これにより
 長期的な温度変化、季節周期、短期的な変動を分けて検討しやすくしています。
 
 計算バックエンドには `KFAS` を用い、推定済みの `tempssm` オブジェクトには
@@ -100,11 +99,10 @@ Baba et al. (2024) に付随する補足コードに基づいています。こ�
 本マニュアルでは、要約統計、診断、プロットの解釈は平滑化推定値に
 基づいています。
 
-数式を含む詳細なモデル定式化は、重複を避け、保守性を高めるために
-本チュートリアル形式のマニュアルから分離しました。観測方程式、状態方程式、
-季節成分の制約、自己回帰成分、外生成分、推定パラメータ数、推定手順については、
-英語版 vignette `model-specification` および日本語版の
-`tools/manual/tempssm_model_jp.Rmd` を参照してください。
+数式を含む詳細なモデル定式化は、英語版 vignette `model-specification` および
+日本語版の`tools/manual/tempssm_model_jp.Rmd` を参照してください。
+観測方程式、状態方程式、季節成分の制約、自己回帰成分、外生成分、
+推定パラメータ数、推定手順の詳細を説明しています。
 
 # チュートリアルの流れ
 
@@ -114,11 +112,11 @@ Baba et al. (2024) に付随する補足コードに基づいています。こ�
 ベースラインの状態空間モデルを当てはめ、潜在成分の可視化、残差診断、
 短期予測を行います。演習 II では、同じ流れを外生変数ありモデルへ拡張し、
 シミュレーションで生成された海洋環境変数を追加することで、モデル解釈と
-条件付き予測性能がどのように変わるかを、診断と時系列交差検証に基づいて
+条件付き予測性能がどのように変わるかを、残差診断と時系列交差検証に基づいて
 確認します。
 
 ここでの目的は、シミュレーションデータから新しい科学的結論を導くことでは
-ありません。モデル当てはめ、診断、予測、モデル比較の流れを、
+ありません。モデルの当てはめ、診断、予測、モデル比較の流れを、
 再現可能な例として示すことを目的としています。
 
 ## セットアップ
@@ -155,7 +153,7 @@ library(patchwork)
 - **単位**: °C  
 - **期間**: 1998 年 1 月から 2023 年 2 月
 
-このデータセットは、Baba et al. (2024) で報告された城ヶ島地先の海水温に
+このデータセットは、馬場ら (2024) で報告された城ヶ島地先の海水温に
 対する状態空間モデル解析に基づいて生成されたものです。ここでは、
 `tempssm` の基本的なワークフローを示すための再現可能な応答時系列として
 使用します。演習 II では、この同じシミュレーション SST に、
@@ -232,8 +230,8 @@ attr(ll, "df") # number of parameters
 `tempssm()` は、デフォルトでは KFAS の周辺尤度 (marginal likelihood) を用いて
 パラメーター推定をおこないます。一方で、`marginal = FALSE` を明示すれば、
 散漫尤度 (diffuse likelihood) も利用できます。選択された尤度タイプは推定済みの
-`tempssm` オブジェクトに保存され、`logLik()` や `summary()` などの下流メソッドでも
-一貫して用いられます。
+`tempssm` オブジェクトに保存され、`logLik()` や `summary()` などの下流メソッド
+でも一貫して用いられます。
 
 本パッケージでは、`tempssm` オブジェクトに対する AIC は自動計算しません。
 これは、状態空間モデルにおける AIC 比較では、尤度タイプ、散漫初期化、
@@ -340,16 +338,16 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ```
 
 これらの検定結果は、残差ACFプロットとあわせて解釈します。多数のラグを確認する
-場合には、少数のラグが偶然に信頼限界を超えることもあります。一方で、周期的または
-連続的な突出がみられる場合には、時間構造が残っている可能性があります。
+場合には、少数のラグが偶然に信頼限界を超えることもあります。一方で、周期的
+または連続的な突出がみられる場合には、時間構造が残っている可能性があります。
 
 ### 自己回帰（AR）次数の検討
 
 本マニュアルでは、`tempssm()` のデフォルトである AR(1) を作業モデルとして
 用います。自己回帰成分は、潜在的な水準、ドリフト、季節成分では表現されない
 短期的な系列依存性を吸収するために組み込まれています。そのため、高いAR次数を
-自動的な改善として扱うのではなく、残差診断により自己相関が残っていると考えられる
-場合に、AR次数を増減させて検討する方針が適切です。
+自動的な改善として扱うのではなく、残差診断により自己相関が残っていると
+考えられる場合に、AR次数を増減させて検討する方針が適切です。
 
 例えば、AR(1) モデルを当てはめた後に残差自己相関が残る場合には、AR(2) モデルを
 当てはめ、同じ残差診断を繰り返すことができます。
@@ -368,7 +366,7 @@ diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ```
 
 この例では、AR(2) モデルの診断結果は AR(1) モデルとよく似ているため、
-AR(1) をベースラインの仕様として用います。
+低次のAR(1) をベースラインの仕様として用います。
 
 ### 推定されたパラメータと潜在状態の成分
 
@@ -465,8 +463,8 @@ pred_12_pi
 - **期間**: 1998 年 1 月から 2023 年 2 月
 
 いずれも `frequency = 12` の単変量 `ts` オブジェクトです。これらは
-Baba et al. (2024) で用いられた黒潮関連変数に基づいて生成された
-月別のシミュレーションデータです。元研究で用いられた一部の変数は
+馬場ら (2024) で用いられた黒潮関連変数に基づいて生成された
+月別のシミュレーションデータです。元の研究で用いられた一部の変数は
 より細かい時間分解能を持っていましたが、本パッケージに含まれる
 シミュレーションデータは、`tempssm` の例で扱いやすいように月別時系列として
 表現されています。
@@ -633,13 +631,13 @@ exo_coef
 `r sprintf("%.2f", kuroshio_a_lwr)` から
 `r sprintf("%.2f", kuroshio_a_upr)` です。`kuroshio_a` はバイナリ指標なので、
 この係数は、他のモデル成分と `distance` を条件づけたうえでの、A 型条件と
-非 A 型条件の推定 SST 差として読むことができます。
+非 A 型条件の推定 SST 差として解釈することができます。
 
 `distance` の推定係数は `r sprintf("%.3f", distance_coef)` °C/単位であり、
 95% 信頼区間は `r sprintf("%.3f", distance_lwr)` から
 `r sprintf("%.3f", distance_upr)` です。これは、潜在成分と `kuroshio_a` を
 条件づけたうえで、シミュレーション距離指標の値が大きいほど SST がわずかに
-低いことを意味します。
+低くなることを意味します。
 
 これらはシミュレーション例に基づく推定値であり、複数の外生変数を持つモデルを
 当てはめ、係数を確認する方法を示すためのものです。黒潮流路に関する新しい
@@ -760,21 +758,6 @@ hindcast 的な評価に相当します。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 
-# (Optional) Load packages for parallel processing.
-# These are only required if you want to enable parallel execution:
-# - future: controls how parallel workers are launched
-# - future.apply: provides parallelized apply functions
-# - progressr: optional progress bar support
-library(future.apply)
-library(future)
-library(progressr)
-
-if (interactive()) {
-  future::plan(multisession)
-} else {
-  future::plan(sequential)
-}
-
 ## Generate a list of training and test datasets with their indices
 # Procedure for constructing year-based time-series cross-validation folds:
 # 
@@ -824,24 +807,26 @@ end(folds_without[[1]]$test_ts)
 # *****************************************
 # Executing time-series cross validation
 
-#-------------------------------------------------- 
+#--------------------------------------------------
 # Model without exogenous variables
 
-# Single processing
+# ts_cv_run() evaluates folds sequentially by default.
+cv_without_results <- ts_cv_run(
+  folds_without,
+  ar_order = 1,
+  use_season = TRUE
+)
+
+# Optional parallel execution:
+# Calling library(future) or library(future.apply) is not required here,
+# but these suggested packages must be installed.
 # cv_without_results <- ts_cv_run(
 #   folds_without,
 #   ar_order = 1,
-#   use_season = TRUE
+#   use_season = TRUE,
+#   parallel = TRUE,
+#   workers = 2
 # )
-
-# Parallel processing
-cv_without_results <- future.apply::future_lapply(
-  folds_without,
-  ts_cv_run_fold,
-  ar_order = 1,
-  use_season = TRUE,
-  future.seed = TRUE
-)
 
 # Computing assessment indexes
 metrics_without <- lapply(cv_without_results, compute_cv_metrics)
@@ -851,20 +836,25 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
   mutate(Model="Without")
 
 
-#-------------------------------------------------- 
+#--------------------------------------------------
 # Model with simulated Kuroshio exogenous variables
 
-# Single processing
-# cv_with_results <- ts_cv_run(folds_with, ar_order = 1, use_season = TRUE)
-
-# Parallel processing
-cv_with_results <- future.apply::future_lapply(
+cv_with_results <- ts_cv_run(
   folds_with,
-  ts_cv_run_fold,
   ar_order = 1,
-  use_season = TRUE,
-  future.seed = TRUE
+  use_season = TRUE
 )
+
+# Optional parallel execution:
+# Calling library(future) or library(future.apply) is not required here,
+# but these suggested packages must be installed.
+# cv_with_results <- ts_cv_run(
+#   folds_with,
+#   ar_order = 1,
+#   use_season = TRUE,
+#   parallel = TRUE,
+#   workers = 2
+# )
 
 # Computing assessment indexes
 metrics_with <- lapply(cv_with_results, compute_cv_metrics)
@@ -944,8 +934,8 @@ n_folds <- if (length(n_folds) == 1L) n_folds else min(n_folds)
 月別平均に基づく季節変動幅（約 `r sprintf("%.1f", seasonal_amplitude)` °C）
 と比べると、これは約 `r sprintf("%.1f", mae_relative_to_season)`% に相当します。
 したがって、このデータセットにおける主要な季節変動スケールと比べれば、
-予測誤差は小さく、短期的な海洋モニタリングにおいて実用的な精度と
-解釈できる可能性があります。
+予測誤差は小さく、目的に応じては実用的な精度のモデルと解釈できる可能性が
+あります。
 
 外生変数ありモデルは、外生変数なしモデルに比べて平均 MAE を約
 `r sprintf("%.1f", mae_improvement)`% 低下させました。同様の改善は
@@ -1011,24 +1001,23 @@ head(akadake_temp)
 
 # 参考文献
 
-`tempssm` に実装されている統計モデリングの枠組みは、Baba et al. (2024) に記述された方法論に基づいており、付随する補足資料および
+`tempssm` に実装されている統計モデリングの枠組みは、馬場ら (2024) に記述された方法論に基づいており、付随する補足資料および
 コードリポジトリが本パッケージ開発の初期ソースとなっています。
 
-Baba, S., Ishii, H., and Yoshiyama, T. (2024).
-Estimating sea temperature trends using a linear Gaussian state-space model
-in Jogashima, Kanagawa, Japan.
-*Bulletin of the Japanese Society of Fisheries Oceanography*,
+馬場真哉, 石井 洋, 芳山 拓. (2024).
+線形ガウス状態空間モデルを用いた神奈川県城ヶ島地先における海水温トレンドの推定.
+*水産海洋研究*,
 88(3), 190–199.
-（日本語、英語要旨あり。）
 https://doi.org/10.34423/jsfo.88.3_190
 
-Baba, S. (2024).
-線形ガウス状態空間モデルを用いた海水温トレンド推定のための補足コードおよびテストデータ。
+馬場真哉. (2024).
+線形ガウス状態空間モデルを用いた海水温トレンド推定のための補足コードおよび
+テストデータ.
 GitHub リポジトリ:
 https://github.com/logics-of-blue/sea-temperature-trend-jogashima
 
 Helske, J. (2017).
-KFAS: R における指数型分布族状態空間モデル。
+KFAS: KFAS: Exponential family state space models in R.
 *Journal of Statistical Software*, 78(10), 1–39.
 https://doi.org/10.18637/jss.v078.i10
 
@@ -1155,8 +1144,9 @@ plot(plt_niigata_sst_anomaly)
 ## 5. `compute_monthly_climatology()`
 
 `compute_monthly_climatology()` 関数は、`ts` オブジェクトから、各季節値を
-年をまたいで平均することにより、気候学的な平均季節周期を計算します。
-主として、温度時系列における季節構造の探索的解析と可視化を目的としています。
+年をまたいで平均することにより、気候値 (climatology: 気候学的な平均季節周期) を
+計算します。主として、温度時系列における季節構造の探索的解析と可視化を
+目的としています。
 
 ### 例
 

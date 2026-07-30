@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.6.16)  30 JUL 2026 09:51
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.6.16)  30 JUL 2026 12:30
  restricted system commands enabled.
 **tempssm_manual_jp.tex
 (./tempssm_manual_jp.tex
@@ -1899,6 +1899,13 @@ LaTeX Font Info:    Font shape `JY3/HiraginoMinchoProN(0)/b/n' will be
 (load cache: extra_lmmono10-regular.luc) [1
 
 {/usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (88.87297pt too wide) in paragraph at lines 236--242
+[]|\JY3/HiraginoMinchoProN(0)/m/n/10 数 |式 |を |含 |む |詳 |細 |な |
+モ |デ |ル |定 |式 |化 |は []  |英 |語 |版 \TU/lmr/m/n/10 vi-gnette \
+TU/lmtt/m/n/10 model-specification |\JY3/HiraginoMinchoProN(0)/m/n/10 お |よ 
+|び |日 |本 |語 |版 |の \TU/lmtt/m/n/10 tools/manual/tempssm_model_jp.Rmd
+ []
+
 LaTeX Font Info:    Font shape `JT3/HiraginoMinchoProN(0)/b/n' will be
 (Font)              scaled to size 11.54663pt on input line 259.
 LaTeX Font Info:    Font shape `JY3/HiraginoMinchoProN(0)/b/n' will be
@@ -2045,7 +2052,7 @@ Package luatex.def Info: tempssm_manual_jp_files/tempssm_manual_jp_files/figure
 (luatex.def)             Requested size: 453.6939pt x 315.17673pt.
 [18] [19<./tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-
 chunk-28-1.pdf>]
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/b/it' undefined
 
 (Font)              No change on input line 1379.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
@@ -2060,24 +2067,42 @@ LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1383.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/b/it' undefined
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1384.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1385.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1386.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1387.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1388.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1389.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1390.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1391.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1392.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1393.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1394.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1395.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
 (Font)              No change on input line 1396.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1397.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1398.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1399.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1400.
@@ -2089,53 +2114,41 @@ LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 (Font)              No change on input line 1402.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1403.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1404.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1405.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1406.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
 (Font)              No change on input line 1407.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1408.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1409.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1411.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1415.
+(Font)              No change on input line 1412.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1416.
+(Font)              No change on input line 1413.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1417.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1422.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1426.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1427.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1428.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
-(Font)              No change on input line 1433.
+(Font)              No change on input line 1418.
 [20]
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1459.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1460.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1462.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1463.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1465.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1472.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1473.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1474.
@@ -2144,10 +2157,16 @@ LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 (Font)              No change on input line 1475.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
+(Font)              No change on input line 1476.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
 (Font)              No change on input line 1477.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1478.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1479.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1480.
@@ -2156,25 +2175,28 @@ LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 (Font)              No change on input line 1481.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1482.
-LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
-
 (Font)              No change on input line 1483.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1484.
+(Font)              No change on input line 1486.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1485.
+(Font)              No change on input line 1491.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1487.
+(Font)              No change on input line 1492.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1496.
+(Font)              No change on input line 1500.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1499.
+(Font)              No change on input line 1501.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1502.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
+(Font)              No change on input line 1503.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1504.
@@ -2183,81 +2205,83 @@ LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 (Font)              No change on input line 1505.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
+(Font)              No change on input line 1506.
+LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
+
 (Font)              No change on input line 1507.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
 (Font)              No change on input line 1508.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1510.
+(Font)              No change on input line 1509.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1519.
+(Font)              No change on input line 1511.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1522.
+(Font)              No change on input line 1514.
 [21]
-Overfull \hbox (8.03816pt too wide) in paragraph at lines 1559--1560
+Overfull \hbox (8.03816pt too wide) in paragraph at lines 1551--1552
  []\TU/lmr/m/n/10 mean_MAE
  []
 
 
-Overfull \hbox (16.02661pt too wide) in paragraph at lines 1561--1562
+Overfull \hbox (16.02661pt too wide) in paragraph at lines 1553--1554
  []\TU/lmr/m/n/10 mean_MASE_naive
  []
 
-[22]
 <tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk-29-
-1.pdf, id=191, 449.68pt x 302.12875pt>
+1.pdf, id=186, 449.68pt x 302.12875pt>
 File: tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chun
 k-29-1.pdf Graphic file (type pdf)
 <use tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk
 -29-1.pdf>
 Package luatex.def Info: tempssm_manual_jp_files/tempssm_manual_jp_files/figure
--latex/unnamed-chunk-29-1.pdf  used on input line 1596.
+-latex/unnamed-chunk-29-1.pdf  used on input line 1588.
 (luatex.def)             Requested size: 449.6789pt x 302.128pt.
-[23<./tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk
--29-1.pdf>]
+[22] [23<./tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-
+chunk-29-1.pdf>]
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1670.
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1662.
 (load cache: extra_lmroman10-italic.luc)
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoSans(0)/m/it' undefined
-(Font)              No change on input line 1712.
+(Font)              No change on input line 1703.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoSans(0)/m/it' undefined
-(Font)              No change on input line 1721.
+(Font)              No change on input line 1712.
 [24]
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1775.
+(Font)              No change on input line 1766.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1806.
+(Font)              No change on input line 1797.
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1818.
+(Font)              No change on input line 1809.
 [25]
 LaTeX Font Info:    Kanji font shape `JY3/HiraginoMinchoProN(0)/m/it' undefined
 
-(Font)              No change on input line 1881.
+(Font)              No change on input line 1872.
 <tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk-35-
-1.pdf, id=228, 464.73625pt x 297.11pt>
+1.pdf, id=229, 464.73625pt x 297.11pt>
 File: tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chun
 k-35-1.pdf Graphic file (type pdf)
 <use tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk
 -35-1.pdf>
 Package luatex.def Info: tempssm_manual_jp_files/tempssm_manual_jp_files/figure
--latex/unnamed-chunk-35-1.pdf  used on input line 1891.
+-latex/unnamed-chunk-35-1.pdf  used on input line 1882.
 (luatex.def)             Requested size: 464.7351pt x 297.10927pt.
 [26] [27<./tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-
 chunk-35-1.pdf>]
 <tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk-36-
-1.pdf, id=251, 460.72125pt x 313.17pt>
+1.pdf, id=252, 460.72125pt x 313.17pt>
 File: tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chun
 k-36-1.pdf Graphic file (type pdf)
 <use tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk
 -36-1.pdf>
 Package luatex.def Info: tempssm_manual_jp_files/tempssm_manual_jp_files/figure
--latex/unnamed-chunk-36-1.pdf  used on input line 1945.
+-latex/unnamed-chunk-36-1.pdf  used on input line 1937.
 (luatex.def)             Requested size: 460.72012pt x 313.16922pt.
 [28<./tempssm_manual_jp_files/tempssm_manual_jp_files/figure-latex/unnamed-chunk
 -36-1.pdf>] (./tempssm_manual_jp.aux)
@@ -2269,34 +2293,35 @@ L3 programming layer <2026-01-19>
 
 Here is how much of LuaTeX's memory you used:
  22363 strings out of 476076
- 244326,1144653 words of node,token memory allocated
- 1920 words of node memory still in use:
+ 244329,1144653 words of node,token memory allocated
+ 1848 words of node memory still in use:
    18 hlist, 2 vlist, 6 rule, 1 local_par, 6 glue, 5 kern, 1 penalty, 3 glyph, 4
-91 attribute, 64 glue_spec, 62 attribute_list, 1 write, 20 user_defined, 1 pdf_a
+58 attribute, 64 glue_spec, 59 attribute_list, 1 write, 20 user_defined, 1 pdf_a
 ction, 2 pdf_colorstack nodes
-   avail lists: 1:33,2:57600,3:868,4:983,5:227,6:77,7:7460,8:76,9:3092,10:25,11:
+   avail lists: 1:30,2:57768,3:892,4:924,5:205,6:77,7:7516,8:76,9:3126,10:24,11:
 68
  44262 multiletter control sequences out of 65536+600000
- 94 fonts using 106788399 bytes
+ 94 fonts using 106788323 bytes
  91i,7n,114p,2050b,631s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmroman10-italic.ot
-f></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmmono10-italic.o
-tf></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmroman10-bold.o
-tf></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmroman12-bold.o
-tf></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmmonolt10-bold.
-otf></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmmonolt10-bold
-oblique.otf></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmroman
-10-regular.otf></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmmo
-no10-regular.otf></System/Library/Fonts/ヒラギノ明朝 ProN.ttc></System/
-Library/Fonts/ヒラギノ明朝 ProN.ttc></usr/local/texlive/2026/texmf-dist
-/fonts/opentype/public/lm/lmroman12-regular.otf></System/Library/Fonts/ヒラ
-ギノ明朝 ProN.ttc></System/Library/Fonts/ヒラギノ明朝 ProN.ttc><
-/usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmroman17-regular.ot
-f>
-Output written on tempssm_manual_jp.pdf (28 pages, 523593 bytes).
+f></System/Library/Fonts/ヒラギノ角ゴシック W4.ttc></System/Libra
+ry/Fonts/ヒラギノ角ゴシック W4.ttc></usr/local/texlive/2026/texmf
+-dist/fonts/opentype/public/lm/lmmono10-italic.otf></usr/local/texlive/2026/texm
+f-dist/fonts/opentype/public/lm/lmroman10-bold.otf></usr/local/texlive/2026/texm
+f-dist/fonts/opentype/public/lm/lmroman12-bold.otf></usr/local/texlive/2026/texm
+f-dist/fonts/opentype/public/lm/lmmonolt10-bold.otf></usr/local/texlive/2026/tex
+mf-dist/fonts/opentype/public/lm/lmmonolt10-boldoblique.otf></usr/local/texlive/
+2026/texmf-dist/fonts/opentype/public/lm/lmroman10-regular.otf></usr/local/texli
+ve/2026/texmf-dist/fonts/opentype/public/lm/lmmono10-regular.otf></System/Librar
+y/Fonts/ヒラギノ明朝 ProN.ttc></System/Library/Fonts/ヒラギノ
+明朝 ProN.ttc></usr/local/texlive/2026/texmf-dist/fonts/opentype/public/lm/lmr
+oman12-regular.otf></System/Library/Fonts/ヒラギノ明朝 ProN.ttc></Syste
+m/Library/Fonts/ヒラギノ明朝 ProN.ttc></usr/local/texlive/2026/texmf-di
+st/fonts/opentype/public/lm/lmroman17-regular.otf>
+Output written on tempssm_manual_jp.pdf (28 pages, 524739 bytes).
 
-PDF statistics: 466 PDF objects out of 1000 (max. 8388607)
- 366 compressed objects within 4 object streams
+PDF statistics: 473 PDF objects out of 1000 (max. 8388607)
+ 370 compressed objects within 4 object streams
  70 named destinations out of 1000 (max. 1048576)
  321 words of extra memory for PDF output out of 10000 (max. 100000000)
 

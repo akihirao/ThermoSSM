@@ -8,8 +8,8 @@ ts_cv_run(
   folds,
   ar_order = 1,
   use_season = TRUE,
-  parallel = TRUE,
-  workers = future::availableCores(),
+  parallel = FALSE,
+  workers = NULL,
   progress = FALSE,
   marginal = TRUE
 )
@@ -29,11 +29,12 @@ considered? Defaults to \code{TRUE}.}
 
 \item{parallel}{Logical scalar; if \code{TRUE}, folds are evaluated in parallel using the
 \pkg{future.apply} framework. If \code{FALSE}, folds are processed
-sequentially. Default is \code{TRUE}.}
+sequentially. Default is \code{FALSE}.}
 
 \item{workers}{Integer scalar specifying the number of parallel workers to use when
-\code{parallel = TRUE}. The default uses all available cores as
-returned by \code{\link[future]{availableCores}}.}
+\code{parallel = TRUE}. If \code{NULL} and \code{parallel = TRUE}, all
+available cores returned by \code{\link[future]{availableCores}} are used.
+This argument is ignored for execution when \code{parallel = FALSE}.}
 
 \item{progress}{Logical scalar; if \code{TRUE}, a progress bar is displayed during execution
 using the \pkg{progressr} package. If \code{FALSE}, no progress bar
@@ -60,7 +61,10 @@ cross-validation but does not compute evaluation metrics.
 \details{
 The requested \pkg{future} execution plan is used only while folds are
 evaluated. The plan that was active before calling this function is restored
-on exit, including when fold evaluation raises an error.
+on exit, including when fold evaluation raises an error. Calling
+\code{ts_cv_run()} does not require attaching \pkg{future} or
+\pkg{future.apply} with \code{library()}, but these suggested packages must
+be installed when \code{parallel = TRUE}.
 }
 \examples{
 \dontrun{
@@ -78,9 +82,11 @@ folds <- ts_train_test_split(
 cv_results <- ts_cv_run(
   folds,
   ar_order = 1,
-  use_season = TRUE,
-  parallel = TRUE
+  use_season = TRUE
 )
+
+# Optional parallel execution:
+# cv_results <- ts_cv_run(folds, parallel = TRUE, workers = 2)
 
 # inspect first fold result
 cv_results[[1]]

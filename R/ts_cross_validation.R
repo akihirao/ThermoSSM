@@ -895,13 +895,17 @@ ts_train_test_split <- function(temp_data,
 
 #' Validate the number of cross-validation workers
 #'
-#' @param workers Number of workers to validate.
+#' @param workers Number of workers to validate, or \code{NULL}.
 #'
 #' @return Invisibly returns \code{workers}.
 #'
 #' @keywords internal
 #' @noRd
 .validate_ts_cv_workers <- function(workers) {
+  if (is.null(workers)) {
+    return(invisible(workers))
+  }
+
   .tempssm_check_length_one(workers, "workers")
   .tempssm_check_numeric(workers, "workers")
 
@@ -919,10 +923,36 @@ ts_train_test_split <- function(temp_data,
 }
 
 
+#' Require packages used for parallel cross-validation
+#'
+#' @return Invisibly returns \code{TRUE}.
+#'
+#' @keywords internal
+#' @noRd
+.require_ts_cv_parallel_packages <- function() {
+  missing_packages <- c(
+    if (!requireNamespace("future", quietly = TRUE)) "future",
+    if (!requireNamespace("future.apply", quietly = TRUE)) "future.apply"
+  )
+
+  if (length(missing_packages) > 0L) {
+    cli::cli_abort(
+      c(
+        "Parallel cross-validation requires additional package{?s}.",
+        "x" = "Missing package{?s}: {.pkg {missing_packages}}.",
+        "i" = "Install missing package(s), or use {.code parallel = FALSE}."
+      )
+    )
+  }
+
+  invisible(TRUE)
+}
+
+
 #' Prepare execution controls for time-series cross-validation
 #'
 #' @param parallel Whether folds should be evaluated in parallel.
-#' @param workers Number of parallel workers.
+#' @param workers Number of parallel workers, or \code{NULL}.
 #' @param progress Whether progress should be reported.
 #'
 #' @return A named list containing validated execution controls.
@@ -931,8 +961,19 @@ ts_train_test_split <- function(temp_data,
 #' @noRd
 .prepare_ts_cv_run_controls <- function(parallel, workers, progress) {
   .validate_ts_cv_logical_control(parallel, "parallel")
-  .validate_ts_cv_workers(workers)
   .validate_ts_cv_logical_control(progress, "progress")
+
+  if (parallel) {
+    .require_ts_cv_parallel_packages()
+
+    if (is.null(workers)) {
+      workers <- future::availableCores()
+    }
+  } else if (is.null(workers)) {
+    workers <- 1L
+  }
+
+  .validate_ts_cv_workers(workers)
 
   list(
     parallel = parallel,
@@ -983,12 +1024,21 @@ ts_train_test_split <- function(temp_data,
 #'
 #' @inheritParams .validate_ts_cv_folds
 #' @param model_controls Validated model controls.
+#' @param parallel Whether folds should be evaluated in parallel.
 #'
 #' @return A list of cross-validation fold results.
 #'
 #' @keywords internal
 #' @noRd
-.run_ts_cv_folds_basic <- function(folds, model_controls) {
+.run_ts_cv_folds_basic <- function(folds, model_controls, parallel) {
+  if (!parallel) {
+    return(lapply(
+      folds,
+      .run_one_ts_cv_fold,
+      model_controls = model_controls
+    ))
+  }
+
   future.apply::future_lapply(
     folds,
     .run_one_ts_cv_fold,
@@ -1006,17 +1056,23 @@ ts_train_test_split <- function(temp_data,
 #'
 #' @keywords internal
 #' @noRd
-.run_ts_cv_folds_with_progress <- function(folds, model_controls) {
+.run_ts_cv_folds_with_progress <- function(folds, model_controls, parallel) {
   progressr::with_progress({
     progress <- progressr::progressor(along = folds)
 
+    run_one <- function(fold) {
+      result <- .run_one_ts_cv_fold(fold, model_controls)
+      progress()
+      result
+    }
+
+    if (!parallel) {
+      return(lapply(folds, run_one))
+    }
+
     future.apply::future_lapply(
       folds,
-      function(fold) {
-        result <- .run_one_ts_cv_fold(fold, model_controls)
-        progress()
-        result
-      },
+      run_one,
       future.seed = TRUE
     )
   })
@@ -1032,23 +1088,23 @@ ts_train_test_split <- function(temp_data,
 #'
 #' @keywords internal
 #' @noRd
-.run_ts_cv_folds <- function(folds, model_controls, progress) {
+.run_ts_cv_folds <- function(folds, model_controls, progress, parallel) {
   if (length(folds) == 0L) {
     return(list())
   }
 
   if (!progress) {
-    return(.run_ts_cv_folds_basic(folds, model_controls))
+    return(.run_ts_cv_folds_basic(folds, model_controls, parallel))
   }
 
   if (!requireNamespace("progressr", quietly = TRUE)) {
     cli::cli_warn(
       "progressr not installed; running without progress bar"
     )
-    return(.run_ts_cv_folds_basic(folds, model_controls))
+    return(.run_ts_cv_folds_basic(folds, model_controls, parallel))
   }
 
-  .run_ts_cv_folds_with_progress(folds, model_controls)
+  .run_ts_cv_folds_with_progress(folds, model_controls, parallel)
 }
 
 
@@ -1062,16 +1118,18 @@ ts_train_test_split <- function(temp_data,
 #' @keywords internal
 #' @noRd
 .with_ts_cv_plan <- function(parallel, workers, code) {
+  if (!parallel) {
+    .tempssm_cli_debug("Sequential execution")
+    return(code())
+  }
+
+  .require_ts_cv_parallel_packages()
+
   old_plan <- future::plan()
   on.exit(future::plan(old_plan), add = TRUE)
 
-  if (parallel) {
-    future::plan(future::multisession, workers = workers)
-    .tempssm_cli_debug("Parallel execution with {workers} workers")
-  } else {
-    future::plan(future::sequential)
-    .tempssm_cli_debug("Sequential execution")
-  }
+  future::plan(future::multisession, workers = workers)
+  .tempssm_cli_debug("Parallel execution with {workers} workers")
 
   code()
 }
@@ -1093,12 +1151,13 @@ ts_train_test_split <- function(temp_data,
 #' @param parallel
 #' Logical scalar; if \code{TRUE}, folds are evaluated in parallel using the
 #' \pkg{future.apply} framework. If \code{FALSE}, folds are processed
-#' sequentially. Default is \code{TRUE}.
+#' sequentially. Default is \code{FALSE}.
 #'
 #' @param workers
 #' Integer scalar specifying the number of parallel workers to use when
-#' \code{parallel = TRUE}. The default uses all available cores as
-#' returned by \code{\link[future]{availableCores}}.
+#' \code{parallel = TRUE}. If \code{NULL} and \code{parallel = TRUE}, all
+#' available cores returned by \code{\link[future]{availableCores}} are used.
+#' This argument is ignored for execution when \code{parallel = FALSE}.
 #'
 #' @param progress
 #' Logical scalar; if \code{TRUE}, a progress bar is displayed during execution
@@ -1112,7 +1171,10 @@ ts_train_test_split <- function(temp_data,
 #' @details
 #' The requested \pkg{future} execution plan is used only while folds are
 #' evaluated. The plan that was active before calling this function is restored
-#' on exit, including when fold evaluation raises an error.
+#' on exit, including when fold evaluation raises an error. Calling
+#' \code{ts_cv_run()} does not require attaching \pkg{future} or
+#' \pkg{future.apply} with \code{library()}, but these suggested packages must
+#' be installed when \code{parallel = TRUE}.
 #'
 #' @examples
 #' \dontrun{
@@ -1130,9 +1192,11 @@ ts_train_test_split <- function(temp_data,
 #' cv_results <- ts_cv_run(
 #'   folds,
 #'   ar_order = 1,
-#'   use_season = TRUE,
-#'   parallel = TRUE
+#'   use_season = TRUE
 #' )
+#'
+#' # Optional parallel execution:
+#' # cv_results <- ts_cv_run(folds, parallel = TRUE, workers = 2)
 #'
 #' # inspect first fold result
 #' cv_results[[1]]
@@ -1149,8 +1213,8 @@ ts_cv_run <- function(
   folds,
   ar_order = 1,
   use_season = TRUE,
-  parallel = TRUE,
-  workers = future::availableCores(),
+  parallel = FALSE,
+  workers = NULL,
   progress = FALSE,
   marginal = TRUE
 ) {
@@ -1174,7 +1238,8 @@ ts_cv_run <- function(
       .run_ts_cv_folds(
         folds,
         model_controls,
-        run_controls$progress
+        run_controls$progress,
+        run_controls$parallel
       )
     }
   )

@@ -1052,22 +1052,6 @@ for improved conditional predictive performance, not as a direct
 guarantee of operational forecast improvement.
 
 ``` r
-# (Optional) Load packages for parallel processing.
-# These are only required if you want to enable parallel execution:
-# - future: controls how parallel workers are launched
-# - future.apply: provides parallelized apply functions
-# - progressr: optional progress bar support
-library(future.apply)
-library(future)
-library(progressr)
-
-if (interactive()) {
-  future::plan(multisession)
-} else {
-  future::plan(sequential)
-}
-
-
 ## Generate a list of training and test datasets with their indices
 # Procedure for constructing year-based time-series cross-validation folds:
 # 
@@ -1135,24 +1119,26 @@ end(folds_without[[1]]$test_ts)
 # *****************************************
 # Executing time-series cross validation
 
-#-------------------------------------------------- 
+#--------------------------------------------------
 # Model without exogenous variables
 
-# Single processing
-# cv_without_results <- ts_cv_run(
-#   folds_without,
-#   ar_order = 1,
-#   use_season = TRUE
-# )
+# ts_cv_run() evaluates folds sequentially by default.
+ cv_without_results <- ts_cv_run(
+   folds_without,
+   ar_order = 1,
+   use_season = TRUE
+ )
 
-# Parallel processing
-cv_without_results <- future.apply::future_lapply(
-  folds_without,
-  ts_cv_run_fold,
-  ar_order = 1,
-  use_season = TRUE,
-  future.seed = TRUE
-)
+# Optional parallel execution:
+# Calling library(future) or library(future.apply) is not required here,
+# but these suggested packages must be installed.
+#cv_without_results <- ts_cv_run(
+#  folds_without,
+#  ar_order = 1,
+#  use_season = TRUE,
+#  parallel = TRUE,
+#  workers = 2
+#)
 
 # Computing assessment indexes
 metrics_without <- lapply(cv_without_results, compute_cv_metrics)
@@ -1162,20 +1148,25 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
   mutate(Model="Without")
 
 
-#-------------------------------------------------- 
+#--------------------------------------------------
 # Model with simulated Kuroshio exogenous variables
 
-# Single processing
-# cv_with_results <- ts_cv_run(folds_with, ar_order = 1, use_season = TRUE)
+ cv_with_results <- ts_cv_run(
+   folds_with,
+   ar_order = 1,
+   use_season = TRUE
+ )
 
-# Parallel processing
-cv_with_results <- future.apply::future_lapply(
-  folds_with,
-  ts_cv_run_fold,
-  ar_order = 1,
-  use_season = TRUE,
-  future.seed = TRUE
-)
+# Optional parallel execution:
+# Calling library(future) or library(future.apply) is not required here,
+# but these suggested packages must be installed.
+#cv_with_results <- ts_cv_run(
+#  folds_with,
+#  ar_order = 1,
+#  use_season = TRUE,
+#  parallel = TRUE,
+#  workers = 2
+#)
 
 # Computing assessment indexes
 metrics_with <- lapply(cv_with_results, compute_cv_metrics)
@@ -1250,8 +1241,8 @@ The mean MAE of the model with exogenous variables is approximately 0.51
 °C. Relative to the seasonal amplitude based on monthly mean SST (about
 9.9 °C), this corresponds to roughly 5.2%. Thus, the prediction error is
 small compared with the dominant seasonal scale of variation in this
-data set, and may be practically useful for short-term marine
-monitoring.
+data set, and the model can be considered practically accurate depending
+on the intended purpose.
 
 The model with the exogenous variables reduces the mean MAE by
 approximately 4.5% compared with the model without exogenous variables.
