@@ -78,8 +78,8 @@ return in-sample one-step-ahead predictions.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 # Forecast the next time point
 predict(res)
@@ -89,12 +89,12 @@ predict(res, n.ahead = 12, interval = "prediction", level = 0.95)
 
 # Models with exogenous variables require future covariate values
 exo <- ts(
-  matrix(seq_along(niigata_sst), ncol = 1),
-  start = start(niigata_sst),
-  frequency = frequency(niigata_sst)
+  matrix(seq_along(sst_niigata), ncol = 1),
+  start = start(sst_niigata),
+  frequency = frequency(sst_niigata)
 )
 colnames(exo) <- "index"
-res_exo <- tempssm(niigata_sst, exo_data = exo)
+res_exo <- tempssm(sst_niigata, exo_data = exo)
 exo_next <- ts(
   matrix(NROW(exo) + 1, ncol = 1, dimnames = list(NULL, "index")),
   start = tsp(exo)[2] + 1 / frequency(exo),

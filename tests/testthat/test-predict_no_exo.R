@@ -74,9 +74,9 @@ test_that("works with minimal horizon h = 1", {
 
 
 test_that("prediction intervals widen with forecast horizon", {
-  data(niigata_sst)
+  data(sst_niigata)
 
-  res <- tempssm(niigata_sst, na_action = "allow")
+  res <- tempssm(sst_niigata, na_action = "allow")
   pred <- stats::predict(
     res$model,
     n.ahead = 24,

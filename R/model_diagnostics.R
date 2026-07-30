@@ -5,8 +5,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' residuals <- get_tempssm_residuals(res)
 #' }
@@ -106,10 +106,10 @@ get_tempssm_residuals <- function(res) {
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
+#' data(sst_niigata)
 #'
 #' # Fit model
-#' res <- tempssm(niigata_sst)
+#' res <- tempssm(sst_niigata)
 #'
 #' # Residual diagnostics (tibble output)
 #' diag <- diagnose_residuals(res)
@@ -203,8 +203,8 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' model_diagnose <- diagnose_residuals(res)
 #' plot_tempssm_residual_diagnostics(model_diagnose)

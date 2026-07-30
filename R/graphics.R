@@ -310,8 +310,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' # Default 95% confidence interval
 #' autoplot_level(res)
@@ -372,8 +372,8 @@ autoplot_level <- function(res,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' # Default 95% confidence interval
 #' autoplot_drift(res)
@@ -435,8 +435,8 @@ autoplot_drift <- function(res,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' # Default 95% confidence interval
 #' autoplot_season(res)
@@ -498,8 +498,8 @@ autoplot_season <- function(res,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' # Default: show the summed autoregressive component
 #' autoplot_ar(res)
@@ -560,8 +560,8 @@ autoplot_ar <- function(res,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' p <- plot_temp_dev(niigata_sst)
+#' data(sst_niigata)
+#' p <- plot_temp_dev(sst_niigata)
 #' print(p)
 #' }
 #'

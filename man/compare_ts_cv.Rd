@@ -25,9 +25,9 @@ candidate \code{tempssm} model specifications using the same folds.
 }
 \examples{
 \dontrun{
-data(yamaguchi_sst)
+data(sst_yamaguchi)
 
-folds <- ts_train_test_split(yamaguchi_sst, initial = 60)
+folds <- ts_train_test_split(sst_yamaguchi, initial = 60)
 cv_ar1 <- ts_cv_run(folds, ar_order = 1)
 cv_ar2 <- ts_cv_run(folds, ar_order = 2)
 

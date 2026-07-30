@@ -191,10 +191,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
+#' data(sst_niigata)
 #'
 #' # fit model
-#' res <- tempssm(niigata_sst)
+#' res <- tempssm(sst_niigata)
 #'
 #' # extract log-likelihood
 #' ll <- logLik(res)
@@ -249,8 +249,8 @@ logLik.tempssm <- function(object, ..., marginal = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' # AIC is intentionally not computed for tempssm objects.
 #' AIC(res)

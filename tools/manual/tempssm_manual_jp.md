@@ -1438,12 +1438,12 @@ head(sst_138_ts)
 
 ``` r
 # Generate temperature anomalies
-data(niigata_sst)
-niigata_sst_anomaly <- compute_temp_anomaly(niigata_sst)
-plt_niigata_sst_anomaly <- forecast::autoplot(niigata_sst_anomaly) +
+data(sst_niigata)
+sst_niigata_anomaly <- compute_temp_anomaly(sst_niigata)
+plt_sst_niigata_anomaly <- forecast::autoplot(sst_niigata_anomaly) +
   labs(y = expression(Temp.~(degree*C)), 
        x = "Time (year)")
-plot(plt_niigata_sst_anomaly) 
+plot(plt_sst_niigata_anomaly) 
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
@@ -1459,9 +1459,9 @@ plot(plt_niigata_sst_anomaly)
 ### 例
 
 ``` r
-data(niigata_sst)
-monthly_seasonal_cycle_niigata_sst <- compute_monthly_climatology(niigata_sst) 
-summary(monthly_seasonal_cycle_niigata_sst)
+data(sst_niigata)
+monthly_seasonal_cycle_sst_niigata <- compute_monthly_climatology(sst_niigata) 
+summary(monthly_seasonal_cycle_sst_niigata)
 ```
 
     ##      Month        Temperature    
@@ -1473,8 +1473,8 @@ summary(monthly_seasonal_cycle_niigata_sst)
     ##  Max.   :12.00   Max.   :26.873
 
 ``` r
-plt_monthly_seasonal_cycle_niigata_sst <- ggplot(
-  data = monthly_seasonal_cycle_niigata_sst,
+plt_monthly_seasonal_cycle_sst_niigata <- ggplot(
+  data = monthly_seasonal_cycle_sst_niigata,
   aes(x = Month, y = Temperature)
 ) +
   geom_point(size = 2) +
@@ -1491,7 +1491,7 @@ plt_monthly_seasonal_cycle_niigata_sst <- ggplot(
   theme_classic()
 
 
-plot(plt_monthly_seasonal_cycle_niigata_sst)
+plot(plt_monthly_seasonal_cycle_sst_niigata)
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->

@@ -53,8 +53,8 @@ returned as \code{NA}. The first reported filtered result is at time
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 level_ts <- get_level_ts(res)
 filtered_level <- get_level_ts(res, estimate = "filtered")
 filtered_level_ci <- get_level_ts(

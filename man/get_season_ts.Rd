@@ -41,8 +41,8 @@ filtered estimates and the handling of the diffuse phase.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 season_ts <- get_season_ts(res)
 }
 }

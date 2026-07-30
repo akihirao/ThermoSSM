@@ -427,11 +427,11 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(yamaguchi_sst)
+#' data(sst_yamaguchi)
 #'
 #' # create folds (no exogenous variables)
 #' folds <- ts_train_test_split(
-#'   temp_data = yamaguchi_sst,
+#'   temp_data = sst_yamaguchi,
 #'   initial   = 60,
 #'   horizon   = 12,
 #'   step      = 12
@@ -705,12 +705,12 @@ ts_cv_run_fold <- function(fold,
 #'
 #' @examples
 #' \dontrun{
-#' data(yamaguchi_sst) # monthly SST near Yamaguchi Prefecture
+#' data(sst_yamaguchi) # monthly SST near Yamaguchi Prefecture
 #' data(pdo) # Pacific Decadal Oscillation
 #'
 #' # synchronize series
-#' common_ts <- ts.intersect(yamaguchi_sst, pdo)
-#' temp_ts <- common_ts[, "yamaguchi_sst"]
+#' common_ts <- ts.intersect(sst_yamaguchi, pdo)
+#' temp_ts <- common_ts[, "sst_yamaguchi"]
 #' pdo_ts <- common_ts[, "pdo"]
 #' pdo_ts <- set_ts_name(pdo_ts, label = "PDO") # label
 #'
@@ -1178,11 +1178,11 @@ ts_train_test_split <- function(temp_data,
 #'
 #' @examples
 #' \dontrun{
-#' data(yamaguchi_sst)
+#' data(sst_yamaguchi)
 #'
 #' # 1. create train/test splits
 #' folds <- ts_train_test_split(
-#'   temp_data = yamaguchi_sst,
+#'   temp_data = sst_yamaguchi,
 #'   initial   = 60,
 #'   horizon   = 12,
 #'   step      = 12
@@ -1371,11 +1371,11 @@ ts_cv_run <- function(
 #'
 #' @examples
 #' \dontrun{
-#' data(yamaguchi_sst)
+#' data(sst_yamaguchi)
 #'
 #' # 1. create train/test splits
 #' folds <- ts_train_test_split(
-#'   temp_data = yamaguchi_sst,
+#'   temp_data = sst_yamaguchi,
 #'   initial   = 60,
 #'   horizon   = 12,
 #'   step      = 12
@@ -1443,11 +1443,11 @@ compute_cv_metrics <- function(cv_result) {
 #'
 #' @examples
 #' \dontrun{
-#' data(yamaguchi_sst)
+#' data(sst_yamaguchi)
 #'
 #' # 1. create train/test splits
 #' folds <- ts_train_test_split(
-#'   temp_data = yamaguchi_sst,
+#'   temp_data = sst_yamaguchi,
 #'   initial   = 60,
 #'   horizon   = 12,
 #'   step      = 12
@@ -1613,9 +1613,9 @@ ts_cv_collect <- function(cv_results, metrics) {
 #'
 #' @examples
 #' \dontrun{
-#' data(yamaguchi_sst)
+#' data(sst_yamaguchi)
 #'
-#' folds <- ts_train_test_split(yamaguchi_sst, initial = 60)
+#' folds <- ts_train_test_split(sst_yamaguchi, initial = 60)
 #' cv_ar1 <- ts_cv_run(folds, ar_order = 1)
 #' cv_ar2 <- ts_cv_run(folds, ar_order = 2)
 #'

@@ -109,9 +109,9 @@ test_that("print.summary.tempssm outputs expected text", {
 
 
 test_that("summary handles non-seasonal model", {
-  data(niigata_sst)
+  data(sst_niigata)
 
-  res <- tempssm(niigata_sst, use_season = FALSE, na_action = "allow")
+  res <- tempssm(sst_niigata, use_season = FALSE, na_action = "allow")
   s <- summary(res)
 
   expect_true(is.na(s$variances$Q_season))

@@ -243,8 +243,8 @@ ggplot2::autoplot
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #'
 #' # plot all components with 95% confidence interval
 #' autoplot(res)
@@ -374,8 +374,8 @@ plot_tempssm_components <- function(x,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' plot(res)
 #' plot(res, component = "level", ci = FALSE)
 #' }

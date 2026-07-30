@@ -74,11 +74,11 @@ provided test-period covariates. Users should ensure that
 }
 \examples{
 \dontrun{
-data(yamaguchi_sst)
+data(sst_yamaguchi)
 
 # create folds (no exogenous variables)
 folds <- ts_train_test_split(
-  temp_data = yamaguchi_sst,
+  temp_data = sst_yamaguchi,
   initial   = 60,
   horizon   = 12,
   step      = 12

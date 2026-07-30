@@ -39,8 +39,8 @@ or upper bounds; it only truncates the returned forecast horizon.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst, na_action = "allow")
+data(sst_niigata)
+res <- tempssm(sst_niigata, na_action = "allow")
 pred <- stats::predict(
   res$model,
   n.ahead = 24,

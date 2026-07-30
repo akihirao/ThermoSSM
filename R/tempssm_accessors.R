@@ -438,8 +438,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' level_ts <- get_level_ts(res)
 #' filtered_level <- get_level_ts(res, estimate = "filtered")
 #' filtered_level_ci <- get_level_ts(
@@ -485,8 +485,8 @@ get_level_ts <- function(res, ci = FALSE, ci_level = 0.95,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' drift <- get_drift_ts(res)
 #' }
 get_drift_ts <- function(res, ci = FALSE, ci_level = 0.95,
@@ -527,8 +527,8 @@ get_drift_ts <- function(res, ci = FALSE, ci_level = 0.95,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' season_ts <- get_season_ts(res)
 #' }
 get_season_ts <- function(res, ci = FALSE, ci_level = 0.95,
@@ -582,8 +582,8 @@ get_season_ts <- function(res, ci = FALSE, ci_level = 0.95,
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' ar_ts <- get_ar_ts(res)
 #' ar_first <- get_ar_ts(res, component = "first")
 #' ar_individual <- get_ar_ts(res, component = "individual")
@@ -758,8 +758,8 @@ get_ar_ts <- function(res, component = c("sum", "first", "individual"),
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' params <- get_tempssm_params(res)
 #' }
 #' @export
@@ -953,10 +953,10 @@ get_tempssm_params <- function(res) {
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
+#' data(sst_niigata)
 #' data(pdo)
-#' common_data <- ts.intersect(niigata_sst, pdo)
-#' temp_data <- common_data[, "niigata_sst"]
+#' common_data <- ts.intersect(sst_niigata, pdo)
+#' temp_data <- common_data[, "sst_niigata"]
 #' exo_data <- common_data[, "pdo", drop = FALSE]
 #' res <- tempssm(temp_data = temp_data, exo_data = exo_data)
 #' get_exo_coef(res)

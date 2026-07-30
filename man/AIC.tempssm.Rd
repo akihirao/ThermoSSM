@@ -29,8 +29,8 @@ The method is registered to prevent automatic AIC calculation from the
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 # AIC is intentionally not computed for tempssm objects.
 AIC(res)

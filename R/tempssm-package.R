@@ -79,7 +79,7 @@
 #' Horizons and Error Margins" section. It explains that forecast uncertainty
 #' generally increases with horizon because future observations depend on
 #' accumulated latent-state and observation uncertainty. The TS3.0 test uses
-#' the `niigata_sst` data to demonstrate this widening, and the TS3.1
+#' the `sst_niigata` data to demonstrate this widening, and the TS3.1
 #' negative-control test demonstrates that decreasing or constant interval
 #' widths would be detected as violations.
 #'

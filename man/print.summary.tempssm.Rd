@@ -26,10 +26,10 @@ This method is automatically called when a
 }
 \examples{
 \dontrun{
-data(niigata_sst)
+data(sst_niigata)
 
 # fit model and compute summary
-res <- tempssm(niigata_sst)
+res <- tempssm(sst_niigata)
 s <- summary(res)
 
 # print summary (explicit)

@@ -1,8 +1,8 @@
-#' Monthly mean air temperature at Hohenpeissenberg Meteorological Observatory
+#' Monthly Mean Air Temperature at Hohenpeissenberg Meteorological Observatory
 #'
 #' A long-term monthly mean air temperature time series observed at
 #' the Hohenpeissenberg Meteorological Observatory, Germany. The data are
-#' are provided as a \code{ts} object and can be used as an example dataset
+#' provided as a \code{ts} object and can be used as an example dataset
 #' for state-space modeling of temperature time series.
 #'
 #' @format
@@ -26,7 +26,7 @@
 #' \url{https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-monthly}
 #'
 #' @examples
-#' data(hmo_temp)
-#' plot(hmo_temp)
+#' data(temp_hmo)
+#' plot(temp_hmo)
 #'
-"hmo_temp"
+"temp_hmo"

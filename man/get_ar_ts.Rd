@@ -52,8 +52,8 @@ filtered estimates and the handling of the diffuse phase.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 ar_ts <- get_ar_ts(res)
 ar_first <- get_ar_ts(res, component = "first")
 ar_individual <- get_ar_ts(res, component = "individual")

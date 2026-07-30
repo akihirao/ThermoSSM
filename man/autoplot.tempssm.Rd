@@ -44,8 +44,8 @@ Create diagnostic and component plots for a model fitted by
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 # plot all components with 95\% confidence interval
 autoplot(res)

@@ -43,8 +43,8 @@ pointwise confidence intervals for the selected autoregressive component.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 # Default: show the summed autoregressive component
 autoplot_ar(res)

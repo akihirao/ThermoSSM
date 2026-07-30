@@ -33,10 +33,10 @@ The \code{marginal} argument is passed to the KFAS method.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
+data(sst_niigata)
 
 # fit model
-res <- tempssm(niigata_sst)
+res <- tempssm(sst_niigata)
 
 # extract log-likelihood
 ll <- logLik(res)

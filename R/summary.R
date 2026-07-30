@@ -128,10 +128,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
+#' data(sst_niigata)
 #'
 #' # fit model
-#' res <- tempssm(niigata_sst)
+#' res <- tempssm(sst_niigata)
 #'
 #' # compute summary
 #' s <- summary(res)
@@ -195,10 +195,10 @@ summary.tempssm <- function(object, ..., marginal = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
+#' data(sst_niigata)
 #'
 #' # fit model and compute summary
-#' res <- tempssm(niigata_sst)
+#' res <- tempssm(sst_niigata)
 #' s <- summary(res)
 #'
 #' # print summary (explicit)

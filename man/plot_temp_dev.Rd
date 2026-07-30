@@ -33,8 +33,8 @@ long-term mean for each calendar month.
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-p <- plot_temp_dev(niigata_sst)
+data(sst_niigata)
+p <- plot_temp_dev(sst_niigata)
 print(p)
 }
 

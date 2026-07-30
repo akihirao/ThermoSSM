@@ -24,8 +24,8 @@ Plot residual diagnostics for tempssm models
 }
 \examples{
 \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 model_diagnose <- diagnose_residuals(res)
 plot_tempssm_residual_diagnostics(model_diagnose)

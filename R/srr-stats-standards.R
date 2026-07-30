@@ -41,13 +41,13 @@
 #' Tests verify its `ts` start, end, frequency, length, and initial values,
 #' and then exercise `compute_monthly_climatology()` and
 #' `ts_train_test_split()` on this standard series. Package examples and other
-#' tests also use exported domain data sets such as `niigata_sst`.
+#' tests also use exported domain data sets such as `sst_niigata`.
 #'
 #' @srrstats {G5.1} Fixed data sets created for package examples and tests
 #' are exported through the package `data/` directory and documented with
-#' roxygen data objects. These include `hmo_temp`, `nao`,
-#' `niigata_sst`, `pdo`, `soi`, `sst_yamaguchi`, `temp_MtFuji`, and
-#' `yamaguchi_sst`. Unit tests verify that all of these data sets can be
+#' roxygen data objects. These include `temp_hmo`, `nao`,
+#' `pdo`, `soi`, `sst_niigata`, `sst_yamaguchi`, and `temp_MtFuji`.
+#' Unit tests verify that all of these data sets can be
 #' loaded with `data(..., package = "tempssm")` and are regular monthly `ts`
 #' objects. Other test inputs are generated directly within the test suite
 #' with fixed seeds, so they are reproducible without hidden package-internal
@@ -156,7 +156,7 @@
 #' @srrstats {TS3.0} Unit tests demonstrate that forecast uncertainty widens
 #' with forecast horizon for a fitted temperature state-space model. In
 #' `tests/testthat/test-predict_no_exo.R`, the test "prediction intervals widen
-#' with forecast horizon" fits `tempssm()` to `niigata_sst`, obtains 24-step
+#' with forecast horizon" fits `tempssm()` to `sst_niigata`, obtains 24-step
 #' ahead prediction intervals from the KFAS backend, and checks that interval
 #' widths are non-decreasing and wider at horizon 24 than at horizon 1.
 #' 

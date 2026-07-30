@@ -13,8 +13,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' data(niigata_sst)
-#' res <- tempssm(niigata_sst)
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
 #' print(res)
 #' }
 print.tempssm <- function(x, ...) {
