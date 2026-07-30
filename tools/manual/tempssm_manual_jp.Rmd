@@ -291,16 +291,14 @@ plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 r <- get_tempssm_residuals(res_ar1)
-lb_lag <- frequency(res_ar1$temp_data)
-forecast::checkresiduals(r, lag = lb_lag, test = "LB")
+plot_tempssm_residuals(r, frequency = frequency(res_ar1$temp_data))
 ```
 
 ここでは、`get_tempssm_residuals()` によって標準化再帰残差を取り出し、
-`forecast::checkresiduals()` によって残差時系列プロット、ACF プロット、
-ヒストグラム、Ljung-Box 検定を確認します。3つの図は、それぞれ上段、
-下段左、下段右に表示されます。検定に用いるラグは入力データの季節周期に
-合わせており、月別データでは lag 12 を用います。これらの図と検定結果を
-用いて、残差に留意すべきパターンが残っていないかを確認します。
+`plot_tempssm_residuals()` によって残差時系列プロット、ACF プロット、
+ヒストグラムを確認します。3つの図は、それぞれ上段、下段左、下段右に
+表示されます。これらの図を用いて、残差に留意すべきパターンが残って
+いないかを確認します。
 
 この例では、残差 ACF プロットにおいて、連続する複数のラグにわたる
 有意な自己相関や、季節周期に対応する反復的なパターンは明瞭ではありません。
@@ -308,11 +306,11 @@ forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ACF プロットだけでモデル変更を判断するのではなく、Ljung-Box 検定や
 残差時系列プロットとあわせて解釈します。
 
-同様の診断プロットを1つの関数で確認したい場合には、
-`plot_tempssm_residual_diagnostics()` も利用できます。
-
 Ljung-Box 検定と残差尖度をコンパクトな表として確認したい場合は、
-`diagnose_residuals()` を用います。
+`diagnose_residuals()` を用います。検定に用いるラグは、デフォルトでは入力
+データの季節周期に合わせており、月別データでは lag 12 を用います。推定済みの
+`tempssm` オブジェクトを直接プロットしたい場合には、ワンコマンドのラッパー
+`plot_tempssm_residual_diagnostics(res_ar1)` も利用できます。
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 diag <- diagnose_residuals(res_ar1)

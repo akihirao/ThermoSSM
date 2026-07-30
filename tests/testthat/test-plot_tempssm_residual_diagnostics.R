@@ -5,3 +5,100 @@ test_that("plot_tempssm_residual_diagnostics runs without error", {
     plot_tempssm_residual_diagnostics(res_tempssm, save = FALSE)
   )
 })
+
+
+test_that("plot_tempssm_residuals draws all panels by default", {
+  r <- get_tempssm_residuals(res_tempssm)
+
+  expect_invisible(
+    plot_tempssm_residuals(r, frequency = frequency(res_tempssm$temp_data))
+  )
+})
+
+
+test_that("plot_tempssm_residuals returns selected panels", {
+  r <- get_tempssm_residuals(res_tempssm)
+
+  expect_s3_class(plot_tempssm_residuals(r, panel = "series"), "ggplot")
+  expect_s3_class(plot_tempssm_residuals(r, panel = "acf"), "ggplot")
+  expect_s3_class(plot_tempssm_residuals(r, panel = "histogram"), "ggplot")
+})
+
+
+test_that("residual ACF default lag uses two cycles plus extra lags", {
+  r <- get_tempssm_residuals(res_tempssm)
+
+  expect_identical(
+    .resolve_residual_plot_lag_max(r, frequency = 12, lag_max = NULL),
+    27L
+  )
+})
+
+
+test_that("residual ACF data excludes lag zero", {
+  r <- get_tempssm_residuals(res_tempssm)
+  acf_df <- .residual_acf_data(r, lag_max = 27L)
+
+  expect_false(any(acf_df$lag == 0))
+  expect_identical(min(acf_df$lag), 1)
+  expect_identical(max(acf_df$lag), 27)
+})
+
+
+test_that("residual ACF lag is truncated for short residual series", {
+  r <- seq_len(20)
+
+  expect_identical(
+    .resolve_residual_plot_lag_max(r, frequency = 12, lag_max = NULL),
+    19L
+  )
+})
+
+
+test_that("residual histogram uses frequency y-axis label", {
+  p <- .plot_residual_histogram(get_tempssm_residuals(res_tempssm))
+
+  expect_s3_class(p, "ggplot")
+  expect_identical(p$labels$y, "Frequency")
+})
+
+
+test_that("residual histogram overlays a normal curve", {
+  r <- get_tempssm_residuals(res_tempssm)
+  normal_df <- .residual_normal_curve_data(r)
+  p <- .plot_residual_histogram(r)
+
+  expect_gt(nrow(normal_df), 0)
+  expect_named(normal_df, c("x", "y"))
+  expect_length(p$layers, 3)
+})
+
+
+test_that("plot_tempssm_residuals validates inputs", {
+  r <- get_tempssm_residuals(res_tempssm)
+
+  expect_error(
+    plot_tempssm_residuals(1),
+    "at least two residual values"
+  )
+
+  expect_error(
+    plot_tempssm_residuals(c(1, Inf)),
+    "finite residual values"
+  )
+
+  expect_error(
+    plot_tempssm_residuals(r, frequency = 0),
+    "frequency.*positive numeric"
+  )
+
+  expect_error(
+    plot_tempssm_residuals(r, lag_max = 0),
+    "lag_max.*positive integer"
+  )
+
+  expect_error(
+    plot_tempssm_residuals(r, panel = "qq"),
+    "'arg' should be one of"
+  )
+})

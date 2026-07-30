@@ -290,14 +290,14 @@ residual distribution, and a Ljung-Box test.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 r <- get_tempssm_residuals(res_ar1)
-lb_lag <- frequency(res_ar1$temp_data)
-forecast::checkresiduals(r, lag = lb_lag, test = "LB")
+plot_tempssm_residuals(r, frequency = frequency(res_ar1$temp_data))
 ```
 
 Here, `get_tempssm_residuals()` extracts standardized recursive residuals, and
-`forecast::checkresiduals()` displays the residual series, ACF plot,
-histogram, and Ljung-Box test. The lag is set to the seasonal frequency of the
-input data; for monthly data, this uses lag 12.
+`plot_tempssm_residuals()` displays the residual series, ACF plot, and
+histogram. The residual series appears in the upper panel, the ACF plot in the
+lower-left panel, and the residual frequency distribution in the lower-right
+panel.
 
 In this example, the ACF plot does not show a clear sequence of successive
 significant lags or a repeated seasonal pattern. Isolated spikes can occur when
@@ -306,8 +306,10 @@ Ljung-Box test and the residual time-series plot rather than used as the sole
 basis for changing the model.
 
 For a compact tabular summary of the Ljung-Box test and residual kurtosis, use
-`diagnose_residuals()`. The wrapper `plot_tempssm_residual_diagnostics()` is
-also available when a single function call for diagnostic plots is preferred.
+`diagnose_residuals()`. The lag is set to the seasonal frequency of the input
+data by default; for monthly data, this uses lag 12. The one-command wrapper
+`plot_tempssm_residual_diagnostics(res_ar1)` is also available when a fitted
+`tempssm` object should be plotted directly.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 diag <- diagnose_residuals(res_ar1)
