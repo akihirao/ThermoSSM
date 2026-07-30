@@ -243,18 +243,19 @@ Ljung-Box tests can be used to assess remaining temporal dependence and
 departures from the Gaussian error assumption.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-r <- get_tempssm_residuals(res, keep_time = TRUE)
+r <- get_tempssm_residuals(res)
 plot_tempssm_residuals(r, frequency = frequency(res$temp_data))
-diag <- diagnose_residuals(res)
+diag <- diagnose_residual_ts(r)
 diag
 ```
 
 Here, `get_tempssm_residuals()` extracts standardized recursive residuals.
 `plot_tempssm_residuals()` displays the residual time series in the upper
 panel, the ACF plot in the lower-left panel, and the residual frequency
-distribution in the lower-right panel. `diagnose_residuals()` returns a compact
-table with the Ljung-Box test and residual kurtosis. For monthly data, the
-default Ljung-Box lag is 12. These plots and the test result should be checked
+distribution in the lower-right panel. `diagnose_residual_ts()` returns a
+compact table with the Ljung-Box test and residual kurtosis. For monthly data,
+the default Ljung-Box lag is 12. These plots and the test result should be
+checked
 for any notable residual patterns. In this example, the Ljung-Box test
 indicated no significant residual autocorrelation up to lag 12 (P > 0.05).
 

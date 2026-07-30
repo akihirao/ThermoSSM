@@ -30,7 +30,9 @@ test_that("model accessors return complete finite values for complete fits", {
   expect_no_missing_or_undefined(
     get_ar_ts(res_tempssm, component = "first", ci = TRUE)
   )
-  expect_no_missing_or_undefined(get_tempssm_residuals(res_tempssm))
+  expect_no_missing_or_undefined(
+    get_tempssm_residuals(res_tempssm, keep_time = FALSE)
+  )
   expect_no_missing_or_undefined(get_exo_coef(res_tempssm_exo))
 })
 

@@ -4,20 +4,20 @@
 \alias{get_tempssm_residuals}
 \title{Extract standardized recursive residuals}
 \usage{
-get_tempssm_residuals(res, keep_time = FALSE)
+get_tempssm_residuals(res, keep_time = TRUE)
 }
 \arguments{
 \item{res}{An object of class \code{"tempssm"} returned by \code{tempssm()}.}
 
-\item{keep_time}{Logical scalar; if FALSE, only finite residuals are
-returned as a numeric vector. If TRUE, the residuals are returned as a
+\item{keep_time}{Logical scalar; if TRUE, the residuals are returned as a
 \code{ts} object with the same start and frequency as the input
-temperature series; non-finite residuals are retained as \code{NA}.}
+temperature series; non-finite residuals are retained as \code{NA}. If
+FALSE, only finite residuals are returned as a numeric vector.}
 }
 \value{
-If \code{keep_time = FALSE}, a numeric vector of finite standardized
-recursive residuals. If \code{keep_time = TRUE}, a \code{ts} object
-preserving the time index of the input temperature series.
+By default, a \code{ts} object preserving the time index of the input
+temperature series. If \code{keep_time = FALSE}, a numeric vector of finite
+standardized recursive residuals.
 }
 \description{
 Extract standardized recursive residuals
@@ -27,7 +27,7 @@ Extract standardized recursive residuals
 data(sst_niigata)
 res <- tempssm(sst_niigata)
 
-residuals <- get_tempssm_residuals(res)
-residuals_ts <- get_tempssm_residuals(res, keep_time = TRUE)
+residuals_ts <- get_tempssm_residuals(res)
+residuals <- get_tempssm_residuals(res, keep_time = FALSE)
 }
 }

@@ -25,8 +25,7 @@ degrees of freedom, p-value, kurtosis, and residual missingness counts.
 \description{
 Compute a Ljung--Box residual autocorrelation diagnostic for a residual
 vector or residual \code{ts} object. This function is useful after
-extracting time-preserving residuals with
-\code{get_tempssm_residuals(res, keep_time = TRUE)}.
+extracting time-preserving residuals with \code{get_tempssm_residuals()}.
 }
 \details{
 If \code{r} contains no missing values, the Ljung--Box statistic is
@@ -42,7 +41,7 @@ autocorrelation diagnostic rather than as the exact result of
 data(sst_niigata)
 res <- tempssm(sst_niigata)
 
-r <- get_tempssm_residuals(res, keep_time = TRUE)
+r <- get_tempssm_residuals(res)
 diagnose_residual_ts(r)
 diagnose_residual_ts(r, lb_lag = 24)
 }

@@ -1,7 +1,18 @@
 # tests/testthat/test-get_tempssm_residuals.R
 
-test_that("get_tempssm_residuals returns a numeric vector", {
+test_that("get_tempssm_residuals returns a time-preserving ts by default", {
   r <- get_tempssm_residuals(res_tempssm)
+
+  expect_s3_class(r, "ts")
+  expect_type(r, "double")
+  expect_identical(stats::start(r), stats::start(res_tempssm$temp_data))
+  expect_identical(stats::frequency(r), stats::frequency(res_tempssm$temp_data))
+  expect_identical(length(r), length(res_tempssm$temp_data))
+})
+
+
+test_that("get_tempssm_residuals can return finite numeric residuals", {
+  r <- get_tempssm_residuals(res_tempssm, keep_time = FALSE)
 
   expect_type(r, "double")
   expect_gt(length(r), 0)
@@ -32,7 +43,7 @@ test_that("time-preserving residuals retain non-finite values as missing", {
   )
 
   r_ts <- get_tempssm_residuals(res_with_nonfinite, keep_time = TRUE)
-  r_vec <- get_tempssm_residuals(res_with_nonfinite)
+  r_vec <- get_tempssm_residuals(res_with_nonfinite, keep_time = FALSE)
 
   expect_true(is.na(r_ts[1]))
   expect_false(any(!is.finite(r_vec)))

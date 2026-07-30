@@ -34,7 +34,7 @@ or if non-finite residuals occur during filtering, the Ljung--Box test is a
 diagnostic summary of the available finite residual sequence rather than a
 strict test on the original equally spaced time index. To inspect residual
 autocorrelation while preserving the original time structure, use
-\code{get_tempssm_residuals(res, keep_time = TRUE)} with
+\code{get_tempssm_residuals(res)} with
 \code{plot_tempssm_residuals()}.
 }
 \examples{

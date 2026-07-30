@@ -1,26 +1,26 @@
 #' Extract standardized recursive residuals
 #'
 #' @inheritParams get_level_ts
-#' @param keep_time Logical scalar; if FALSE, only finite residuals are
-#'   returned as a numeric vector. If TRUE, the residuals are returned as a
+#' @param keep_time Logical scalar; if TRUE, the residuals are returned as a
 #'   \code{ts} object with the same start and frequency as the input
-#'   temperature series; non-finite residuals are retained as \code{NA}.
+#'   temperature series; non-finite residuals are retained as \code{NA}. If
+#'   FALSE, only finite residuals are returned as a numeric vector.
 #'
 #' @return
-#' If \code{keep_time = FALSE}, a numeric vector of finite standardized
-#' recursive residuals. If \code{keep_time = TRUE}, a \code{ts} object
-#' preserving the time index of the input temperature series.
+#' By default, a \code{ts} object preserving the time index of the input
+#' temperature series. If \code{keep_time = FALSE}, a numeric vector of finite
+#' standardized recursive residuals.
 #'
 #' @examples
 #' \dontrun{
 #' data(sst_niigata)
 #' res <- tempssm(sst_niigata)
 #'
-#' residuals <- get_tempssm_residuals(res)
-#' residuals_ts <- get_tempssm_residuals(res, keep_time = TRUE)
+#' residuals_ts <- get_tempssm_residuals(res)
+#' residuals <- get_tempssm_residuals(res, keep_time = FALSE)
 #' }
 #' @export
-get_tempssm_residuals <- function(res, keep_time = FALSE) {
+get_tempssm_residuals <- function(res, keep_time = TRUE) {
   if (!inherits(res, "tempssm")) {
     cli::cli_abort(
       "`res` must be an object of class {.cls tempssm}."
@@ -180,7 +180,7 @@ get_tempssm_residuals <- function(res, keep_time = FALSE) {
 #' diagnostic summary of the available finite residual sequence rather than a
 #' strict test on the original equally spaced time index. To inspect residual
 #' autocorrelation while preserving the original time structure, use
-#' \code{get_tempssm_residuals(res, keep_time = TRUE)} with
+#' \code{get_tempssm_residuals(res)} with
 #' \code{plot_tempssm_residuals()}.
 #'
 #' @examples
@@ -215,7 +215,7 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
   residual_ts <- get_tempssm_residuals(res, keep_time = TRUE)
   .inform_missing_residual_diagnostics(residual_ts)
 
-  r <- get_tempssm_residuals(res)
+  r <- get_tempssm_residuals(res, keep_time = FALSE)
 
   n_ts <- length(r)
   lb_lag <- .resolve_ljung_box_lag(res, lb_lag, n_ts)
@@ -454,8 +454,7 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' @description
 #' Compute a Ljung--Box residual autocorrelation diagnostic for a residual
 #' vector or residual \code{ts} object. This function is useful after
-#' extracting time-preserving residuals with
-#' \code{get_tempssm_residuals(res, keep_time = TRUE)}.
+#' extracting time-preserving residuals with \code{get_tempssm_residuals()}.
 #'
 #' @param r Numeric vector or \code{ts} object of residuals. Missing values are
 #'   allowed.
@@ -484,7 +483,7 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
 #' data(sst_niigata)
 #' res <- tempssm(sst_niigata)
 #'
-#' r <- get_tempssm_residuals(res, keep_time = TRUE)
+#' r <- get_tempssm_residuals(res)
 #' diagnose_residual_ts(r)
 #' diagnose_residual_ts(r, lb_lag = 24)
 #' }

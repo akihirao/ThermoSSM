@@ -128,7 +128,10 @@ test_that("diagnose_residuals validates Ljung-Box lag values", {
   expect_error(
     diagnose_residuals(
       res_tempssm,
-      lb_lag = length(get_tempssm_residuals(res_tempssm))
+      lb_lag = length(get_tempssm_residuals(
+        res_tempssm,
+        keep_time = FALSE
+      ))
     ),
     "lb_lag.*smaller than the number of finite residuals"
   )
