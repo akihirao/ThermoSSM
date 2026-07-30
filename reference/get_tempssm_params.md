@@ -23,8 +23,8 @@ A `list` object of the estimated parameters.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 params <- get_tempssm_params(res)
 } # }
 ```

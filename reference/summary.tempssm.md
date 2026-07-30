@@ -42,10 +42,10 @@ as `NA`.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
+data(sst_niigata)
 
 # fit model
-res <- tempssm(niigata_sst)
+res <- tempssm(sst_niigata)
 
 # compute summary
 s <- summary(res)

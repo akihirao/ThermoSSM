@@ -54,8 +54,8 @@ handling of the diffuse phase.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 drift <- get_drift_ts(res)
 } # }
 ```

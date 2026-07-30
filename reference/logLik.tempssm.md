@@ -46,10 +46,10 @@ fitted `SSModel` object. S3 dispatch then invokes KFAS's registered
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
+data(sst_niigata)
 
 # fit model
-res <- tempssm(niigata_sst)
+res <- tempssm(sst_niigata)
 
 # extract log-likelihood
 ll <- logLik(res)

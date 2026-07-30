@@ -62,8 +62,8 @@ free y-axis scales and component-specific units in the facet labels.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 # plot all components with 95% confidence interval
 autoplot(res)

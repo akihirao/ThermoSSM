@@ -23,8 +23,8 @@ A numeric vector of standardized recursive residuals.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 residuals <- get_tempssm_residuals(res)
 } # }

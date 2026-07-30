@@ -57,10 +57,10 @@ smoothed time point because these states are constant over time.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
+data(sst_niigata)
 data(pdo)
-common_data <- ts.intersect(niigata_sst, pdo)
-temp_data <- common_data[, "niigata_sst"]
+common_data <- ts.intersect(sst_niigata, pdo)
+temp_data <- common_data[, "sst_niigata"]
 exo_data <- common_data[, "pdo", drop = FALSE]
 res <- tempssm(temp_data = temp_data, exo_data = exo_data)
 get_exo_coef(res)

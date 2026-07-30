@@ -31,11 +31,11 @@ columns `fold`, `converged`, `MAE`, `MASE_naive`, and `MASE_seasonal`.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(yamaguchi_sst)
+data(sst_yamaguchi)
 
 # 1. create train/test splits
 folds <- ts_train_test_split(
-  temp_data = yamaguchi_sst,
+  temp_data = sst_yamaguchi,
   initial   = 60,
   horizon   = 12,
   step      = 12

@@ -31,12 +31,10 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/get_season_ts.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_tempssm_params.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.html</loc></url>
-<url><loc>https://akihirao.github.io/tempssm/reference/hmo_temp.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/index.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/kuroshio_a_sim.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/logLik.tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/nao.html</loc></url>
-<url><loc>https://akihirao.github.io/tempssm/reference/niigata_sst.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/pdo.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/plot.tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/plot_temp_dev.html</loc></url>
@@ -55,6 +53,7 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/sst_yamaguchi.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/summary.tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/temp_MtFuji.html</loc></url>
+<url><loc>https://akihirao.github.io/tempssm/reference/temp_hmo.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/tempssm.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/trim_prediction_intervals.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/trim_ts_overlap.html</loc></url>
@@ -62,6 +61,5 @@
 <url><loc>https://akihirao.github.io/tempssm/reference/ts_cv_run.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/ts_cv_run_fold.html</loc></url>
 <url><loc>https://akihirao.github.io/tempssm/reference/ts_train_test_split.html</loc></url>
-<url><loc>https://akihirao.github.io/tempssm/reference/yamaguchi_sst.html</loc></url>
 </urlset>
 

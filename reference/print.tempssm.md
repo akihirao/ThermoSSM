@@ -29,8 +29,8 @@ The input object `x`, invisibly. The returned object has class
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 print(res)
 } # }
 ```

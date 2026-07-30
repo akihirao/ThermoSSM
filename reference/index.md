@@ -78,10 +78,6 @@
 - [`get_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.md)
   : Extract standardized recursive residuals
 
-- [`hmo_temp`](https://akihirao.github.io/tempssm/reference/hmo_temp.md)
-  : Monthly mean air temperature at Hohenpeissenberg Meteorological
-  Observatory
-
 - [`kuroshio_a_sim`](https://akihirao.github.io/tempssm/reference/kuroshio_a_sim.md)
   : Simulated monthly Kuroshio large-meander indicator
 
@@ -90,9 +86,6 @@
 
 - [`nao`](https://akihirao.github.io/tempssm/reference/nao.md) : North
   Atlantic Oscillation: NAO (Hurrell)
-
-- [`niigata_sst`](https://akihirao.github.io/tempssm/reference/niigata_sst.md)
-  : Monthly mean sea surface temperature off Niigata, Japan
 
 - [`pdo`](https://akihirao.github.io/tempssm/reference/pdo.md) : Pacific
   Decadal Oscillation (PDO) index (JMA)
@@ -147,6 +140,10 @@
 - [`temp_MtFuji`](https://akihirao.github.io/tempssm/reference/temp_MtFuji.md)
   : Monthly mean air temperature at the summit of Mt. Fuji
 
+- [`temp_hmo`](https://akihirao.github.io/tempssm/reference/temp_hmo.md)
+  : Monthly Mean Air Temperature at Hohenpeissenberg Meteorological
+  Observatory
+
 - [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
   : tempssm: State space models for temperature time series
 
@@ -168,6 +165,3 @@
 
 - [`ts_train_test_split()`](https://akihirao.github.io/tempssm/reference/ts_train_test_split.md)
   : Generate rolling train/test splits for time series
-
-- [`yamaguchi_sst`](https://akihirao.github.io/tempssm/reference/yamaguchi_sst.md)
-  : Montly mean temperature time series off Yamaguchi Prefecture

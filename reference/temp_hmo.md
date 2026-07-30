@@ -1,14 +1,14 @@
-# Monthly mean air temperature at Hohenpeissenberg Meteorological Observatory
+# Monthly Mean Air Temperature at Hohenpeissenberg Meteorological Observatory
 
 A long-term monthly mean air temperature time series observed at the
-Hohenpeissenberg Meteorological Observatory, Germany. The data are are
+Hohenpeissenberg Meteorological Observatory, Germany. The data are
 provided as a `ts` object and can be used as an example dataset for
 state-space modeling of temperature time series.
 
 ## Usage
 
 ``` r
-hmo_temp
+temp_hmo
 ```
 
 ## Format
@@ -44,7 +44,7 @@ values, if any, are encoded as `NA`.
 ## Examples
 
 ``` r
-data(hmo_temp)
-plot(hmo_temp)
+data(temp_hmo)
+plot(temp_hmo)
 
 ```

@@ -38,10 +38,10 @@ test statistics are also included.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
+data(sst_niigata)
 
 # Fit model
-res <- tempssm(niigata_sst)
+res <- tempssm(sst_niigata)
 
 # Residual diagnostics (tibble output)
 diag <- diagnose_residuals(res)

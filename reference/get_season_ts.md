@@ -55,8 +55,8 @@ handling of the diffuse phase.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 season_ts <- get_season_ts(res)
 } # }
 ```

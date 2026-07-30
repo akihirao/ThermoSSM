@@ -63,8 +63,8 @@ ribbon represents pointwise confidence intervals for the level state.
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 # Default 95% confidence interval
 autoplot_level(res)

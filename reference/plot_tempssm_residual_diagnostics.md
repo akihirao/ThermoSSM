@@ -34,8 +34,8 @@ Invisibly returns NULL. Called for its side effects (plots).
 
 ``` r
 if (FALSE) { # \dontrun{
-data(niigata_sst)
-res <- tempssm(niigata_sst)
+data(sst_niigata)
+res <- tempssm(sst_niigata)
 
 model_diagnose <- diagnose_residuals(res)
 plot_tempssm_residual_diagnostics(model_diagnose)
