@@ -102,6 +102,9 @@
 - [`plot_tempssm_residual_diagnostics()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_residual_diagnostics.md)
   : Plot residual diagnostics for tempssm models
 
+- [`plot_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_residuals.md)
+  : Plot residuals from tempssm models
+
 - [`predict(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/predict.tempssm.md)
   : Forecast from a fitted tempssm model
 

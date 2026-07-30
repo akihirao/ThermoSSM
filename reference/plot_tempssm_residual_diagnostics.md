@@ -37,7 +37,6 @@ if (FALSE) { # \dontrun{
 data(sst_niigata)
 res <- tempssm(sst_niigata)
 
-model_diagnose <- diagnose_residuals(res)
-plot_tempssm_residual_diagnostics(model_diagnose)
+plot_tempssm_residual_diagnostics(res)
 } # }
 ```
