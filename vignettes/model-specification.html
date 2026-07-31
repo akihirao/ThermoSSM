@@ -12,7 +12,7 @@
 
 <meta name="author" content="Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa" />
 
-<meta name="date" content="2026-07-29" />
+<meta name="date" content="2026-07-31" />
 
 <title>Model specification in tempssm</title>
 
@@ -241,7 +241,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h3 class="subtitle">Version 0.3.0</h3>
 <h4 class="author">Akira S. Hirao, Shinya Baba, and Momoko
 Ichinokawa</h4>
-<h4 class="date">2026-07-29</h4>
+<h4 class="date">2026-07-31</h4>
 
 
 
@@ -304,7 +304,7 @@ long-term level and its rate of change to vary over time.</p>
 <h1>Seasonal Component</h1>
 <p>The seasonal component is modeled with a sum-to-zero constraint:</p>
 <p><span class="math display">\[
-s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
+s_t = - \sum_{i=t-f+1}^{t-1} s_i + \omega_t,
 \qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
 \]</span></p>
 <p>Here, <span class="math inline">\(\omega_t\)</span> is the process
