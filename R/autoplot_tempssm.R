@@ -90,6 +90,22 @@ ggplot2::autoplot
 }
 
 
+#' Available component plots for a fitted tempssm model
+#'
+#' @param object An object returned by `tempssm()`.
+#' @param choices Character vector of supported component names.
+#'
+#' @return A character vector of component names available by default.
+#' @noRd
+.tempssm_available_autoplot_components <- function(object, choices) {
+  if (inherits(object, "tempssm") && identical(object$use_season, FALSE)) {
+    return(setdiff(choices, "season"))
+  }
+
+  choices
+}
+
+
 #' Resolve and validate a faceted component layout
 #'
 #' @param nrow,ncol Optional positive integers defining the facet layout.
@@ -224,7 +240,8 @@ ggplot2::autoplot
 #' Character vector specifying one to four components to plot.
 #' One of \code{"level"}, \code{"drift"}, \code{"season"}, or \code{"ar"}.
 #' Values must be unique and are displayed in the supplied order. If
-#' \code{NULL} (default), all four components are plotted.
+#' \code{NULL} (default), all components included in the fitted model are
+#' plotted. Non-seasonal models omit the seasonal panel by default.
 #'
 #' @inheritParams get_level_ts
 #'
@@ -281,7 +298,11 @@ autoplot.tempssm <- function(object,
 
   components <- .tempssm_autoplot_components(
     component,
-    names(plotters)
+    if (is.null(component)) {
+      .tempssm_available_autoplot_components(object, names(plotters))
+    } else {
+      names(plotters)
+    }
   )
   if (length(components) == 1L) {
     return(

@@ -44,6 +44,48 @@ test_that("autoplot.tempssm returns faceted ggplot for all components", {
 })
 
 
+test_that("autoplot.tempssm omits season by default for non-seasonal models", {
+  res_no_season <- tempssm(
+    temp_ts_test,
+    use_season = FALSE
+  )
+
+  p <- autoplot(res_no_season, ci = FALSE)
+  p_helper <- plot_tempssm_components(res_no_season, ci = FALSE)
+
+  expect_s3_class(p, "ggplot")
+  expect_identical(
+    unique(p$data$component_id),
+    c("level", "drift", "ar")
+  )
+  expect_identical(nlevels(p$data$component), 3L)
+  expect_identical(
+    unique(p_helper$data$component_id),
+    c("level", "drift", "ar")
+  )
+})
+
+
+test_that("autoplot.tempssm errors for explicit season in non-seasonal models", {
+  res_no_season <- tempssm(
+    temp_ts_test,
+    use_season = FALSE
+  )
+
+  expect_error(
+    autoplot(res_no_season, component = "season"),
+    "Seasonal component is not included in the model"
+  )
+  expect_error(
+    plot_tempssm_components(
+      res_no_season,
+      component = c("level", "season")
+    ),
+    "Seasonal component is not included in the model"
+  )
+})
+
+
 test_that("autoplot.tempssm selects components in supplied order", {
   p <- autoplot(
     res_tempssm,

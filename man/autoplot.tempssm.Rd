@@ -20,7 +20,8 @@
 \item{component}{Character vector specifying one to four components to plot.
 One of \code{"level"}, \code{"drift"}, \code{"season"}, or \code{"ar"}.
 Values must be unique and are displayed in the supplied order. If
-\code{NULL} (default), all four components are plotted.}
+\code{NULL} (default), all components included in the fitted model are
+plotted. Non-seasonal models omit the seasonal panel by default.}
 
 \item{ci}{Logical; if TRUE, pointwise confidence intervals are returned.}
 
