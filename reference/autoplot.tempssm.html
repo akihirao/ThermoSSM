@@ -47,6 +47,7 @@ tempssm(). By default, all available components are plotted."></head><body>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/autoplot.html" class="external-link">autoplot</a></span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
 <span>  component <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  components <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ci <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  ci_level <span class="op">=</span> <span class="fl">0.95</span>,</span>
 <span>  nrow <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -69,6 +70,11 @@ One of <code>"level"</code>, <code>"drift"</code>, <code>"season"</code>, or <co
 Values must be unique and are displayed in the supplied order. If
 <code>NULL</code> (default), all components included in the fitted model are
 plotted. Non-seasonal models omit the seasonal panel by default.</p></dd>
+
+
+<dt id="arg-components">components<a class="anchor" aria-label="anchor" href="#arg-components"></a></dt>
+<dd><p>Alias for <code>component</code>. Use this when a plural argument name is clearer
+in scripts.</p></dd>
 
 
 <dt id="arg-ci">ci<a class="anchor" aria-label="anchor" href="#arg-ci"></a></dt>

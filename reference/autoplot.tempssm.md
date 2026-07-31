@@ -11,6 +11,7 @@ By default, all available components are plotted.
 autoplot(
   object,
   component = NULL,
+  components = NULL,
   ci = TRUE,
   ci_level = 0.95,
   nrow = NULL,
@@ -33,6 +34,11 @@ autoplot(
   are displayed in the supplied order. If `NULL` (default), all
   components included in the fitted model are plotted. Non-seasonal
   models omit the seasonal panel by default.
+
+- components:
+
+  Alias for `component`. Use this when a plural argument name is clearer
+  in scripts.
 
 - ci:
 
