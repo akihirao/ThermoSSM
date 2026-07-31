@@ -43,6 +43,9 @@ Suggests:
     rmarkdown,
     units,
     forecast,
+    dplyr,
+    purrr,
+    patchwork,
     future,
     future.apply,
     parallelly
