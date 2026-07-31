@@ -30,6 +30,11 @@ plot_tempssm_residual_diagnostics(res, save = FALSE, prefix = "residuals")
 
 Invisibly returns NULL. Called for its side effects (plots).
 
+## Details
+
+This function is retained as a compatibility alias for
+[`plot_tempssm_model_residuals()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_model_residuals.md).
+
 ## Examples
 
 ``` r
