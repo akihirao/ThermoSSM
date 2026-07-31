@@ -65,7 +65,7 @@ vary over time.
 The seasonal component is modeled with a sum-to-zero constraint:
 
 ``` math
-s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
+s_t = - \sum_{i=t-f+1}^{t-1} s_i + \omega_t,
 \qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
 ```
 

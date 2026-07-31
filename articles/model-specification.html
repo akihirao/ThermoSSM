@@ -136,8 +136,8 @@ allows the long-term level and its rate of change to vary over time.</p>
 <h2 id="seasonal-component">Seasonal Component<a class="anchor" aria-label="anchor" href="#seasonal-component"></a>
 </h2>
 <p>The seasonal component is modeled with a sum-to-zero constraint:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><mi>−</mi><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mi>t</mi><mo>−</mo><mi>f</mi></mrow><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>s</mi><mi>i</mi></msub><mo>+</mo><msub><mi>ω</mi><mi>t</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ω</mi><mi>t</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>ω</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
-s_t = - \sum_{i=t-f}^{t-1} s_i + \omega_t,
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>s</mi><mi>t</mi></msub><mo>=</mo><mi>−</mi><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mi>t</mi><mo>−</mo><mi>f</mi><mo>+</mo><mn>1</mn></mrow><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></munderover><msub><mi>s</mi><mi>i</mi></msub><mo>+</mo><msub><mi>ω</mi><mi>t</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ω</mi><mi>t</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mi>ω</mi><mn>2</mn></msubsup><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
+s_t = - \sum_{i=t-f+1}^{t-1} s_i + \omega_t,
 \qquad \omega_t \sim \mathcal{N}(0, \sigma_\omega^2). \tag{4}
 </annotation></semantics></math></p>
 <p>Here,
