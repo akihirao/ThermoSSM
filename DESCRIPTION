@@ -30,7 +30,6 @@ Imports:
     rlang   (>= 1.0.0),
     readr,
     tibble,
-    forecast,
     tseries,
     cli,
     httr2
@@ -43,6 +42,7 @@ Suggests:
     progressr,
     rmarkdown,
     units,
+    forecast,
     future,
     future.apply,
     parallelly

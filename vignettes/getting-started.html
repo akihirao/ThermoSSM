@@ -439,9 +439,13 @@ available as a PDF in the package repository:</p>
 </div>
 <div id="setup" class="section level1">
 <h1>Setup</h1>
-<p>Load <code>tempssm</code> before running the examples below.</p>
+<p>Load <code>tempssm</code> before running the examples below. This
+tutorial also uses <code>forecast</code> for simple time-series plots.
+If <code>forecast</code> is not installed, please install it first with
+<code>install.packages(&quot;forecast&quot;)</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="do">## Set libraries</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tempssm)</span></code></pre></div>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(tempssm)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(forecast)</span></code></pre></div>
 <p>The objective of this practice is to demonstrate the basic
 application of a linear Gaussian state-space model to a univariate
 temperature time series. This example introduces the basic workflow for

@@ -90,11 +90,14 @@ PDF in the package repository:
 
 # Setup
 
-Load `tempssm` before running the examples below.
+Load `tempssm` before running the examples below. This tutorial also
+uses `forecast` for simple time-series plots. If `forecast` is not
+installed, please install it first with `install.packages("forecast")`.
 
 ``` r
 ## Set libraries
 library(tempssm)
+library(forecast)
 ```
 
 The objective of this practice is to demonstrate the basic application
