@@ -30,8 +30,9 @@ autoplot(
 
   Character vector specifying one to four components to plot. One of
   `"level"`, `"drift"`, `"season"`, or `"ar"`. Values must be unique and
-  are displayed in the supplied order. If `NULL` (default), all four
-  components are plotted.
+  are displayed in the supplied order. If `NULL` (default), all
+  components included in the fitted model are plotted. Non-seasonal
+  models omit the seasonal panel by default.
 
 - ci:
 
