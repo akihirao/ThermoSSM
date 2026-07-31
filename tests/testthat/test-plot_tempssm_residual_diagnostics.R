@@ -8,6 +8,14 @@ test_that("plot_tempssm_residual_diagnostics runs without error", {
 })
 
 
+test_that("plot_tempssm_model_residuals runs without error", {
+  expect_message(
+    plot_tempssm_model_residuals(res_tempssm, save = FALSE),
+    "The residual series includes missing values"
+  )
+})
+
+
 test_that("plot_tempssm_residuals draws all panels by default", {
   r <- get_tempssm_residuals(res_tempssm)
 

@@ -29,7 +29,7 @@
 #' codes, logical values, or character choices.
 #'
 #' @srrstats {G4.0} The only package function that writes local output files
-#' is `plot_tempssm_residual_diagnostics(save = TRUE)`. It accepts a
+#' is `plot_tempssm_model_residuals(save = TRUE)`. It accepts a
 #' `prefix` argument rather than complete file names, parses any supplied file
 #' extension with `tools::file_path_sans_ext()`, and then automatically
 #' generates the two PNG output paths `*_check.png` and `*_qq.png`. Unit tests

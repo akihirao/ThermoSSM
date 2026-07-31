@@ -1034,7 +1034,7 @@ plot_tempssm_residuals <- function(r,
 }
 
 
-#' Plot residual diagnostics for tempssm models
+#' Plot residuals from a tempssm model
 #'
 #' @inheritParams get_level_ts
 #' @param save Logical scalar; if TRUE, plots are saved.
@@ -1046,17 +1046,23 @@ plot_tempssm_residuals <- function(r,
 #' @return
 #' Invisibly returns NULL. Called for its side effects (plots).
 #'
+#' @details
+#' This is a convenience wrapper for fitted \code{tempssm} objects. It extracts
+#' time-preserving standardized recursive residuals internally and then calls
+#' \code{plot_tempssm_residuals()}. Use \code{plot_tempssm_residuals()} when
+#' residuals have already been extracted with \code{get_tempssm_residuals()}.
+#'
 #' @examples
 #' \dontrun{
 #' data(sst_niigata)
 #' res <- tempssm(sst_niigata)
 #'
-#' plot_tempssm_residual_diagnostics(res)
+#' plot_tempssm_model_residuals(res)
 #' }
 #' @export
-plot_tempssm_residual_diagnostics <- function(res,
-                                              save = FALSE,
-  prefix = "residuals") {
+plot_tempssm_model_residuals <- function(res,
+                                         save = FALSE,
+                                         prefix = "residuals") {
   r <- get_tempssm_residuals(res, keep_time = TRUE)
 
   plot_tempssm_residuals(
@@ -1076,4 +1082,34 @@ plot_tempssm_residual_diagnostics <- function(res,
   }
 
   invisible(NULL)
+}
+
+
+#' Plot residual diagnostics for tempssm models
+#'
+#' @inheritParams plot_tempssm_model_residuals
+#'
+#' @return
+#' Invisibly returns NULL. Called for its side effects (plots).
+#'
+#' @details
+#' This function is retained as a compatibility alias for
+#' \code{plot_tempssm_model_residuals()}.
+#'
+#' @examples
+#' \dontrun{
+#' data(sst_niigata)
+#' res <- tempssm(sst_niigata)
+#'
+#' plot_tempssm_residual_diagnostics(res)
+#' }
+#' @export
+plot_tempssm_residual_diagnostics <- function(res,
+                                              save = FALSE,
+                                              prefix = "residuals") {
+  plot_tempssm_model_residuals(
+    res = res,
+    save = save,
+    prefix = prefix
+  )
 }
