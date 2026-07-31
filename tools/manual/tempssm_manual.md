@@ -135,7 +135,7 @@ The package includes `sst_sim`, a simulated monthly sea surface
 temperature (SST) dataset.
 
 - **Dataset**: Simulated monthly SST off Jogashima, Japan\
-- **Unit**: °C\
+- **Unit**: °C
 - **Period**: January 1998 to February 2023
 
 The dataset was generated from a state-space model analysis of sea
@@ -183,11 +183,11 @@ plot(plt_sst_sim)
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 The overall mean SST is approximately 18.2 °C, and a clear seasonal
-pattern is visible. The series contains 0 missing observations. The raw
-time series suggests that SST may have decreased gradually from the
-beginning of the record to around 2008 and then increased thereafter.
-However, interannual variability is also evident, making the long-term
-pattern difficult to assess from the raw series alone.
+pattern is visible. The raw time series suggests that SST may have
+decreased gradually from the beginning of the record to around 2008 and
+then increased thereafter. However, interannual variability is also
+evident, making the long-term pattern difficult to assess from the raw
+series alone.
 
 ### Fit the Baseline State-Space Model
 
