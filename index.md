@@ -96,13 +96,15 @@ The model specification is described separately:
 
 <https://github.com/akihirao/tempssm/blob/main/vignettes/model-specification.pdf>
 
-A comprehensive reference manual (English) is available here:
+A comprehensive reference manual (English) is available on the package
+site:
 
-<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf>
+<https://akihirao.github.io/tempssm/articles/tempssm_manual.html>
 
-For Japanese users, a detailed manual is also provided:
+For Japanese users, a detailed manual is also provided on the package
+site:
 
-<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual_jp.pdf>
+<https://akihirao.github.io/tempssm/articles/tempssm_manual_jp.html>
 
 ## Basic Usage
 

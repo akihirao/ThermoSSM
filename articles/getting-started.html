@@ -30,14 +30,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="active nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/getting-started-jogashima.html">tempssm: State-space modeling for temperature time series in R</a></li>
-    <li><a class="dropdown-item" href="../articles/getting-started.html">tempssm: State-space modeling for temperature time series in R</a></li>
-    <li><a class="dropdown-item" href="../articles/model-specification.html">Model specification in tempssm</a></li>
-  </ul>
-</li>
+<li class="active nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -168,10 +161,14 @@ available as a PDF in the package repository:</p>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
-<p>Load <code>tempssm</code> before running the examples below.</p>
+<p>Load <code>tempssm</code> before running the examples below. This
+tutorial also uses <code>forecast</code> for simple time-series plots.
+If <code>forecast</code> is not installed, please install it first with
+<code>install.packages("forecast")</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Set libraries</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/akihirao/tempssm" class="external-link">tempssm</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/akihirao/tempssm" class="external-link">tempssm</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pkg.robjhyndman.com/forecast/" class="external-link">forecast</a></span><span class="op">)</span></span></code></pre></div>
 <p>The objective of this practice is to demonstrate the basic
 application of a linear Gaussian state-space model to a univariate
 temperature time series. This example introduces the basic workflow for
@@ -474,7 +471,7 @@ fitting, diagnosing, visualizing, and making short-term predictions from
 a <code>tempssm</code> model. The detailed manual extends this workflow
 to exogenous variables, additional model diagnostics, and time-series
 cross-validation:</p>
-<p><a href="https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf" class="external-link uri">https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf</a></p>
+<p><a href="https://akihirao.github.io/tempssm/articles/tempssm_manual.html" class="uri">https://akihirao.github.io/tempssm/articles/tempssm_manual.html</a></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -96,12 +96,15 @@ PDF in the package repository:
 
 ## Setup
 
-Load `tempssm` before running the examples below.
+Load `tempssm` before running the examples below. This tutorial also
+uses `forecast` for simple time-series plots. If `forecast` is not
+installed, please install it first with `install.packages("forecast")`.
 
 ``` r
 
 ## Set libraries
 library(tempssm)
+library(forecast)
 ```
 
 The objective of this practice is to demonstrate the basic application
@@ -460,4 +463,4 @@ diagnosing, visualizing, and making short-term predictions from a
 variables, additional model diagnostics, and time-series
 cross-validation:
 
-<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf>
+<https://akihirao.github.io/tempssm/articles/tempssm_manual.html>
