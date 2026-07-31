@@ -90,6 +90,28 @@ ggplot2::autoplot
 }
 
 
+#' Resolve singular and plural component arguments
+#'
+#' @param component Character vector supplied to `component`.
+#' @param components Character vector supplied to `components`.
+#'
+#' @return A character vector or `NULL`.
+#' @noRd
+.tempssm_resolve_component_arg <- function(component, components) {
+  if (!is.null(component) && !is.null(components)) {
+    cli::cli_abort(
+      "Use only one of {.arg component} or {.arg components}."
+    )
+  }
+
+  if (!is.null(components)) {
+    return(components)
+  }
+
+  component
+}
+
+
 #' Available component plots for a fitted tempssm model
 #'
 #' @param object An object returned by `tempssm()`.
@@ -264,6 +286,10 @@ ggplot2::autoplot
 #' \code{NULL} (default), all components included in the fitted model are
 #' plotted. Non-seasonal models omit the seasonal panel by default.
 #'
+#' @param components
+#' Alias for \code{component}. Use this when a plural argument name is clearer
+#' in scripts.
+#'
 #' @inheritParams get_level_ts
 #'
 #' @param nrow,ncol Optional positive integers specifying the facet layout when
@@ -304,11 +330,14 @@ ggplot2::autoplot
 #' @export
 autoplot.tempssm <- function(object,
                              component = NULL,
+                             components = NULL,
                              ci = TRUE,
                              ci_level = 0.95,
                              nrow = NULL,
                              ncol = NULL,
                              ...) {
+
+  component <- .tempssm_resolve_component_arg(component, components)
 
   plotters <- list(
     level  = autoplot_level,
@@ -383,6 +412,7 @@ autoplot.tempssm <- function(object,
 #' }
 plot_tempssm_components <- function(x,
                                     component = NULL,
+                                    components = NULL,
                                     ci = TRUE,
                                     ci_level = 0.95,
                                     nrow = NULL,
@@ -391,6 +421,7 @@ plot_tempssm_components <- function(x,
   autoplot.tempssm(
     x,
     component = component,
+    components = components,
     ci = ci,
     ci_level = ci_level,
     nrow = nrow,

@@ -83,6 +83,13 @@ test_that("autoplot.tempssm errors for explicit season in non-seasonal models", 
     ),
     "Seasonal component is not included in the model"
   )
+  expect_error(
+    plot(
+      res_no_season,
+      components = c("level", "season")
+    ),
+    "Seasonal component is not included in the model"
+  )
 })
 
 
@@ -92,10 +99,19 @@ test_that("autoplot.tempssm selects components in supplied order", {
     component = c("drift", "level"),
     ci = FALSE
   )
+  p_plural <- autoplot(
+    res_tempssm,
+    components = c("drift", "level"),
+    ci = FALSE
+  )
 
   expect_s3_class(p, "ggplot")
   expect_identical(
     unique(p$data$component_id),
+    c("drift", "level")
+  )
+  expect_identical(
+    unique(p_plural$data$component_id),
     c("drift", "level")
   )
   expect_identical(p$facet$params$nrow, 1L)
@@ -209,6 +225,14 @@ test_that("autoplot.tempssm validates selected components", {
   expect_error(
     autoplot(res_tempssm, component = "ar1"),
     "one to four unique component names"
+  )
+  expect_error(
+    autoplot(
+      res_tempssm,
+      component = "level",
+      components = "drift"
+    ),
+    "Use only one of"
   )
 })
 

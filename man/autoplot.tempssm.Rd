@@ -7,6 +7,7 @@
 \method{autoplot}{tempssm}(
   object,
   component = NULL,
+  components = NULL,
   ci = TRUE,
   ci_level = 0.95,
   nrow = NULL,
@@ -22,6 +23,9 @@ One of \code{"level"}, \code{"drift"}, \code{"season"}, or \code{"ar"}.
 Values must be unique and are displayed in the supplied order. If
 \code{NULL} (default), all components included in the fitted model are
 plotted. Non-seasonal models omit the seasonal panel by default.}
+
+\item{components}{Alias for \code{component}. Use this when a plural argument name is clearer
+in scripts.}
 
 \item{ci}{Logical; if TRUE, pointwise confidence intervals are returned.}
 
