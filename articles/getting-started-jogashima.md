@@ -221,9 +221,9 @@ summary(res)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496414 
-    ##   State (Q trend): 4.937125e-06 
-    ##   State (Q season): 0.0001763537 
+    ##   Observation (H): 0.07496413 
+    ##   State (Q trend): 4.937123e-06 
+    ##   State (Q season): 0.0001763536 
     ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
@@ -352,10 +352,10 @@ head(alpha_hat)
     ##          sea_dummy11     arima1
     ## Jan 1998  -2.8244535 -0.2178663
     ## Feb 1998  -2.0508949  0.1519894
-    ## Mar 1998   0.2882283  0.4187224
+    ## Mar 1998   0.2882283  0.4187225
     ## Apr 1998   1.9925949  0.2408083
     ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167731
+    ## Jun 1998   4.9410126  1.0167732
 
 ``` r
 
