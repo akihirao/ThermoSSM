@@ -106,6 +106,27 @@ ggplot2::autoplot
 }
 
 
+#' Check selected component plots against the fitted model structure
+#'
+#' @param object An object returned by `tempssm()`.
+#' @param components Character vector of requested component names.
+#'
+#' @return Invisibly returns `NULL`.
+#' @noRd
+.tempssm_check_selected_autoplot_components <- function(object, components) {
+  if (inherits(object, "tempssm") &&
+      identical(object$use_season, FALSE) &&
+      "season" %in% components) {
+    cli::cli_abort(
+      "Seasonal component is not included in the model.",
+      call = NULL
+    )
+  }
+
+  invisible(NULL)
+}
+
+
 #' Resolve and validate a faceted component layout
 #'
 #' @param nrow,ncol Optional positive integers defining the facet layout.
@@ -304,6 +325,8 @@ autoplot.tempssm <- function(object,
       names(plotters)
     }
   )
+  .tempssm_check_selected_autoplot_components(object, components)
+
   if (length(components) == 1L) {
     return(
       plotters[[components]](
