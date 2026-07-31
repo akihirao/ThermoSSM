@@ -9,4 +9,11 @@ data/temp_MtFuji.csv
 data/test_bad_data.csv
 tests/testthat/Rplots.pdf
 
+vignettes/*.html
+vignettes/*.md
+vignettes/*_files/
+vignettes/articles/*.html
+vignettes/articles/*.md
+vignettes/articles/*_files/
+
 docs
