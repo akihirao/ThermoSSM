@@ -316,27 +316,46 @@ plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
 時間依存性や正規誤差仮定からの大きな逸脱がないかを確認できます。
 
 ``` r
-r <- get_tempssm_residuals(res_ar1)
-lb_lag <- frequency(res_ar1$temp_data)
-forecast::checkresiduals(r, lag = lb_lag, test = "LB")
+resid <- get_tempssm_residuals(res_ar1)
+plot_tempssm_residuals(resid)
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-    ## 
-    ##  Ljung-Box test
-    ## 
-    ## data:  Residuals
-    ## Q* = 9.6827, df = 12, p-value = 0.6438
-    ## 
-    ## Model df: 0.   Total lags used: 12
-
 ここでは、`get_tempssm_residuals()` によって標準化再帰残差を取り出し、
-`forecast::checkresiduals()` によって残差時系列プロット、ACF プロット、
-ヒストグラム、Ljung-Box 検定を確認します。3つの図は、それぞれ上段、
-下段左、下段右に表示されます。検定に用いるラグは入力データの季節周期に
-合わせており、月別データでは lag 12 を用います。これらの図と検定結果を
-用いて、残差に留意すべきパターンが残っていないかを確認します。
+`plot_tempssm_residuals()` によって残差時系列プロット、ACF プロット、
+ヒストグラムを確認します。3つの図は、それぞれ上段、下段左、下段右に
+表示されます。これらの図を用いて、残差に留意すべきパターンが残って
+いないかを確認します。
+
+`get_tempssm_residuals()` は、デフォルトでは入力時系列の時間軸を保持した
+`ts` オブジェクトとして残差を返します。欠損値または非有限の残差は `NA`
+として
+保持されます。完全な数値入力を必要とする計算に用いるため、有限値のみの
+数値ベクトルを取得したい場合は、`keep_time = FALSE` を指定します。
+
+標準化再帰残差を時間軸を保持した `ts`
+オブジェクトとして取り出すと、初期の 一部の残差が `NA`
+として返される場合があります。散漫初期化を用いる
+状態空間モデルでは、散漫期間中に標準化再帰残差が通常の意味で定義されない
+ことがあります。そのため、これらの `NA`
+は、その時点でモデル推定が失敗した
+ことを直ちに意味するものではありません。むしろ、散漫成分が解消されるまで、
+比較可能な標準化再帰残差が得られないことを示しています。
+
+標準化再帰残差の `NA` は、その観測値が対数尤度の計算から除外されたことを
+意味するものではありません。対数尤度は、KFAS によるカルマンフィルタの
+尤度計算に基づき、選択された尤度タイプに応じて散漫初期化を考慮して
+計算されます。一方で、標準化再帰残差は診断用の量であり、散漫期間中には
+通常の意味で利用できない場合があります。そのため、尤度に基づくモデル推定と
+残差診断は関連していますが、同一の対象を同じ形で扱っているわけでは
+ありません。
+
+この点は残差診断の解釈に重要です。ACF プロットや Ljung-Box 診断は、
+有限の標準化再帰残差が得られている期間に対する診断として解釈する必要が
+あります。`get_tempssm_residuals()`
+によって時間軸を保持した残差を確認する
+ことで、元の時系列のどの期間が残差診断に含まれているかを把握できます。
 
 この例では、残差 ACF プロットにおいて、連続する複数のラグにわたる
 有意な自己相関や、季節周期に対応する反復的なパターンは明瞭ではありません。
@@ -344,35 +363,45 @@ forecast::checkresiduals(r, lag = lb_lag, test = "LB")
 ACF プロットだけでモデル変更を判断するのではなく、Ljung-Box 検定や
 残差時系列プロットとあわせて解釈します。
 
-同様の診断プロットを1つの関数で確認したい場合には、
-`plot_tempssm_residual_diagnostics()` も利用できます。
-
 Ljung-Box 検定と残差尖度をコンパクトな表として確認したい場合は、
-`diagnose_residuals()` を用います。
+`diagnose_residuals()` を用います。一方で、欠損値を含む可能性のある残差
+`ts` オブジェクトの時間構造を保ったまま診断したい場合は、
+`diagnose_residual_ts(resid)`
+を利用できます。いずれの場合も、検定に用いる
+ラグはデフォルトでは入力データの季節周期に合わせており、月別データでは
+lag 12 を用います。
+
+残差プロット用の関数は、入力形式によって使い分けます。残差を数値ベクトルまたは
+時間軸を保持した `ts` オブジェクトとして取り出した後に可視化する場合は、
+`plot_tempssm_residuals(resid)` を用います。一方で、推定済みの `tempssm`
+オブジェクトを直接渡したい場合は、簡便ラッパー
+`plot_tempssm_model_residuals(res_ar1)`
+を利用できます。このラッパーは内部で
+残差を取り出し、同じ診断プロットを作成します。
 
 ``` r
-diag <- diagnose_residuals(res_ar1)
+diag <- diagnose_residual_ts(resid)
 print(diag)
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    9.68     12     0.644     3.26
+    ## # A tibble: 1 × 8
+    ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
+    ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
+    ## 1    9.68     12    12     0.644     3.26   302        13      289
 
-`diagnose_residuals()` の返り値のうち、`lb_stat`、`lb_lag`、`lb_pvalue`
-は それぞれ Ljung-Box 検定統計量、検定に用いたラグ、対応する P
-値を表します。 月別時系列では、デフォルトで季節周期に対応する lag 12
-が用いられます。 この例では、lag 12
-までの残差自己相関に有意性は認められませんでした。
+`diagnose_residual_ts()`
+の返り値のうち、`lb_stat`、`lb_lag`、`lb_pvalue` は それぞれ Ljung-Box
+検定統計量、検定に用いたラグ、対応する P 値を表します。
+月別時系列では、デフォルトで季節周期に対応する lag 12 が用いられます。
+この例では、lag 12 までの残差自己相関に有意性は認められませんでした。
 
 より長いラグにおける残差自己相関が気になる場合には、検定に用いるラグを
 手動で指定できます。例えば、次のコードでは lag 24 および lag 36 までの
 Ljung-Box 検定を追加で実行します。
 
 ``` r
-diag_lag24 <- diagnose_residuals(res_ar1, lb_lag = 24)
-diag_lag36 <- diagnose_residuals(res_ar1, lb_lag = 36)
+diag_lag24 <- diagnose_residual_ts(resid, lb_lag = 24)
+diag_lag36 <- diagnose_residual_ts(resid, lb_lag = 36)
 
 diag_lags <- rbind(diag, diag_lag24, diag_lag36)
 diag_lags$check <- c("lag 12", "lag 24", "lag 36")
@@ -381,7 +410,7 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
-    ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
+    ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
     ## 1 lag 12    9.68     12     0.644     3.26
     ## 2 lag 24   19.5      24     0.725     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
@@ -432,15 +461,16 @@ summary(res_ar2)
     ##   Coefficient of AR2: 0.07430046
 
 ``` r
-plot_tempssm_residual_diagnostics(res_ar2)
+resid_ar2 <- get_tempssm_residuals(res_ar2)
+plot_tempssm_residuals(resid_ar2)
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
-diag_lag12_ar2 <- diagnose_residuals(res_ar2, lb_lag = 12)
-diag_lag24_ar2 <- diagnose_residuals(res_ar2, lb_lag = 24)
-diag_lag36_ar2 <- diagnose_residuals(res_ar2, lb_lag = 36)
+diag_lag12_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 12)
+diag_lag24_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 24)
+diag_lag36_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 36)
 diag_lags_ar2 <- rbind(diag_lag12_ar2, diag_lag24_ar2, diag_lag36_ar2)
 diag_lags_ar2$check <- c("lag 12", "lag 24", "lag 36")
 diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
@@ -448,7 +478,7 @@ diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
-    ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
+    ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
     ## 1 lag 12    9.61     12     0.650     3.26
     ## 2 lag 24   19.4      24     0.729     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
@@ -863,20 +893,21 @@ summary(res_with)
     ## Upper CI  0.8562225 -0.005674308
 
 ``` r
-plot_tempssm_residual_diagnostics(res_with)
+resid_with <- get_tempssm_residuals(res_with)
+plot_tempssm_residuals(resid_with)
 ```
 
 ![](tempssm_manual_jp_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
-diag_res_with <- diagnose_residuals(res_with)
+diag_res_with <- diagnose_residual_ts(resid_with)
 print(diag_res_with)
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    6.50     12     0.889     3.07
+    ## # A tibble: 1 × 8
+    ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
+    ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
+    ## 1    6.50     12    12     0.889     3.07   302        80      222
 
 このモデルの残差診断でも、lag 12
 までの有意な残差自己相関は認められません。

@@ -316,26 +316,47 @@ model fitting. Here we inspect the residual series, residual
 autocorrelation, residual distribution, and a Ljung-Box test.
 
 ``` r
-r <- get_tempssm_residuals(res_ar1)
-lb_lag <- frequency(res_ar1$temp_data)
-forecast::checkresiduals(r, lag = lb_lag, test = "LB")
+resid <- get_tempssm_residuals(res_ar1)
+plot_tempssm_residuals(resid)
 ```
 
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-    ## 
-    ##  Ljung-Box test
-    ## 
-    ## data:  Residuals
-    ## Q* = 9.6827, df = 12, p-value = 0.6438
-    ## 
-    ## Model df: 0.   Total lags used: 12
-
 Here, `get_tempssm_residuals()` extracts standardized recursive
-residuals, and `forecast::checkresiduals()` displays the residual
-series, ACF plot, histogram, and Ljung-Box test. The lag is set to the
-seasonal frequency of the input data; for monthly data, this uses lag
-12.
+residuals, and `plot_tempssm_residuals()` displays the residual series,
+ACF plot, and histogram. The residual series appears in the upper panel,
+the ACF plot in the lower-left panel, and the residual frequency
+distribution in the lower-right panel.
+
+By default, `get_tempssm_residuals()` returns a `ts` object that
+preserves the time index of the input series. Missing or non-finite
+residuals are represented as `NA`. Set `keep_time = FALSE` to obtain a
+numeric vector of finite residuals for calculations that require
+complete numeric input.
+
+When standardized recursive residuals are extracted as a time-preserving
+`ts` object, some initial residuals may be returned as `NA`. In
+state-space models with diffuse initialization, standardized recursive
+residuals are not always available during the diffuse phase. These `NA`
+values therefore do not necessarily indicate that the fitted model
+failed at those time points. Rather, they indicate that comparable
+standardized recursive residuals are not defined until the diffuse
+effects have been resolved.
+
+The `NA` values in standardized recursive residuals should not be
+interpreted as observations being omitted from likelihood evaluation.
+The log-likelihood is computed by KFAS through the Kalman filtering
+likelihood with diffuse initialization handled according to the selected
+likelihood type. In contrast, standardized recursive residuals are
+diagnostic quantities and may be unavailable during the diffuse phase.
+Thus, likelihood-based fitting and residual diagnostics use related but
+not identical quantities.
+
+This distinction is important for residual diagnostics. ACF plots and
+Ljung-Box diagnostics should be interpreted for the period where finite
+standardized recursive residuals are available. Preserving the time
+index with `get_tempssm_residuals()` helps identify which part of the
+original time series is included in the residual diagnostic assessment.
 
 In this example, the ACF plot does not show a clear sequence of
 successive significant lags or a repeated seasonal pattern. Isolated
@@ -345,19 +366,26 @@ time-series plot rather than used as the sole basis for changing the
 model.
 
 For a compact tabular summary of the Ljung-Box test and residual
-kurtosis, use `diagnose_residuals()`. The wrapper
-`plot_tempssm_residual_diagnostics()` is also available when a single
-function call for diagnostic plots is preferred.
+kurtosis, use `diagnose_residual_ts()`. The default Ljung-Box lag
+follows the seasonal frequency of the input data; for monthly data, this
+uses lag 12.
+
+The plotting functions differ in their input format. Use
+`plot_tempssm_residuals(resid)` when residuals have already been
+extracted as a numeric vector or a time-preserving `ts` object. Use the
+convenience wrapper `plot_tempssm_model_residuals(res_ar1)` when a
+fitted `tempssm` object should be passed directly; the wrapper extracts
+the residuals internally and produces the same diagnostic plot.
 
 ``` r
-diag <- diagnose_residuals(res_ar1)
+diag <- diagnose_residual_ts(resid)
 print(diag)
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    9.68     12     0.644     3.26
+    ## # A tibble: 1 × 8
+    ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
+    ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
+    ## 1    9.68     12    12     0.644     3.26   302        13      289
 
 The `lb_stat`, `lb_lag`, and `lb_pvalue` columns correspond to the
 Ljung-Box test statistic, the lag used in the test, and the P-value. For
@@ -369,8 +397,8 @@ specified manually. For example, the following code repeats the
 Ljung-Box test up to lags 24 and 36.
 
 ``` r
-diag_lag24 <- diagnose_residuals(res_ar1, lb_lag = 24)
-diag_lag36 <- diagnose_residuals(res_ar1, lb_lag = 36)
+diag_lag24 <- diagnose_residual_ts(resid, lb_lag = 24)
+diag_lag36 <- diagnose_residual_ts(resid, lb_lag = 36)
 
 diag_lags <- rbind(diag, diag_lag24, diag_lag36)
 diag_lags$check <- c("lag 12", "lag 24", "lag 36")
@@ -379,7 +407,7 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
-    ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
+    ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
     ## 1 lag 12    9.68     12     0.644     3.26
     ## 2 lag 24   19.5      24     0.725     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
@@ -430,15 +458,16 @@ summary(res_ar2)
     ##   Coefficient of AR2: 0.07430046
 
 ``` r
-plot_tempssm_residual_diagnostics(res_ar2)
+resid_ar2 <- get_tempssm_residuals(res_ar2)
+plot_tempssm_residuals(resid_ar2)
 ```
 
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
-diag_lag12_ar2 <- diagnose_residuals(res_ar2, lb_lag = 12)
-diag_lag24_ar2 <- diagnose_residuals(res_ar2, lb_lag = 24)
-diag_lag36_ar2 <- diagnose_residuals(res_ar2, lb_lag = 36)
+diag_lag12_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 12)
+diag_lag24_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 24)
+diag_lag36_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 36)
 diag_lags_ar2 <- rbind(diag_lag12_ar2, diag_lag24_ar2, diag_lag36_ar2)
 diag_lags_ar2$check <- c("lag 12", "lag 24", "lag 36")
 diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
@@ -446,7 +475,7 @@ diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
-    ##   <chr>    <dbl>  <dbl>     <dbl>    <dbl>
+    ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
     ## 1 lag 12    9.61     12     0.650     3.26
     ## 2 lag 24   19.4      24     0.729     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
@@ -862,20 +891,21 @@ summary(res_with)
     ## Upper CI  0.8562225 -0.005674308
 
 ``` r
-plot_tempssm_residual_diagnostics(res_with)
+resid_with <- get_tempssm_residuals(res_with)
+plot_tempssm_residuals(resid_with)
 ```
 
 ![](tempssm_manual_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 ``` r
-diag_res_with <- diagnose_residuals(res_with)
+diag_res_with <- diagnose_residual_ts(resid_with)
 print(diag_res_with)
 ```
 
-    ## # A tibble: 1 × 4
-    ##   lb_stat lb_lag lb_pvalue kurtosis
-    ##     <dbl>  <dbl>     <dbl>    <dbl>
-    ## 1    6.50     12     0.889     3.07
+    ## # A tibble: 1 × 8
+    ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
+    ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
+    ## 1    6.50     12    12     0.889     3.07   302        80      222
 
 The residual diagnostics for this model also do not indicate significant
 residual autocorrelation up to lag 12. Thus, AR(1) remains a reasonable
