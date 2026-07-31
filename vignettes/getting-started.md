@@ -430,4 +430,4 @@ diagnosing, visualizing, and making short-term predictions from a
 variables, additional model diagnostics, and time-series
 cross-validation:
 
-<https://github.com/akihirao/tempssm/blob/main/tools/manual/tempssm_manual.pdf>
+<https://akihirao.github.io/tempssm/articles/tempssm_manual.html>
