@@ -224,9 +224,9 @@ summary(res_ar1)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
+    ##   Observation (H): 0.07496414 
+    ##   State (Q trend): 4.937125e-06 
+    ##   State (Q season): 0.0001763537 
     ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
@@ -470,15 +470,15 @@ summary(res_ar2)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.05517486 
-    ##   State (Q trend): 4.945287e-06 
-    ##   State (Q season): 0.0001859976 
-    ##   State (Q ar): 0.1497545 
+    ##   Observation (H): 0.05517483 
+    ##   State (Q trend): 4.94528e-06 
+    ##   State (Q season): 0.0001859974 
+    ##   State (Q ar): 0.1497546 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 2 
     ##   Coefficient of AR1: 0.655325 
-    ##   Coefficient of AR2: 0.07429946
+    ##   Coefficient of AR2: 0.0742994
 
 ``` r
 
@@ -540,10 +540,10 @@ head(alpha_hat)
     ##          sea_dummy11     arima1
     ## Jan 1998  -2.8244535 -0.2178663
     ## Feb 1998  -2.0508949  0.1519894
-    ## Mar 1998   0.2882283  0.4187225
+    ## Mar 1998   0.2882283  0.4187224
     ## Apr 1998   1.9925949  0.2408083
     ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167732
+    ## Jun 1998   4.9410126  1.0167731
 
 通常の利用では、個別の成分を元の時系列インデックスを持つ `ts`
 オブジェクトとして
@@ -630,7 +630,7 @@ pred_12_pi
     ## Mar 2023 18.33035 17.35029 19.31042
     ## Apr 2023 18.96985 17.85360 20.08610
     ## May 2023 21.33710 20.13453 22.53967
-    ## Jun 2023 23.08522 21.82424 24.34619
+    ## Jun 2023 23.08522 21.82425 24.34619
     ## Jul 2023 23.51856 22.21551 24.82161
     ## Aug 2023 26.03694 24.70183 27.37204
     ## Sep 2023 22.69098 21.33016 24.05179
@@ -823,9 +823,9 @@ summary(res_without)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
+    ##   Observation (H): 0.07496414 
+    ##   State (Q trend): 4.937125e-06 
+    ##   State (Q season): 0.0001763537 
     ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
@@ -926,18 +926,18 @@ summary(res_with)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.003184384 
-    ##   State (Q trend): 4.132736e-06 
-    ##   State (Q season): 0.0006818028 
-    ##   State (Q ar): 0.1556755 
+    ##   Observation (H): 0.003184437 
+    ##   State (Q trend): 4.132731e-06 
+    ##   State (Q season): 0.0006818022 
+    ##   State (Q ar): 0.1556754 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 1 
     ##   Coefficient of AR1: 0.6585956 
     ## Exogenous variable    kuroshio_a distance 
-    ## Estimated coefficient     0.5110124 -0.007070969 
-    ## Lower CI  0.1658023 -0.00846763 
-    ## Upper CI  0.8562225 -0.005674308
+    ## Estimated coefficient     0.5110124 -0.007070968 
+    ## Lower CI  0.1658024 -0.008467629 
+    ## Upper CI  0.8562224 -0.005674307
 
 ``` r
 
@@ -972,9 +972,9 @@ print(diag_res_with)
 exo_coef
 ```
 
-    ##     Variable  Coefficient         lwr          upr
-    ## 1 kuroshio_a  0.511012404  0.16580234  0.856222472
-    ## 2   distance -0.007070969 -0.00846763 -0.005674308
+    ##     Variable  Coefficient          lwr          upr
+    ## 1 kuroshio_a  0.511012412  0.165802393  0.856222432
+    ## 2   distance -0.007070968 -0.008467629 -0.005674307
 
 係数表は、潜在成分を考慮したうえで、SST と各シミュレーション黒潮変数との
 推定された関係を要約しています。このモデルでは、`kuroshio_a`
@@ -1269,7 +1269,7 @@ cv_comparison %>% knitr::kable()
 | model | n_folds | converged_n | converged_rate | mean_MAE | mean_MASE_naive | mean_MASE_seasonal |
 |:---|---:|---:|---:|---:|---:|---:|
 | Without | 12 | 12 | 1 | 0.5375966 | 0.3137671 | 0.8001065 |
-| With | 12 | 12 | 1 | 0.5135379 | 0.2997564 | 0.7705862 |
+| With | 12 | 12 | 1 | 0.5135379 | 0.2997563 | 0.7705862 |
 
 ``` r
 
