@@ -532,6 +532,32 @@ diagnose_residual_ts <- function(r, lb_lag = NULL, frequency = NULL) {
 }
 
 
+#' Validate residual plot output arguments
+#'
+#' @param save Logical scalar; if TRUE, plots are saved.
+#' @param prefix Character scalar used as the path prefix.
+#'
+#' @return Invisibly returns \code{NULL}.
+#'
+#' @keywords internal
+#' @noRd
+.validate_residual_plot_output_args <- function(save, prefix) {
+  .tempssm_check_length_one(save, "save")
+  .tempssm_check_logical(save, "save")
+  if (!is.logical(save) || is.na(save)) {
+    cli::cli_abort("{.arg save} must be a logical scalar.")
+  }
+
+  .tempssm_check_length_one(prefix, "prefix")
+  .tempssm_check_character(prefix, "prefix")
+  if (!is.character(prefix) || is.na(prefix)) {
+    cli::cli_abort("{.arg prefix} must be a character scalar.")
+  }
+
+  invisible(NULL)
+}
+
+
 #' Validate residual plotting inputs
 #'
 #' @param r Numeric vector of residuals.
@@ -929,6 +955,53 @@ diagnose_residual_ts <- function(r, lb_lag = NULL, frequency = NULL) {
 }
 
 
+#' Select a residual diagnostic plot panel
+#'
+#' @inheritParams .validate_residual_plot_inputs
+#' @param lag_max Positive integer scalar giving the maximum displayed lag.
+#'
+#' @return A ggplot object, or \code{NULL} when \code{panel = "all"}.
+#'
+#' @keywords internal
+#' @noRd
+.select_residual_plot_panel <- function(r, panel, lag_max) {
+  switch(
+    panel,
+    all = NULL,
+    series = .plot_residual_series(r),
+    acf = .plot_residual_acf(r, lag_max),
+    histogram = .plot_residual_histogram(r)
+  )
+}
+
+
+#' Save residual diagnostic plots
+#'
+#' @inheritParams .validate_residual_plot_inputs
+#' @param plot A ggplot object for a selected panel, or \code{NULL}.
+#' @param lag_max Positive integer scalar giving the maximum displayed lag.
+#' @param prefix Character scalar used as the path prefix.
+#'
+#' @return Invisibly returns \code{NULL}.
+#'
+#' @keywords internal
+#' @noRd
+.save_residual_plot <- function(r, panel, plot, lag_max, prefix) {
+  paths <- .residual_diagnostic_paths(prefix)
+
+  grDevices::png(paths[["check"]], 600, 400)
+  on.exit(grDevices::dev.off(), add = TRUE)
+
+  if (identical(panel, "all")) {
+    .draw_residual_diagnostic_plots(r, lag_max)
+  } else {
+    print(plot)
+  }
+
+  invisible(NULL)
+}
+
+
 #' Plot residuals from tempssm models
 #'
 #' @param r Numeric vector of residuals, typically obtained with
@@ -985,52 +1058,26 @@ plot_tempssm_residuals <- function(r,
                                    lag_max = NULL,
                                    save = FALSE,
                                    prefix = "residuals") {
-  .tempssm_check_length_one(save, "save")
-  .tempssm_check_logical(save, "save")
-  if (!is.logical(save) || is.na(save)) {
-    cli::cli_abort("{.arg save} must be a logical scalar.")
-  }
-
-  .tempssm_check_length_one(prefix, "prefix")
-  .tempssm_check_character(prefix, "prefix")
-  if (!is.character(prefix) || is.na(prefix)) {
-    cli::cli_abort("{.arg prefix} must be a character scalar.")
-  }
+  .validate_residual_plot_output_args(save, prefix)
 
   inputs <- .validate_residual_plot_inputs(r, panel, frequency, lag_max)
   r <- inputs[["r"]]
   panel <- inputs[["panel"]]
   lag_max <- inputs[["lag_max"]]
 
-  if (panel == "all" && !save) {
-    .draw_residual_diagnostic_plots(r, lag_max)
-  } else {
-    plot <- switch(
-      panel,
-      all = NULL,
-      series = .plot_residual_series(r),
-      acf = .plot_residual_acf(r, lag_max),
-      histogram = .plot_residual_histogram(r)
-    )
-
-    if (!save && panel != "all") {
-      return(plot)
-    }
-  }
+  plot <- .select_residual_plot_panel(r, panel, lag_max)
 
   if (save) {
-    paths <- .residual_diagnostic_paths(prefix)
-
-    grDevices::png(paths[["check"]], 600, 400)
-    if (panel == "all") {
-      .draw_residual_diagnostic_plots(r, lag_max)
-    } else {
-      print(plot)
-    }
-    grDevices::dev.off()
+    .save_residual_plot(r, panel, plot, lag_max, prefix)
+    return(invisible(NULL))
   }
 
-  invisible(NULL)
+  if (identical(panel, "all")) {
+    .draw_residual_diagnostic_plots(r, lag_max)
+    return(invisible(NULL))
+  }
+
+  plot
 }
 
 

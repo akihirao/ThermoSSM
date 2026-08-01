@@ -15,5 +15,6 @@ vignettes/*_files/
 vignettes/articles/*.html
 vignettes/articles/*.md
 vignettes/articles/*_files/
+vignettes/articles/*.log
 
 docs

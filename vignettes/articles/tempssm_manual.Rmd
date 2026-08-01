@@ -4,10 +4,10 @@ subtitle: "Version `r packageVersion('tempssm')`"
 author: "Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    latex_engine: lualatex
+#  pdf_document:
+#    latex_engine: lualatex
 #    toc: true
-#  rmarkdown::html_vignette: default
+  rmarkdown::html_vignette: default
 #  md_document:
 #    variant: gfm+tex_math_dollars
 vignette: >
@@ -207,6 +207,12 @@ not a general recommendation that AR(2) should always be preferred. When such
 prior information is unavailable, a practical workflow is to start from the
 default AR(1) specification and then examine AR(2) or higher-order alternatives
 through residual diagnostics and sensitivity checks.
+
+Here, AR means autoregressive. In `tempssm`, the autoregressive component
+captures short-term serial dependence that remains after accounting for the
+long-term level, drift, and seasonal components. An AR(2) specification means
+that this short-term component is modeled using dependence on the previous two
+time points.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # baseline model with a second-order autoregressive component

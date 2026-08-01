@@ -552,6 +552,212 @@ get_season_ts <- function(res, ci = FALSE, ci_level = 0.95,
 }
 
 
+#' Build autoregressive state names
+#'
+#' @inheritParams get_level_ts
+#'
+#' @return Character vector of KFAS autoregressive state names.
+#' @noRd
+.tempssm_ar_state_names <- function(res) {
+  paste0("arima", seq_len(res$ar_order))
+}
+
+
+#' Check whether autoregressive states are available
+#'
+#' @inheritParams .tempssm_check_accessor_input
+#' @inheritParams .tempssm_match_estimate
+#' @param ar_states Character vector of autoregressive state names.
+#'
+#' @return Invisibly returns \code{NULL}.
+#' @noRd
+.tempssm_check_ar_states <- function(res, estimate, ar_states) {
+  state_matrix <- .tempssm_state_matrix(res, estimate)
+  if (is.null(state_matrix) || !all(ar_states %in% colnames(state_matrix))) {
+    stop(
+      "Autoregressive component not found in the smoothing results.",
+      call. = FALSE
+    )
+  }
+
+  invisible(NULL)
+}
+
+
+#' Convert an autoregressive matrix to a ts object
+#'
+#' @inheritParams .tempssm_check_accessor_input
+#' @param values Numeric vector or matrix of autoregressive estimates.
+#'
+#' @return A univariate or multivariate \code{ts} object.
+#' @noRd
+.tempssm_ar_ts <- function(res, values) {
+  ts(
+    values,
+    start = start(res$temp_data),
+    frequency = frequency(res$temp_data)
+  )
+}
+
+
+#' Extract the first autoregressive state as a time series
+#'
+#' @inheritParams get_ar_ts
+#'
+#' @return A univariate or multivariate \code{ts} object.
+#' @noRd
+.tempssm_ar_first_ts <- function(res, ci, ci_level, estimate) {
+  .tempssm_extract_state_ts(
+    res = res,
+    state = "arima1",
+    output_name = "ar1",
+    ci = ci,
+    ci_level = ci_level,
+    estimate = estimate,
+    fun = "get_ar_ts",
+    missing_msg = paste0(
+      "First autoregressive component (AR1) not found ",
+      "in the smoothing results."
+    ),
+    ci_missing_msg = paste0(
+      "First Autoregressive (AR1) component not found ",
+      "in confidence intervals."
+    )
+  )
+}
+
+
+#' Check autoregressive confidence interval availability
+#'
+#' @param ci_obj Object returned by \code{stats::confint()}.
+#' @param ar_states Character vector of autoregressive state names.
+#'
+#' @return Invisibly returns \code{NULL}.
+#' @noRd
+.tempssm_check_ar_ci_states <- function(ci_obj, ar_states) {
+  if (!all(ar_states %in% names(ci_obj))) {
+    stop(
+      "Autoregressive component not found in confidence intervals.",
+      call. = FALSE
+    )
+  }
+
+  invisible(NULL)
+}
+
+
+#' Extract the summed autoregressive contribution
+#'
+#' @inheritParams get_ar_ts
+#' @param ar_states Character vector of autoregressive state names.
+#'
+#' @return A univariate or multivariate \code{ts} object.
+#' @noRd
+.tempssm_ar_sum_ts <- function(res, ar_states, estimate, ci, ci_level) {
+  state_matrix <- .tempssm_state_matrix(res, estimate)
+  values <- rowSums(state_matrix[, ar_states, drop = FALSE])
+  if (identical(estimate, "filtered")) {
+    values <- .tempssm_mask_diffuse(values, res)
+  }
+  if (!ci) {
+    return(.tempssm_ar_ts(res, values))
+  }
+
+  ci_obj <- stats::confint(res$kfs, level = ci_level)
+  .tempssm_check_ar_ci_states(ci_obj, ar_states)
+
+  lwr <- rowSums(vapply(ar_states, function(state) {
+    ci_obj[[state]][, "lwr"]
+  }, numeric(length(values))))
+  upr <- rowSums(vapply(ar_states, function(state) {
+    ci_obj[[state]][, "upr"]
+  }, numeric(length(values))))
+
+  values <- cbind(
+    ar = values,
+    lwr = lwr,
+    upr = upr
+  )
+  colnames(values)[1] <- "ar"
+  .tempssm_ar_ts(res, values)
+}
+
+
+#' Build output names for individual autoregressive intervals
+#'
+#' @param ar_states Character vector of autoregressive state names.
+#'
+#' @return Character vector of output column names.
+#' @noRd
+.tempssm_ar_individual_ci_names <- function(ar_states) {
+  c(
+    vapply(
+      seq_along(ar_states),
+      function(idx) paste0("ar", idx),
+      character(1)
+    ),
+    vapply(
+      seq_along(ar_states),
+      function(idx) paste0("ar", idx, "_lwr"),
+      character(1)
+    ),
+    vapply(
+      seq_along(ar_states),
+      function(idx) paste0("ar", idx, "_upr"),
+      character(1)
+    )
+  )
+}
+
+
+#' Extract individual autoregressive states
+#'
+#' @inheritParams get_ar_ts
+#' @param ar_states Character vector of autoregressive state names.
+#'
+#' @return A multivariate \code{ts} object.
+#' @noRd
+.tempssm_ar_individual_ts <- function(res, ar_states, estimate, ci, ci_level) {
+  state_matrix <- .tempssm_state_matrix(res, estimate)
+  values <- state_matrix[, ar_states, drop = FALSE]
+  if (identical(estimate, "filtered")) {
+    values <- .tempssm_mask_diffuse(values, res)
+  }
+
+  colnames(values) <- paste0("ar", seq_len(ncol(values)))
+
+  if (!ci) {
+    return(.tempssm_ar_ts(res, values))
+  }
+
+  ci_obj <- stats::confint(res$kfs, level = ci_level)
+  .tempssm_check_ar_ci_states(ci_obj, ar_states)
+
+  ci_values <- lapply(ar_states, function(state) {
+    ci_obj[[state]][, c("lwr", "upr")]
+  })
+  names(ci_values) <- paste0("ar", seq_along(ar_states))
+
+  out <- list()
+  for (idx in seq_along(ar_states)) {
+    out[[idx]] <- cbind(
+      values[, idx, drop = FALSE],
+      lwr = ci_values[[idx]][, "lwr"],
+      upr = ci_values[[idx]][, "upr"]
+    )
+    colnames(out[[idx]]) <- c(
+      paste0("ar", idx),
+      paste0("ar", idx, "_lwr"),
+      paste0("ar", idx, "_upr")
+    )
+  }
+
+  combined <- do.call(cbind, out)
+  colnames(combined) <- .tempssm_ar_individual_ci_names(ar_states)
+  .tempssm_ar_ts(res, combined)
+}
+
+
 #' Extract autoregressive components as a time series
 #'
 #' @inheritParams get_level_ts
@@ -596,157 +802,31 @@ get_ar_ts <- function(res, component = c("sum", "first", "individual"),
   estimate <- .tempssm_match_estimate(estimate)
   .tempssm_check_accessor_ci(ci, ci_level, "get_ar_ts")
 
-  if (!is.null(res$kfs) && !is.null(res$kfs$alphahat)) {
-    state_matrix <- res$kfs$alphahat
-    ar_states <- paste0("arima", seq_len(res$ar_order))
-    if (!all(ar_states %in% colnames(state_matrix))) {
-      stop(
-        "Autoregressive component not found in the smoothing results.",
-        call. = FALSE
-      )
-    }
-  } else {
-    stop(
-      "Autoregressive component not found in the smoothing results.",
-      call. = FALSE
-    )
-  }
-
-  if (identical(estimate, "filtered")) {
-    state_matrix <- res$kfs$att
-    if (!all(ar_states %in% colnames(state_matrix))) {
-      stop(
-        "Autoregressive component not found in the smoothing results.",
-        call. = FALSE
-      )
-    }
-  }
+  ar_states <- .tempssm_ar_state_names(res)
+  .tempssm_check_ar_states(res, estimate, ar_states)
 
   if (identical(component, "first")) {
-    return(.tempssm_extract_state_ts(
-      res = res,
-      state = "arima1",
-      output_name = "ar1",
-      ci = ci,
-      ci_level = ci_level,
-      estimate = estimate,
-      fun = "get_ar_ts",
-      missing_msg = paste0(
-        "First autoregressive component (AR1) not found ",
-        "in the smoothing results."
-      ),
-      ci_missing_msg = paste0(
-        "First Autoregressive (AR1) component not found ",
-        "in confidence intervals."
-      )
-    ))
+    return(.tempssm_ar_first_ts(res, ci, ci_level, estimate))
   }
 
   if (identical(component, "sum")) {
-    values <- rowSums(state_matrix[, ar_states, drop = FALSE])
-    if (identical(estimate, "filtered")) {
-      values <- .tempssm_mask_diffuse(values, res)
-    }
-    if (!ci) {
-      return(ts(
-        values,
-        start = start(res$temp_data),
-        frequency = frequency(res$temp_data)
-      ))
-    }
-
-    ci_obj <- stats::confint(res$kfs, level = ci_level)
-    if (!all(ar_states %in% names(ci_obj))) {
-      stop(
-        "Autoregressive component not found in confidence intervals.",
-        call. = FALSE
+    return(
+      .tempssm_ar_sum_ts(
+        res = res,
+        ar_states = ar_states,
+        estimate = estimate,
+        ci = ci,
+        ci_level = ci_level
       )
-    }
-
-    lwr <- rowSums(vapply(ar_states, function(state) {
-      ci_obj[[state]][, "lwr"]
-    }, numeric(length(values))))
-    upr <- rowSums(vapply(ar_states, function(state) {
-      ci_obj[[state]][, "upr"]
-    }, numeric(length(values))))
-
-    values <- cbind(
-      ar = values,
-      lwr = lwr,
-      upr = upr
-    )
-    colnames(values)[1] <- "ar"
-    return(ts(
-      values,
-      start = start(res$temp_data),
-      frequency = frequency(res$temp_data)
-    ))
-  }
-
-  values <- state_matrix[, ar_states, drop = FALSE]
-  if (identical(estimate, "filtered")) {
-    values <- .tempssm_mask_diffuse(values, res)
-  }
-
-  colnames(values) <- paste0("ar", seq_len(ncol(values)))
-
-  if (!ci) {
-    return(ts(
-      values,
-      start = start(res$temp_data),
-      frequency = frequency(res$temp_data)
-    ))
-  }
-
-  ci_obj <- stats::confint(res$kfs, level = ci_level)
-  if (!all(ar_states %in% names(ci_obj))) {
-    stop(
-      "Autoregressive component not found in confidence intervals.",
-      call. = FALSE
     )
   }
 
-  ci_values <- lapply(ar_states, function(state) {
-    ci_obj[[state]][, c("lwr", "upr")]
-  })
-  names(ci_values) <- paste0("ar", seq_along(ar_states))
-
-  out <- list()
-  for (idx in seq_along(ar_states)) {
-    out[[idx]] <- cbind(
-      values[, idx, drop = FALSE],
-      lwr = ci_values[[idx]][, "lwr"],
-      upr = ci_values[[idx]][, "upr"]
-    )
-    colnames(out[[idx]]) <- c(
-      paste0("ar", idx),
-      paste0("ar", idx, "_lwr"),
-      paste0("ar", idx, "_upr")
-    )
-  }
-
-  combined <- do.call(cbind, out)
-  colnames(combined) <- c(
-    vapply(
-      seq_along(ar_states),
-      function(idx) paste0("ar", idx),
-      character(1)
-    ),
-    vapply(
-      seq_along(ar_states),
-      function(idx) paste0("ar", idx, "_lwr"),
-      character(1)
-    ),
-    vapply(
-      seq_along(ar_states),
-      function(idx) paste0("ar", idx, "_upr"),
-      character(1)
-    )
-  )
-  ts(
-    combined,
-    start = start(res$temp_data),
-    frequency = frequency(res$temp_data)
+  .tempssm_ar_individual_ts(
+    res = res,
+    ar_states = ar_states,
+    estimate = estimate,
+    ci = ci,
+    ci_level = ci_level
   )
 }
 

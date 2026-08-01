@@ -204,6 +204,11 @@ SST の全体平均は約 `r sprintf("%.1f", sst_sim_mean)` °C であり、
 意味ではありません。このような事前情報がない場合には、デフォルトの AR(1) から
 始め、残差診断や感度分析を通じて AR(2) 以上の次数を検討する流れが実用的です。
 
+ここで AR は autoregressive（自己回帰）を意味します。`tempssm` では、
+自己回帰成分は、長期水準、ドリフト、季節成分では説明しきれない短期的な
+系列依存性を表すために用いられます。AR(2) は、この短期成分が直前2時点までの
+値に依存するものとして表現されることを意味します。
+
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # baseline model with a second-order autoregressive component
 res_base <- tempssm(sst_sim, ar_order = 2)
