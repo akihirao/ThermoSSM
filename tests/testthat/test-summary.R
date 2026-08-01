@@ -108,6 +108,17 @@ test_that("print.summary.tempssm outputs expected text", {
 })
 
 
+test_that("print.summary.tempssm separates exogenous block", {
+  s <- summary(res_tempssm_exo)
+
+  output <- capture.output(print(s))
+  exo_line <- grep("Exogenous variable", output, fixed = TRUE)
+
+  expect_length(exo_line, 1)
+  expect_identical(output[exo_line - 1], "")
+})
+
+
 test_that("summary handles non-seasonal model", {
   data(sst_niigata)
 

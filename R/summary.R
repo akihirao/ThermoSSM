@@ -248,6 +248,7 @@ print.summary.tempssm <- function(x, ...) {
   }
 
   if (!is.null(x$exogenous_coef)) {
+    cat("\n")
     cat("Exogenous variable\t", x$exogenous_coef$Variable, "\n")
     cat("Estimated coefficient\t", x$exogenous_coef$Coefficient, "\n")
     cat("Lower CI\t", x$exogenous_coef$lwr, "\n")
