@@ -79,7 +79,7 @@
   : Extract estimated parameters in the fitted models
 
 - [`get_tempssm_residuals()`](https://akihirao.github.io/tempssm/reference/get_tempssm_residuals.md)
-  : Extract standardized recursive residuals
+  : Extract residuals from a tempssm model
 
 - [`kuroshio_a_sim`](https://akihirao.github.io/tempssm/reference/kuroshio_a_sim.md)
   : Simulated monthly Kuroshio large-meander indicator
