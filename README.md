@@ -55,6 +55,11 @@ Gaussian state-space modeling, Kalman filtering, and Kalman smoothing. Model
 estimation is handled through the `KFAS` package, which provides a general
 framework for state-space models in R.
 
+Several other R packages support plotting, time-series handling, data input,
+and examples. In particular, `ggplot2` is used for package plotting methods,
+`zoo` for selected time-series conversion utilities, and `forecast` in
+tutorial examples for basic time-series visualization.
+
 The initial implementation was adapted from the supplementary code provided by
 Baba (2024), accompanying Baba et al. (2024), which analyzed sea temperature
 trends using a linear Gaussian state-space model. The supplementary code is
