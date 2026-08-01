@@ -262,34 +262,42 @@ series alone.</p>
 (here, <code>sst_sim</code>) is passed to the core function
 <code><a href="../reference/tempssm.html">tempssm()</a></code>, model construction and parameter estimation are
 performed together. The returned S3 object of class <code>tempssm</code>
-(here, <code>res_ar1</code>) stores the filtering and smoothing
-estimates, as well as the constructed model and input data. By default,
-<code><a href="../reference/tempssm.html">tempssm()</a></code> fits a first-order autoregressive model.</p>
+(here, <code>res_base</code>) stores the filtering and smoothing
+estimates, as well as the constructed model and input data.</p>
+<p>The simulated SST series used in this manual was generated under an
+AR(2) setting based on the original analysis of Baba et al. (2024). We
+therefore use an AR(2) specification as the baseline model in this
+detailed example. This is not a general recommendation that AR(2) should
+always be preferred. When such prior information is unavailable, a
+practical workflow is to start from the default AR(1) specification and
+then examine AR(2) or higher-order alternatives through residual
+diagnostics and sensitivity checks.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># model with first-order autoregressive component</span></span>
-<span><span class="va">res_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_sim</span><span class="op">)</span> <span class="co"># (ar_order=1: default)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># baseline model with a second-order autoregressive component</span></span>
+<span><span class="va">res_base</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_sim</span>, ar_order <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## tempssm summary</span></span>
 <span><span class="co">## -----------------</span></span>
 <span><span class="co">## Call:</span></span>
-<span><span class="co">## tempssm(temp_data = sst_sim)</span></span>
+<span><span class="co">## tempssm(temp_data = sst_sim, ar_order = 2)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model fit:</span></span>
 <span><span class="co">##   Likelihood type: marginal </span></span>
 <span><span class="co">##   Log-likelihood : -198.19 </span></span>
-<span><span class="co">##   k              : 5 </span></span>
+<span><span class="co">##   k              : 6 </span></span>
 <span><span class="co">##   Diffuse states : 13 </span></span>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.07496413 </span></span>
-<span><span class="co">##   State (Q trend): 4.937123e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001763536 </span></span>
-<span><span class="co">##   State (Q ar): 0.1202156 </span></span>
+<span><span class="co">##   Observation (H): 0.05517486 </span></span>
+<span><span class="co">##   State (Q trend): 4.945287e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001859976 </span></span>
+<span><span class="co">##   State (Q ar): 0.1497545 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
-<span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.7579371</span></span></code></pre>
+<span><span class="co">##   Order of AR: 2 </span></span>
+<span><span class="co">##   Coefficient of AR1: 0.655325 </span></span>
+<span><span class="co">##   Coefficient of AR2: 0.07429946</span></span></code></pre>
 <p>From the summary output, confirm that the model has converged
 (<code>Converged: TRUE</code>). The output also reports the number of
 parameters (<code>k</code>), the log-likelihood, the likelihood type,
@@ -303,17 +311,17 @@ for the latent components: <code>Q trend</code> controls stochastic
 variation in the long-term trend, <code>Q season</code> controls
 variation in the seasonal component, and the autoregressive process
 variance controls variation in the short-term autoregressive component.
-The coefficient <code>AR1</code> represents first-order autoregressive
-dependence in that short-term component.</p>
+The <code>AR</code> coefficients represent serial dependence in that
+short-term component.</p>
 <p>The log-likelihood and parameter count can also be extracted directly
 with <code><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik()</a></code>.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ll</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/logLik.html" class="external-link">logLik</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span>
 <span><span class="va">ll</span></span></code></pre></div>
-<pre><code><span><span class="co">## 'log Lik.' -198.1929 (df=5)</span></span></code></pre>
+<pre><code><span><span class="co">## 'log Lik.' -198.1878 (df=6)</span></span></code></pre>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">ll</span>, <span class="st">"df"</span><span class="op">)</span> <span class="co"># number of parameters</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 5</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 6</span></span></code></pre>
 <p>By default, <code><a href="../reference/tempssm.html">tempssm()</a></code> uses the KFAS marginal likelihood.
 The diffuse likelihood remains available with
 <code>marginal = FALSE</code>, and the selected likelihood type is
@@ -333,9 +341,9 @@ them in their own workflows.</p>
 seasonal variation, and autoregressive dependence.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># plot all components at once</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tempssm_manual_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
-<pre><code><span><span class="co">## [1] 0.08777083</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.08773294</span></span></code></pre>
 <p>The long-term trend in the upper-left panel suggests that SST
 decreased during the first part of the study period and then increased
 after around 2008. In this example, the average annual rate of SST
@@ -352,10 +360,10 @@ Individual components can be selected with the <code>component</code>
 argument.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract individual component plots</span></span>
-<span><span class="va">plt_level</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"level"</span><span class="op">)</span></span>
-<span><span class="va">plt_drift</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"drift"</span><span class="op">)</span></span>
-<span><span class="va">plt_season</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"season"</span><span class="op">)</span></span>
-<span><span class="va">plt_ar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"ar"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">plt_level</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_base</span>, component <span class="op">=</span> <span class="st">"level"</span><span class="op">)</span></span>
+<span><span class="va">plt_drift</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_base</span>, component <span class="op">=</span> <span class="st">"drift"</span><span class="op">)</span></span>
+<span><span class="va">plt_season</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_base</span>, component <span class="op">=</span> <span class="st">"season"</span><span class="op">)</span></span>
+<span><span class="va">plt_ar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_base</span>, component <span class="op">=</span> <span class="st">"ar"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="model-diagnostics">Model Diagnostics<a class="anchor" aria-label="anchor" href="#model-diagnostics"></a>
@@ -364,7 +372,7 @@ argument.</p>
 after model fitting. Here we inspect the residual series, residual
 autocorrelation, residual distribution, and a Ljung-Box test.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">resid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">resid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">resid</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tempssm_manual_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="700"></p>
 <p>Here, <code><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals()</a></code> extracts standardized
@@ -392,6 +400,12 @@ therefore do not necessarily indicate that the fitted model failed at
 those time points. Rather, they indicate that comparable standardized
 recursive residuals are not defined until the diffuse effects have been
 resolved.</p>
+<p>For seasonal models, this can occur even when no exogenous variables
+are used. The seasonal states are initialized diffusely, and a full
+seasonal cycle is needed before comparable standardized recursive
+residuals are typically available. For monthly data with
+<code>frequency = 12</code>, the residuals for roughly the first year
+may therefore be <code>NA</code>.</p>
 <p>The <code>NA</code> values in standardized recursive residuals should
 not be interpreted as observations being omitted from likelihood
 evaluation. The log-likelihood is computed by KFAS through the Kalman
@@ -424,7 +438,7 @@ for monthly data, this uses lag 12.</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite</span></span>
 <span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>    9.68     12    12     0.644     3.26   302        13      289</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>    9.61     12    12     0.650     3.26   302        13      289</span></span></code></pre>
 <p>The <code>lb_stat</code>, <code>lb_lag</code>, and
 <code>lb_pvalue</code> columns correspond to the Ljung-Box test
 statistic, the lag used in the test, and the P-value. For monthly time
@@ -443,8 +457,8 @@ Ljung-Box test up to lags 24 and 36.</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 5</span></span></span>
 <span><span class="co">##   check  lb_stat lb_lag lb_pvalue kurtosis</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> lag 12    9.68     12     0.644     3.26</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> lag 24   19.5      24     0.725     3.26</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> lag 12    9.61     12     0.650     3.26</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> lag 24   19.4      24     0.729     3.26</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">3</span> lag 36   27.9      36     0.831     3.26</span></span></code></pre>
 <p>In this example, extending the Ljung-Box diagnostic to lags 24 and 36
 still does not indicate significant residual autocorrelation. Interpret
@@ -455,109 +469,113 @@ remaining temporal structure.</p>
 <div class="section level4">
 <h4 id="examine-the-autoregressive-order">Examine the Autoregressive Order<a class="anchor" aria-label="anchor" href="#examine-the-autoregressive-order"></a>
 </h4>
-<p>This manual uses the default AR(1) specification as the working
-model. The autoregressive component absorbs short-term serial dependence
-not represented by the level, drift, and seasonal components. A higher
-AR order should be considered when residual diagnostics suggest that
-notable autocorrelation remains, rather than treated as an automatic
-improvement.</p>
-<p>For example, if residual autocorrelation remains after fitting the
-AR(1) model, users can fit an AR(2) model and repeat the same
-diagnostics.</p>
+<p>This manual uses AR(2) as the baseline specification because the
+simulated SST series was generated under an AR(2) setting informed by
+Baba et al. (2024). The autoregressive component absorbs short-term
+serial dependence not represented by the level, drift, and seasonal
+components.</p>
+<p>The choice of AR order should still be checked against diagnostics.
+As a sensitivity check, we also fit an AR(1) model and repeat the same
+residual diagnostics. In applications without prior information about
+the AR structure, AR(1) is a reasonable starting point, and higher-order
+alternatives such as AR(2) can be examined when residual autocorrelation
+remains.</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Optional sensitivity check with a second-order autoregressive component</span></span>
-<span><span class="va">res_ar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_sim</span>, ar_order <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res_ar2</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># Optional sensitivity check with a first-order autoregressive component</span></span>
+<span><span class="va">res_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_sim</span>, ar_order <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## tempssm summary</span></span>
 <span><span class="co">## -----------------</span></span>
 <span><span class="co">## Call:</span></span>
-<span><span class="co">## tempssm(temp_data = sst_sim, ar_order = 2)</span></span>
+<span><span class="co">## tempssm(temp_data = sst_sim, ar_order = 1)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model fit:</span></span>
 <span><span class="co">##   Likelihood type: marginal </span></span>
 <span><span class="co">##   Log-likelihood : -198.19 </span></span>
-<span><span class="co">##   k              : 6 </span></span>
+<span><span class="co">##   k              : 5 </span></span>
 <span><span class="co">##   Diffuse states : 13 </span></span>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.05517486 </span></span>
-<span><span class="co">##   State (Q trend): 4.945287e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001859976 </span></span>
-<span><span class="co">##   State (Q ar): 0.1497545 </span></span>
+<span><span class="co">##   Observation (H): 0.07496413 </span></span>
+<span><span class="co">##   State (Q trend): 4.937123e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001763536 </span></span>
+<span><span class="co">##   State (Q ar): 0.1202156 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
-<span><span class="co">##   Order of AR: 2 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.655325 </span></span>
-<span><span class="co">##   Coefficient of AR2: 0.07429946</span></span></code></pre>
+<span><span class="co">##   Order of AR: 1 </span></span>
+<span><span class="co">##   Coefficient of AR1: 0.7579371</span></span></code></pre>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">resid_ar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res_ar2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">resid_ar2</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">resid_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">resid_ar1</span><span class="op">)</span></span></code></pre></div>
 <p><img src="tempssm_manual_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">diag_lag12_ar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">resid_ar2</span>, lb_lag <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
-<span><span class="va">diag_lag24_ar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">resid_ar2</span>, lb_lag <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span>
-<span><span class="va">diag_lag36_ar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">resid_ar2</span>, lb_lag <span class="op">=</span> <span class="fl">36</span><span class="op">)</span></span>
-<span><span class="va">diag_lags_ar2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">diag_lag12_ar2</span>, <span class="va">diag_lag24_ar2</span>, <span class="va">diag_lag36_ar2</span><span class="op">)</span></span>
-<span><span class="va">diag_lags_ar2</span><span class="op">$</span><span class="va">check</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lag 12"</span>, <span class="st">"lag 24"</span>, <span class="st">"lag 36"</span><span class="op">)</span></span>
-<span><span class="va">diag_lags_ar2</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"check"</span>, <span class="st">"lb_stat"</span>, <span class="st">"lb_lag"</span>, <span class="st">"lb_pvalue"</span>, <span class="st">"kurtosis"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">diag_lag12_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">resid_ar1</span>, lb_lag <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
+<span><span class="va">diag_lag24_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">resid_ar1</span>, lb_lag <span class="op">=</span> <span class="fl">24</span><span class="op">)</span></span>
+<span><span class="va">diag_lag36_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/diagnose_residual_ts.html">diagnose_residual_ts</a></span><span class="op">(</span><span class="va">resid_ar1</span>, lb_lag <span class="op">=</span> <span class="fl">36</span><span class="op">)</span></span>
+<span><span class="va">diag_lags_ar1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">diag_lag12_ar1</span>, <span class="va">diag_lag24_ar1</span>, <span class="va">diag_lag36_ar1</span><span class="op">)</span></span>
+<span><span class="va">diag_lags_ar1</span><span class="op">$</span><span class="va">check</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"lag 12"</span>, <span class="st">"lag 24"</span>, <span class="st">"lag 36"</span><span class="op">)</span></span>
+<span><span class="va">diag_lags_ar1</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"check"</span>, <span class="st">"lb_stat"</span>, <span class="st">"lb_lag"</span>, <span class="st">"lb_pvalue"</span>, <span class="st">"kurtosis"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 3 × 5</span></span></span>
 <span><span class="co">##   check  lb_stat lb_lag lb_pvalue kurtosis</span></span>
 <span><span class="co">##   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span> lag 12    9.61     12     0.650     3.26</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">2</span> lag 24   19.4      24     0.729     3.26</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span> lag 12    9.68     12     0.644     3.26</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">2</span> lag 24   19.5      24     0.725     3.26</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">3</span> lag 36   27.9      36     0.831     3.26</span></span></code></pre>
-<p>In this example, the AR(2) diagnostics are similar to those from the
-AR(1) model, so we proceed with AR(1) as the baseline specification.</p>
+<p>In this example, the AR(1) diagnostics are broadly similar to those
+from the AR(2) baseline model. We therefore proceed with AR(2),
+reflecting the simulation setting, while noting that the main component
+patterns are not highly sensitive to this AR-order choice in this
+example.</p>
 </div>
 <div class="section level4">
 <h4 id="extract-estimated-components">Extract Estimated Components<a class="anchor" aria-label="anchor" href="#extract-estimated-components"></a>
 </h4>
 <p>The fitted <code>tempssm</code> object contains smoothed state
 estimates returned by <code>KFAS</code>. The matrix
-<code>res_ar1$kfs$alphahat</code> stores the level, drift, seasonal
+<code>res_base$kfs$alphahat</code> stores the level, drift, seasonal
 states, and autoregressive state.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Smoothing estimates</span></span>
-<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res_ar1</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
+<span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res_base</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">alpha_hat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
-<span><span class="co">## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553991</span></span>
-<span><span class="co">## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451</span></span>
-<span><span class="co">## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344</span></span>
-<span><span class="co">## Apr 1998 18.60118 -0.01911004 -2.0508949 -2.8244535 -5.0256252 -2.0428374</span></span>
-<span><span class="co">## May 1998 18.58207 -0.01914416  0.2882283 -2.0508949 -2.8244535 -5.0256252</span></span>
-<span><span class="co">## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535</span></span>
+<span><span class="co">## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189075  0.5624220  0.9561047</span></span>
+<span><span class="co">## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189075  0.5624220</span></span>
+<span><span class="co">## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189075</span></span>
+<span><span class="co">## Apr 1998 18.60145 -0.01913228 -2.0500556 -2.8254806 -5.0255618 -2.0423835</span></span>
+<span><span class="co">## May 1998 18.58232 -0.01916624  0.2885088 -2.0500556 -2.8254806 -5.0255618</span></span>
+<span><span class="co">## Jun 1998 18.56316 -0.01920803  1.9920043  0.2885088 -2.0500556 -2.8254806</span></span>
 <span><span class="co">##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10</span></span>
-<span><span class="co">## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949</span></span>
-<span><span class="co">## Feb 1998  0.9553991  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283</span></span>
-<span><span class="co">## Mar 1998  0.5642451  0.9553991  1.6282639  4.9410126  2.4937014   1.9925949</span></span>
-<span><span class="co">## Apr 1998 -0.9196344  0.5642451  0.9553991  1.6282639  4.9410126   2.4937014</span></span>
-<span><span class="co">## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553991  1.6282639   4.9410126</span></span>
-<span><span class="co">## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553991   1.6282639</span></span>
-<span><span class="co">##          sea_dummy11     arima1</span></span>
-<span><span class="co">## Jan 1998  -2.8244535 -0.2178663</span></span>
-<span><span class="co">## Feb 1998  -2.0508949  0.1519894</span></span>
-<span><span class="co">## Mar 1998   0.2882283  0.4187225</span></span>
-<span><span class="co">## Apr 1998   1.9925949  0.2408083</span></span>
-<span><span class="co">## May 1998   2.4937014  0.7185730</span></span>
-<span><span class="co">## Jun 1998   4.9410126  1.0167732</span></span></code></pre>
+<span><span class="co">## Jan 1998  1.6287761  4.9406562  2.4939170  1.9920043  0.2885088  -2.0500556</span></span>
+<span><span class="co">## Feb 1998  0.9561047  1.6287761  4.9406562  2.4939170  1.9920043   0.2885088</span></span>
+<span><span class="co">## Mar 1998  0.5624220  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043</span></span>
+<span><span class="co">## Apr 1998 -0.9189075  0.5624220  0.9561047  1.6287761  4.9406562   2.4939170</span></span>
+<span><span class="co">## May 1998 -2.0423835 -0.9189075  0.5624220  0.9561047  1.6287761   4.9406562</span></span>
+<span><span class="co">## Jun 1998 -5.0255618 -2.0423835 -0.9189075  0.5624220  0.9561047   1.6287761</span></span>
+<span><span class="co">##          sea_dummy11     arima1      arima2</span></span>
+<span><span class="co">## Jan 1998  -2.8254806 -0.2729565 -0.01238173</span></span>
+<span><span class="co">## Feb 1998  -2.0500556  0.1645898 -0.02028052</span></span>
+<span><span class="co">## Mar 1998   0.2885088  0.4780657  0.01222893</span></span>
+<span><span class="co">## Apr 1998   1.9920043  0.1615218  0.03552002</span></span>
+<span><span class="co">## May 1998   2.4939170  0.7484155  0.01200098</span></span>
+<span><span class="co">## Jun 1998   4.9406562  1.0843954  0.05560686</span></span></code></pre>
 <p>For routine use, helper functions extract individual components as
 <code>ts</code> objects with the original time index. The level
 component represents the estimated long-term temperature level, while
 the drift component represents its rate of change per year.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Smoothing estimate of level component</span></span>
-<span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span>
+<span><span class="va">level_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_level_ts.html">get_level_ts</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Smoothing estimate of drift component</span></span>
-<span><span class="va">drift_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_drift_ts.html">get_drift_ts</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span>
+<span><span class="va">drift_ts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_drift_ts.html">get_drift_ts</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Average drift rate per year across the full period</span></span>
 <span><span class="va">mean_drift_year</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drift_ts</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">mean_drift_year</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.08777083</span></span></code></pre>
-<p>The average annual rate of SST change was estimated to be 0.0878 °C
+<pre><code><span><span class="co">## [1] 0.08773294</span></span></code></pre>
+<p>The average annual rate of SST change was estimated to be 0.0877 °C
 over the full period. Because the estimated drift changes sign over
 time, this value should be interpreted as a model-based summary of the
 whole study period rather than as a constant warming rate.</p>
@@ -572,20 +590,20 @@ end of the observed series. This is useful for visual checks of how the
 fitted model extrapolates the estimated level, seasonal, and
 autoregressive components.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pred_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res_ar1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">pred_1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res_base</span><span class="op">)</span></span>
 <span><span class="va">pred_1</span></span></code></pre></div>
 <pre><code><span><span class="co">##           Mar</span></span>
-<span><span class="co">## 2023 18.33035</span></span></code></pre>
+<span><span class="co">## 2023 18.32948</span></span></code></pre>
 <p>Predictions for multiple future time points can be requested by
 setting the <code>n.ahead</code> argument.</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pred_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res_ar1</span>, n.ahead <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">pred_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res_base</span>, n.ahead <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="va">pred_12</span></span></code></pre></div>
 <pre><code><span><span class="co">##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug</span></span>
-<span><span class="co">## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694</span></span>
-<span><span class="co">## 2024 19.09319 16.16926                                                      </span></span>
+<span><span class="co">## 2023                   18.32948 18.96862 21.33573 23.08507 23.51601 26.03613</span></span>
+<span><span class="co">## 2024 19.09047 16.16883                                                      </span></span>
 <span><span class="co">##           Sep      Oct      Nov      Dec</span></span>
-<span><span class="co">## 2023 22.69098 22.00902 21.74806 20.19190</span></span>
+<span><span class="co">## 2023 22.68867 22.00620 21.74783 20.19009</span></span>
 <span><span class="co">## 2024</span></span></code></pre>
 <p>Prediction uncertainty can also be returned by setting the
 <code>interval</code> argument. With
@@ -598,7 +616,7 @@ confidence level is controlled by the <code>level</code> argument and
 defaults to 0.95.</p>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_12_pi</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span></span>
-<span>  <span class="va">res_ar1</span>,</span>
+<span>  <span class="va">res_base</span>,</span>
 <span>  n.ahead <span class="op">=</span> <span class="fl">12</span>,</span>
 <span>  interval <span class="op">=</span> <span class="st">"prediction"</span>,</span>
 <span>  level <span class="op">=</span> <span class="fl">0.95</span></span>
@@ -606,18 +624,18 @@ defaults to 0.95.</p>
 <span></span>
 <span><span class="va">pred_12_pi</span></span></code></pre></div>
 <pre><code><span><span class="co">##               fit      lwr      upr</span></span>
-<span><span class="co">## Mar 2023 18.33035 17.35029 19.31042</span></span>
-<span><span class="co">## Apr 2023 18.96985 17.85360 20.08610</span></span>
-<span><span class="co">## May 2023 21.33710 20.13453 22.53967</span></span>
-<span><span class="co">## Jun 2023 23.08522 21.82424 24.34619</span></span>
-<span><span class="co">## Jul 2023 23.51856 22.21551 24.82161</span></span>
-<span><span class="co">## Aug 2023 26.03694 24.70183 27.37204</span></span>
-<span><span class="co">## Sep 2023 22.69098 21.33016 24.05179</span></span>
-<span><span class="co">## Oct 2023 22.00902 20.62664 23.39141</span></span>
-<span><span class="co">## Nov 2023 21.74806 20.34682 23.14929</span></span>
-<span><span class="co">## Dec 2023 20.19190 18.77359 21.61020</span></span>
-<span><span class="co">## Jan 2024 19.09319 17.65904 20.52734</span></span>
-<span><span class="co">## Feb 2024 16.16926 14.72135 17.61717</span></span></code></pre>
+<span><span class="co">## Mar 2023 18.32948 17.34926 19.30971</span></span>
+<span><span class="co">## Apr 2023 18.96862 17.85289 20.08435</span></span>
+<span><span class="co">## May 2023 21.33573 20.13239 22.53907</span></span>
+<span><span class="co">## Jun 2023 23.08507 21.82315 24.34699</span></span>
+<span><span class="co">## Jul 2023 23.51601 22.21214 24.81988</span></span>
+<span><span class="co">## Aug 2023 26.03613 24.70044 27.37183</span></span>
+<span><span class="co">## Sep 2023 22.68867 21.32754 24.04981</span></span>
+<span><span class="co">## Oct 2023 22.00620 20.62375 23.38865</span></span>
+<span><span class="co">## Nov 2023 21.74783 20.34675 23.14890</span></span>
+<span><span class="co">## Dec 2023 20.19009 18.77214 21.60804</span></span>
+<span><span class="co">## Jan 2024 19.09047 17.65685 20.52409</span></span>
+<span><span class="co">## Feb 2024 16.16883 14.72164 17.61601</span></span></code></pre>
 <p>These predictions should be interpreted as model-based extrapolations
 rather than definitive forecasts. Uncertainty generally increases as the
 prediction horizon becomes longer, and long-horizon predictions can be
@@ -769,32 +787,33 @@ responses during Kalman filtering and smoothing.</p>
 <h4 id="reuse-the-baseline-model">Reuse the Baseline Model<a class="anchor" aria-label="anchor" href="#reuse-the-baseline-model"></a>
 </h4>
 <p>Exercise II uses the same response series as Exercise I, so we reuse
-the previously fitted AR(1) model as the reference model without
-exogenous variables.</p>
+the previously fitted AR(2) baseline model as the reference model
+without exogenous variables.</p>
 <div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res_without</span> <span class="op">&lt;-</span> <span class="va">res_ar1</span></span>
+<code class="sourceCode R"><span><span class="va">res_without</span> <span class="op">&lt;-</span> <span class="va">res_base</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res_without</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## tempssm summary</span></span>
 <span><span class="co">## -----------------</span></span>
 <span><span class="co">## Call:</span></span>
-<span><span class="co">## tempssm(temp_data = sst_sim)</span></span>
+<span><span class="co">## tempssm(temp_data = sst_sim, ar_order = 2)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model fit:</span></span>
 <span><span class="co">##   Likelihood type: marginal </span></span>
 <span><span class="co">##   Log-likelihood : -198.19 </span></span>
-<span><span class="co">##   k              : 5 </span></span>
+<span><span class="co">##   k              : 6 </span></span>
 <span><span class="co">##   Diffuse states : 13 </span></span>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.07496413 </span></span>
-<span><span class="co">##   State (Q trend): 4.937123e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001763536 </span></span>
-<span><span class="co">##   State (Q ar): 0.1202156 </span></span>
+<span><span class="co">##   Observation (H): 0.05517486 </span></span>
+<span><span class="co">##   State (Q trend): 4.945287e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001859976 </span></span>
+<span><span class="co">##   State (Q ar): 0.1497545 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
-<span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.7579371</span></span></code></pre>
+<span><span class="co">##   Order of AR: 2 </span></span>
+<span><span class="co">##   Coefficient of AR1: 0.655325 </span></span>
+<span><span class="co">##   Coefficient of AR2: 0.07429946</span></span></code></pre>
 <p>This keeps the comparison focused on the additional information
 introduced by the simulated Kuroshio variables.</p>
 </div>
@@ -848,34 +867,35 @@ supplied through <code>exo_data</code>.</p>
 <code class="sourceCode R"><span><span class="va">res_with</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span></span>
 <span>  temp_data <span class="op">=</span> <span class="va">sst_sim</span>,</span>
 <span>  exo_data <span class="op">=</span> <span class="va">exo_kuroshio</span>,</span>
-<span>  ar_order <span class="op">=</span> <span class="fl">1</span></span>
+<span>  ar_order <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">res_with</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## tempssm summary</span></span>
 <span><span class="co">## -----------------</span></span>
 <span><span class="co">## Call:</span></span>
-<span><span class="co">## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 1)</span></span>
+<span><span class="co">## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 2)</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Model fit:</span></span>
 <span><span class="co">##   Likelihood type: marginal </span></span>
-<span><span class="co">##   Log-likelihood : -154.38 </span></span>
-<span><span class="co">##   k              : 7 </span></span>
+<span><span class="co">##   Log-likelihood : -154.36 </span></span>
+<span><span class="co">##   k              : 8 </span></span>
 <span><span class="co">##   Diffuse states : 15 </span></span>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.003184384 </span></span>
-<span><span class="co">##   State (Q trend): 4.132736e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0006818028 </span></span>
-<span><span class="co">##   State (Q ar): 0.1556755 </span></span>
+<span><span class="co">##   Observation (H): 0.02922748 </span></span>
+<span><span class="co">##   State (Q trend): 4.146963e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0006867528 </span></span>
+<span><span class="co">##   State (Q ar): 0.1157466 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
-<span><span class="co">##   Order of AR: 1 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.6585956 </span></span>
+<span><span class="co">##   Order of AR: 2 </span></span>
+<span><span class="co">##   Coefficient of AR1: 0.803867 </span></span>
+<span><span class="co">##   Coefficient of AR2: -0.1059014 </span></span>
 <span><span class="co">## Exogenous variable    kuroshio_a distance </span></span>
-<span><span class="co">## Estimated coefficient     0.5110124 -0.007070969 </span></span>
-<span><span class="co">## Lower CI  0.1658023 -0.00846763 </span></span>
-<span><span class="co">## Upper CI  0.8562225 -0.005674308</span></span></code></pre>
+<span><span class="co">## Estimated coefficient     0.5079595 -0.00707018 </span></span>
+<span><span class="co">## Lower CI  0.1635527 -0.008465811 </span></span>
+<span><span class="co">## Upper CI  0.8523663 -0.005674548</span></span></code></pre>
 <div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">resid_with</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res_with</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">resid_with</span><span class="op">)</span></span></code></pre></div>
@@ -886,25 +906,25 @@ supplied through <code>exo_data</code>.</p>
 <pre><code><span><span class="co">## <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
 <span><span class="co">##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite</span></span>
 <span><span class="co">##     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">1</span>    6.50     12    12     0.889     3.07   302        80      222</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">1</span>    6.47     12    12     0.891     3.06   302        80      222</span></span></code></pre>
 <p>The residual time-series plot shows that standardized recursive
 residuals are <code>NA</code> until 2004, corresponding to the period
 before the diffuse components from diffuse initialization have been
 resolved. The residual diagnostics for this model also do not indicate
-significant residual autocorrelation up to lag 12. Thus, AR(1) remains a
-reasonable working specification for both models considered here.</p>
+significant residual autocorrelation up to lag 12. Thus, the AR(2)
+specification remains acceptable for both models considered here.</p>
 <p>We then examine the estimated coefficients for the exogenous
 variables.</p>
 <div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exo_coef</span></span></code></pre></div>
-<pre><code><span><span class="co">##     Variable  Coefficient         lwr          upr</span></span>
-<span><span class="co">## 1 kuroshio_a  0.511012404  0.16580234  0.856222472</span></span>
-<span><span class="co">## 2   distance -0.007070969 -0.00846763 -0.005674308</span></span></code></pre>
+<pre><code><span><span class="co">##     Variable Coefficient          lwr          upr</span></span>
+<span><span class="co">## 1 kuroshio_a  0.50795948  0.163552654  0.852366306</span></span>
+<span><span class="co">## 2   distance -0.00707018 -0.008465811 -0.005674548</span></span></code></pre>
 <p>The coefficient table summarizes the estimated association between
 SST and each simulated Kuroshio variable after accounting for the latent
 components. In this fitted model, the estimated coefficient for
 <code>kuroshio_a</code> is 0.51 °C, with a 95% confidence interval from
-0.17 to 0.86. Because <code>kuroshio_a</code> is coded as a binary
+0.16 to 0.85. Because <code>kuroshio_a</code> is coded as a binary
 indicator, this coefficient can be read as the estimated SST difference
 between A-type and non-A-type conditions, conditional on the other model
 components and on <code>distance</code>.</p>
@@ -926,8 +946,8 @@ forward as a persistence assumption.</p>
 <div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pred_with_last_exo</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">res_with</span>, exo_strategy <span class="op">=</span> <span class="st">"last"</span><span class="op">)</span></span>
 <span><span class="va">pred_with_last_exo</span></span></code></pre></div>
-<pre><code><span><span class="co">##           Mar</span></span>
-<span><span class="co">## 2023 18.37914</span></span></code></pre>
+<pre><code><span><span class="co">##          Mar</span></span>
+<span><span class="co">## 2023 18.3759</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="compare-estimated-components">Compare Estimated Components<a class="anchor" aria-label="anchor" href="#compare-estimated-components"></a>
@@ -988,10 +1008,10 @@ models by overlaying their smoothed point estimates.</p>
 <span><span class="va">mean_drift_year_with</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">drift_with</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">mean_drift_year_without</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.08777083</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.08773294</span></span></code></pre>
 <div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mean_drift_year_with</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] 0.04924515</span></span></code></pre>
+<pre><code><span><span class="co">## [1] 0.04920045</span></span></code></pre>
 <p>The level components show a similar broad pattern in both models: SST
 declines from the beginning of the record to around 2008 and then
 increases toward the end of the period. However, the model with the
@@ -1006,7 +1026,7 @@ drift. This suggests that some short- to medium-term variation
 represented in the baseline model’s drift component is instead captured
 by the simulated exogenous variables.</p>
 <p>The estimated annual rate of SST change over the observation period
-is 0.0878 in the model without exogenous variables and 0.0492 in the
+is 0.0877 in the model without exogenous variables and 0.0492 in the
 model with exogenous variables.</p>
 <p>This simulated example illustrates that estimated long-term
 components can change when external drivers are included.</p>
@@ -1102,7 +1122,7 @@ guarantee of operational forecast improvement.</p>
 <span><span class="co"># ts_cv_run() evaluates folds sequentially by default.</span></span>
 <span> <span class="va">cv_without_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ts_cv_run.html">ts_cv_run</a></span><span class="op">(</span></span>
 <span>   <span class="va">folds_without</span>,</span>
-<span>   ar_order <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>   ar_order <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>   use_season <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span> <span class="op">)</span></span>
 <span></span>
@@ -1111,7 +1131,7 @@ guarantee of operational forecast improvement.</p>
 <span><span class="co"># but these suggested packages must be installed.</span></span>
 <span><span class="co">#cv_without_results &lt;- ts_cv_run(</span></span>
 <span><span class="co">#  folds_without,</span></span>
-<span><span class="co">#  ar_order = 1,</span></span>
+<span><span class="co">#  ar_order = 2,</span></span>
 <span><span class="co">#  use_season = TRUE,</span></span>
 <span><span class="co">#  parallel = TRUE,</span></span>
 <span><span class="co">#  workers = 2</span></span>
@@ -1130,7 +1150,7 @@ guarantee of operational forecast improvement.</p>
 <span></span>
 <span> <span class="va">cv_with_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ts_cv_run.html">ts_cv_run</a></span><span class="op">(</span></span>
 <span>   <span class="va">folds_with</span>,</span>
-<span>   ar_order <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>   ar_order <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>   use_season <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span> <span class="op">)</span></span>
 <span></span>
@@ -1139,7 +1159,7 @@ guarantee of operational forecast improvement.</p>
 <span><span class="co"># but these suggested packages must be installed.</span></span>
 <span><span class="co">#cv_with_results &lt;- ts_cv_run(</span></span>
 <span><span class="co">#  folds_with,</span></span>
-<span><span class="co">#  ar_order = 1,</span></span>
+<span><span class="co">#  ar_order = 2,</span></span>
 <span><span class="co">#  use_season = TRUE,</span></span>
 <span><span class="co">#  parallel = TRUE,</span></span>
 <span><span class="co">#  workers = 2</span></span>
@@ -1188,18 +1208,18 @@ guarantee of operational forecast improvement.</p>
 <td align="right">12</td>
 <td align="right">12</td>
 <td align="right">1</td>
-<td align="right">0.5375966</td>
-<td align="right">0.3137671</td>
-<td align="right">0.8001065</td>
+<td align="right">0.5346915</td>
+<td align="right">0.3120579</td>
+<td align="right">0.7954259</td>
 </tr>
 <tr class="even">
 <td align="left">With</td>
 <td align="right">12</td>
 <td align="right">12</td>
 <td align="right">1</td>
-<td align="right">0.5135379</td>
-<td align="right">0.2997564</td>
-<td align="right">0.7705862</td>
+<td align="right">0.5136672</td>
+<td align="right">0.2998310</td>
+<td align="right">0.7708534</td>
 </tr>
 </tbody>
 </table>
@@ -1251,7 +1271,7 @@ error is small compared with the dominant seasonal scale of variation in
 this data set, and the model can be considered practically accurate
 depending on the intended purpose.</p>
 <p>The model with the exogenous variables reduces the mean MAE by
-approximately 4.5% compared with the model without exogenous variables.
+approximately 3.9% compared with the model without exogenous variables.
 Similar improvements are also seen in the MASE metrics. This
 interpretation should be kept conditional on the tsCV setting used here,
 in which the test-period values of the simulated Kuroshio variables are

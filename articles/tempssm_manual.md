@@ -205,40 +205,48 @@ When a `ts` object containing temperature time-series data (here,
 `sst_sim`) is passed to the core function
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md),
 model construction and parameter estimation are performed together. The
-returned S3 object of class `tempssm` (here, `res_ar1`) stores the
+returned S3 object of class `tempssm` (here, `res_base`) stores the
 filtering and smoothing estimates, as well as the constructed model and
-input data. By default,
-[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
-fits a first-order autoregressive model.
+input data.
+
+The simulated SST series used in this manual was generated under an
+AR(2) setting based on the original analysis of Baba et al. (2024). We
+therefore use an AR(2) specification as the baseline model in this
+detailed example. This is not a general recommendation that AR(2) should
+always be preferred. When such prior information is unavailable, a
+practical workflow is to start from the default AR(1) specification and
+then examine AR(2) or higher-order alternatives through residual
+diagnostics and sensitivity checks.
 
 ``` r
 
-# model with first-order autoregressive component
-res_ar1 <- tempssm(sst_sim) # (ar_order=1: default)
-summary(res_ar1)
+# baseline model with a second-order autoregressive component
+res_base <- tempssm(sst_sim, ar_order = 2)
+summary(res_base)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim)
+    ## tempssm(temp_data = sst_sim, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
     ##   Log-likelihood : -198.19 
-    ##   k              : 5 
+    ##   k              : 6 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
-    ##   State (Q ar): 0.1202156 
+    ##   Observation (H): 0.05517486 
+    ##   State (Q trend): 4.945287e-06 
+    ##   State (Q season): 0.0001859976 
+    ##   State (Q ar): 0.1497545 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.7579371
+    ##   Order of AR: 2 
+    ##   Coefficient of AR1: 0.655325 
+    ##   Coefficient of AR2: 0.07429946
 
 From the summary output, confirm that the model has converged
 (`Converged: TRUE`). The output also reports the number of parameters
@@ -253,26 +261,26 @@ terms are process error variances for the latent components: `Q trend`
 controls stochastic variation in the long-term trend, `Q season`
 controls variation in the seasonal component, and the autoregressive
 process variance controls variation in the short-term autoregressive
-component. The coefficient `AR1` represents first-order autoregressive
-dependence in that short-term component.
+component. The `AR` coefficients represent serial dependence in that
+short-term component.
 
 The log-likelihood and parameter count can also be extracted directly
 with [`logLik()`](https://rdrr.io/r/stats/logLik.html).
 
 ``` r
 
-ll <- logLik(res_ar1)
+ll <- logLik(res_base)
 ll
 ```
 
-    ## 'log Lik.' -198.1929 (df=5)
+    ## 'log Lik.' -198.1878 (df=6)
 
 ``` r
 
 attr(ll, "df") # number of parameters
 ```
 
-    ## [1] 5
+    ## [1] 6
 
 By default,
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
@@ -297,12 +305,12 @@ seasonal variation, and autoregressive dependence.
 ``` r
 
 # plot all components at once
-plot(res_ar1)
+plot(res_base)
 ```
 
 ![](tempssm_manual_files/figure-html/unnamed-chunk-7-1.png)
 
-    ## [1] 0.08777083
+    ## [1] 0.08773294
 
 The long-term trend in the upper-left panel suggests that SST decreased
 during the first part of the study period and then increased after
@@ -324,10 +332,10 @@ components can be selected with the `component` argument.
 ``` r
 
 # extract individual component plots
-plt_level <- plot_tempssm_components(res_ar1, component = "level")
-plt_drift <- plot_tempssm_components(res_ar1, component = "drift")
-plt_season <- plot_tempssm_components(res_ar1, component = "season")
-plt_ar <- plot_tempssm_components(res_ar1, component = "ar")
+plt_level <- plot_tempssm_components(res_base, component = "level")
+plt_drift <- plot_tempssm_components(res_base, component = "drift")
+plt_season <- plot_tempssm_components(res_base, component = "season")
+plt_ar <- plot_tempssm_components(res_base, component = "ar")
 ```
 
 #### Model Diagnostics
@@ -338,7 +346,7 @@ autocorrelation, residual distribution, and a Ljung-Box test.
 
 ``` r
 
-resid <- get_tempssm_residuals(res_ar1)
+resid <- get_tempssm_residuals(res_base)
 plot_tempssm_residuals(resid)
 ```
 
@@ -373,6 +381,12 @@ values therefore do not necessarily indicate that the fitted model
 failed at those time points. Rather, they indicate that comparable
 standardized recursive residuals are not defined until the diffuse
 effects have been resolved.
+
+For seasonal models, this can occur even when no exogenous variables are
+used. The seasonal states are initialized diffusely, and a full seasonal
+cycle is needed before comparable standardized recursive residuals are
+typically available. For monthly data with `frequency = 12`, the
+residuals for roughly the first year may therefore be `NA`.
 
 The `NA` values in standardized recursive residuals should not be
 interpreted as observations being omitted from likelihood evaluation.
@@ -414,7 +428,7 @@ print(diag)
     ## # A tibble: 1 × 8
     ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
     ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
-    ## 1    9.68     12    12     0.644     3.26   302        13      289
+    ## 1    9.61     12    12     0.650     3.26   302        13      289
 
 The `lb_stat`, `lb_lag`, and `lb_pvalue` columns correspond to the
 Ljung-Box test statistic, the lag used in the test, and the P-value. For
@@ -438,8 +452,8 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
-    ## 1 lag 12    9.68     12     0.644     3.26
-    ## 2 lag 24   19.5      24     0.725     3.26
+    ## 1 lag 12    9.61     12     0.650     3.26
+    ## 2 lag 24   19.4      24     0.729     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
 
 In this example, extending the Ljung-Box diagnostic to lags 24 and 36
@@ -450,108 +464,112 @@ remaining temporal structure.
 
 #### Examine the Autoregressive Order
 
-This manual uses the default AR(1) specification as the working model.
-The autoregressive component absorbs short-term serial dependence not
-represented by the level, drift, and seasonal components. A higher AR
-order should be considered when residual diagnostics suggest that
-notable autocorrelation remains, rather than treated as an automatic
-improvement.
+This manual uses AR(2) as the baseline specification because the
+simulated SST series was generated under an AR(2) setting informed by
+Baba et al. (2024). The autoregressive component absorbs short-term
+serial dependence not represented by the level, drift, and seasonal
+components.
 
-For example, if residual autocorrelation remains after fitting the AR(1)
-model, users can fit an AR(2) model and repeat the same diagnostics.
+The choice of AR order should still be checked against diagnostics. As a
+sensitivity check, we also fit an AR(1) model and repeat the same
+residual diagnostics. In applications without prior information about
+the AR structure, AR(1) is a reasonable starting point, and higher-order
+alternatives such as AR(2) can be examined when residual autocorrelation
+remains.
 
 ``` r
 
-# Optional sensitivity check with a second-order autoregressive component
-res_ar2 <- tempssm(sst_sim, ar_order = 2)
-summary(res_ar2)
+# Optional sensitivity check with a first-order autoregressive component
+res_ar1 <- tempssm(sst_sim, ar_order = 1)
+summary(res_ar1)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim, ar_order = 2)
+    ## tempssm(temp_data = sst_sim, ar_order = 1)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
     ##   Log-likelihood : -198.19 
-    ##   k              : 6 
+    ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.05517486 
-    ##   State (Q trend): 4.945287e-06 
-    ##   State (Q season): 0.0001859976 
-    ##   State (Q ar): 0.1497545 
+    ##   Observation (H): 0.07496413 
+    ##   State (Q trend): 4.937123e-06 
+    ##   State (Q season): 0.0001763536 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 2 
-    ##   Coefficient of AR1: 0.655325 
-    ##   Coefficient of AR2: 0.07429946
+    ##   Order of AR: 1 
+    ##   Coefficient of AR1: 0.7579371
 
 ``` r
 
-resid_ar2 <- get_tempssm_residuals(res_ar2)
-plot_tempssm_residuals(resid_ar2)
+resid_ar1 <- get_tempssm_residuals(res_ar1)
+plot_tempssm_residuals(resid_ar1)
 ```
 
 ![](tempssm_manual_files/figure-html/unnamed-chunk-13-1.png)
 
 ``` r
 
-diag_lag12_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 12)
-diag_lag24_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 24)
-diag_lag36_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 36)
-diag_lags_ar2 <- rbind(diag_lag12_ar2, diag_lag24_ar2, diag_lag36_ar2)
-diag_lags_ar2$check <- c("lag 12", "lag 24", "lag 36")
-diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
+diag_lag12_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 12)
+diag_lag24_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 24)
+diag_lag36_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 36)
+diag_lags_ar1 <- rbind(diag_lag12_ar1, diag_lag24_ar1, diag_lag36_ar1)
+diag_lags_ar1$check <- c("lag 12", "lag 24", "lag 36")
+diag_lags_ar1[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ```
 
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
-    ## 1 lag 12    9.61     12     0.650     3.26
-    ## 2 lag 24   19.4      24     0.729     3.26
+    ## 1 lag 12    9.68     12     0.644     3.26
+    ## 2 lag 24   19.5      24     0.725     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
 
-In this example, the AR(2) diagnostics are similar to those from the
-AR(1) model, so we proceed with AR(1) as the baseline specification.
+In this example, the AR(1) diagnostics are broadly similar to those from
+the AR(2) baseline model. We therefore proceed with AR(2), reflecting
+the simulation setting, while noting that the main component patterns
+are not highly sensitive to this AR-order choice in this example.
 
 #### Extract Estimated Components
 
 The fitted `tempssm` object contains smoothed state estimates returned
-by `KFAS`. The matrix `res_ar1$kfs$alphahat` stores the level, drift,
+by `KFAS`. The matrix `res_base$kfs$alphahat` stores the level, drift,
 seasonal states, and autoregressive state.
 
 ``` r
 
 # Smoothing estimates
-alpha_hat <- res_ar1$kfs$alphahat
+alpha_hat <- res_base$kfs$alphahat
 head(alpha_hat)
 ```
 
     ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553991
-    ## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451
-    ## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344
-    ## Apr 1998 18.60118 -0.01911004 -2.0508949 -2.8244535 -5.0256252 -2.0428374
-    ## May 1998 18.58207 -0.01914416  0.2882283 -2.0508949 -2.8244535 -5.0256252
-    ## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535
+    ## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189075  0.5624220  0.9561047
+    ## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189075  0.5624220
+    ## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189075
+    ## Apr 1998 18.60145 -0.01913228 -2.0500556 -2.8254806 -5.0255618 -2.0423835
+    ## May 1998 18.58232 -0.01916624  0.2885088 -2.0500556 -2.8254806 -5.0255618
+    ## Jun 1998 18.56316 -0.01920803  1.9920043  0.2885088 -2.0500556 -2.8254806
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
-    ## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949
-    ## Feb 1998  0.9553991  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283
-    ## Mar 1998  0.5642451  0.9553991  1.6282639  4.9410126  2.4937014   1.9925949
-    ## Apr 1998 -0.9196344  0.5642451  0.9553991  1.6282639  4.9410126   2.4937014
-    ## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553991  1.6282639   4.9410126
-    ## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553991   1.6282639
-    ##          sea_dummy11     arima1
-    ## Jan 1998  -2.8244535 -0.2178663
-    ## Feb 1998  -2.0508949  0.1519894
-    ## Mar 1998   0.2882283  0.4187225
-    ## Apr 1998   1.9925949  0.2408083
-    ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167732
+    ## Jan 1998  1.6287761  4.9406562  2.4939170  1.9920043  0.2885088  -2.0500556
+    ## Feb 1998  0.9561047  1.6287761  4.9406562  2.4939170  1.9920043   0.2885088
+    ## Mar 1998  0.5624220  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043
+    ## Apr 1998 -0.9189075  0.5624220  0.9561047  1.6287761  4.9406562   2.4939170
+    ## May 1998 -2.0423835 -0.9189075  0.5624220  0.9561047  1.6287761   4.9406562
+    ## Jun 1998 -5.0255618 -2.0423835 -0.9189075  0.5624220  0.9561047   1.6287761
+    ##          sea_dummy11     arima1      arima2
+    ## Jan 1998  -2.8254806 -0.2729565 -0.01238173
+    ## Feb 1998  -2.0500556  0.1645898 -0.02028052
+    ## Mar 1998   0.2885088  0.4780657  0.01222893
+    ## Apr 1998   1.9920043  0.1615218  0.03552002
+    ## May 1998   2.4939170  0.7484155  0.01200098
+    ## Jun 1998   4.9406562  1.0843954  0.05560686
 
 For routine use, helper functions extract individual components as `ts`
 objects with the original time index. The level component represents the
@@ -561,19 +579,19 @@ represents its rate of change per year.
 ``` r
 
 # Smoothing estimate of level component
-level_ts <- get_level_ts(res_ar1)
+level_ts <- get_level_ts(res_base)
 
 # Smoothing estimate of drift component
-drift_ts <- get_drift_ts(res_ar1)
+drift_ts <- get_drift_ts(res_base)
 
 # Average drift rate per year across the full period
 mean_drift_year <- mean(drift_ts) 
 print(mean_drift_year)
 ```
 
-    ## [1] 0.08777083
+    ## [1] 0.08773294
 
-The average annual rate of SST change was estimated to be 0.0878 °C over
+The average annual rate of SST change was estimated to be 0.0877 °C over
 the full period. Because the estimated drift changes sign over time,
 this value should be interpreted as a model-based summary of the whole
 study period rather than as a constant warming rate.
@@ -589,27 +607,27 @@ seasonal, and autoregressive components.
 
 ``` r
 
-pred_1 <- predict(res_ar1)
+pred_1 <- predict(res_base)
 pred_1
 ```
 
     ##           Mar
-    ## 2023 18.33035
+    ## 2023 18.32948
 
 Predictions for multiple future time points can be requested by setting
 the `n.ahead` argument.
 
 ``` r
 
-pred_12 <- predict(res_ar1, n.ahead = 12)
+pred_12 <- predict(res_base, n.ahead = 12)
 pred_12
 ```
 
     ##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug
-    ## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694
-    ## 2024 19.09319 16.16926                                                      
+    ## 2023                   18.32948 18.96862 21.33573 23.08507 23.51601 26.03613
+    ## 2024 19.09047 16.16883                                                      
     ##           Sep      Oct      Nov      Dec
-    ## 2023 22.69098 22.00902 21.74806 20.19190
+    ## 2023 22.68867 22.00620 21.74783 20.19009
     ## 2024
 
 Prediction uncertainty can also be returned by setting the `interval`
@@ -623,7 +641,7 @@ level is controlled by the `level` argument and defaults to 0.95.
 ``` r
 
 pred_12_pi <- predict(
-  res_ar1,
+  res_base,
   n.ahead = 12,
   interval = "prediction",
   level = 0.95
@@ -633,18 +651,18 @@ pred_12_pi
 ```
 
     ##               fit      lwr      upr
-    ## Mar 2023 18.33035 17.35029 19.31042
-    ## Apr 2023 18.96985 17.85360 20.08610
-    ## May 2023 21.33710 20.13453 22.53967
-    ## Jun 2023 23.08522 21.82424 24.34619
-    ## Jul 2023 23.51856 22.21551 24.82161
-    ## Aug 2023 26.03694 24.70183 27.37204
-    ## Sep 2023 22.69098 21.33016 24.05179
-    ## Oct 2023 22.00902 20.62664 23.39141
-    ## Nov 2023 21.74806 20.34682 23.14929
-    ## Dec 2023 20.19190 18.77359 21.61020
-    ## Jan 2024 19.09319 17.65904 20.52734
-    ## Feb 2024 16.16926 14.72135 17.61717
+    ## Mar 2023 18.32948 17.34926 19.30971
+    ## Apr 2023 18.96862 17.85289 20.08435
+    ## May 2023 21.33573 20.13239 22.53907
+    ## Jun 2023 23.08507 21.82315 24.34699
+    ## Jul 2023 23.51601 22.21214 24.81988
+    ## Aug 2023 26.03613 24.70044 27.37183
+    ## Sep 2023 22.68867 21.32754 24.04981
+    ## Oct 2023 22.00620 20.62375 23.38865
+    ## Nov 2023 21.74783 20.34675 23.14890
+    ## Dec 2023 20.19009 18.77214 21.60804
+    ## Jan 2024 19.09047 17.65685 20.52409
+    ## Feb 2024 16.16883 14.72164 17.61601
 
 These predictions should be interpreted as model-based extrapolations
 rather than definitive forecasts. Uncertainty generally increases as the
@@ -812,36 +830,37 @@ unobserved responses during Kalman filtering and smoothing.
 #### Reuse the Baseline Model
 
 Exercise II uses the same response series as Exercise I, so we reuse the
-previously fitted AR(1) model as the reference model without exogenous
-variables.
+previously fitted AR(2) baseline model as the reference model without
+exogenous variables.
 
 ``` r
 
-res_without <- res_ar1
+res_without <- res_base
 summary(res_without)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim)
+    ## tempssm(temp_data = sst_sim, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
     ##   Log-likelihood : -198.19 
-    ##   k              : 5 
+    ##   k              : 6 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
-    ##   State (Q ar): 0.1202156 
+    ##   Observation (H): 0.05517486 
+    ##   State (Q trend): 4.945287e-06 
+    ##   State (Q season): 0.0001859976 
+    ##   State (Q ar): 0.1497545 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.7579371
+    ##   Order of AR: 2 
+    ##   Coefficient of AR1: 0.655325 
+    ##   Coefficient of AR2: 0.07429946
 
 This keeps the comparison focused on the additional information
 introduced by the simulated Kuroshio variables.
@@ -920,7 +939,7 @@ through `exo_data`.
 res_with <- tempssm(
   temp_data = sst_sim,
   exo_data = exo_kuroshio,
-  ar_order = 1
+  ar_order = 2
 )
 summary(res_with)
 ```
@@ -928,28 +947,29 @@ summary(res_with)
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 1)
+    ## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -154.38 
-    ##   k              : 7 
+    ##   Log-likelihood : -154.36 
+    ##   k              : 8 
     ##   Diffuse states : 15 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.003184384 
-    ##   State (Q trend): 4.132736e-06 
-    ##   State (Q season): 0.0006818028 
-    ##   State (Q ar): 0.1556755 
+    ##   Observation (H): 0.02922748 
+    ##   State (Q trend): 4.146963e-06 
+    ##   State (Q season): 0.0006867528 
+    ##   State (Q ar): 0.1157466 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6585956 
+    ##   Order of AR: 2 
+    ##   Coefficient of AR1: 0.803867 
+    ##   Coefficient of AR2: -0.1059014 
     ## Exogenous variable    kuroshio_a distance 
-    ## Estimated coefficient     0.5110124 -0.007070969 
-    ## Lower CI  0.1658023 -0.00846763 
-    ## Upper CI  0.8562225 -0.005674308
+    ## Estimated coefficient     0.5079595 -0.00707018 
+    ## Lower CI  0.1635527 -0.008465811 
+    ## Upper CI  0.8523663 -0.005674548
 
 ``` r
 
@@ -968,14 +988,14 @@ print(diag_res_with)
     ## # A tibble: 1 × 8
     ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
     ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
-    ## 1    6.50     12    12     0.889     3.07   302        80      222
+    ## 1    6.47     12    12     0.891     3.06   302        80      222
 
 The residual time-series plot shows that standardized recursive
 residuals are `NA` until 2004, corresponding to the period before the
 diffuse components from diffuse initialization have been resolved. The
 residual diagnostics for this model also do not indicate significant
-residual autocorrelation up to lag 12. Thus, AR(1) remains a reasonable
-working specification for both models considered here.
+residual autocorrelation up to lag 12. Thus, the AR(2) specification
+remains acceptable for both models considered here.
 
 We then examine the estimated coefficients for the exogenous variables.
 
@@ -984,15 +1004,15 @@ We then examine the estimated coefficients for the exogenous variables.
 exo_coef
 ```
 
-    ##     Variable  Coefficient         lwr          upr
-    ## 1 kuroshio_a  0.511012404  0.16580234  0.856222472
-    ## 2   distance -0.007070969 -0.00846763 -0.005674308
+    ##     Variable Coefficient          lwr          upr
+    ## 1 kuroshio_a  0.50795948  0.163552654  0.852366306
+    ## 2   distance -0.00707018 -0.008465811 -0.005674548
 
 The coefficient table summarizes the estimated association between SST
 and each simulated Kuroshio variable after accounting for the latent
 components. In this fitted model, the estimated coefficient for
-`kuroshio_a` is 0.51 °C, with a 95% confidence interval from 0.17 to
-0.86. Because `kuroshio_a` is coded as a binary indicator, this
+`kuroshio_a` is 0.51 °C, with a 95% confidence interval from 0.16 to
+0.85. Because `kuroshio_a` is coded as a binary indicator, this
 coefficient can be read as the estimated SST difference between A-type
 and non-A-type conditions, conditional on the other model components and
 on `distance`.
@@ -1021,8 +1041,8 @@ pred_with_last_exo <- predict(res_with, exo_strategy = "last")
 pred_with_last_exo
 ```
 
-    ##           Mar
-    ## 2023 18.37914
+    ##          Mar
+    ## 2023 18.3759
 
 #### Compare Estimated Components
 
@@ -1090,14 +1110,14 @@ mean_drift_year_with <- mean(drift_with, na.rm = TRUE)
 mean_drift_year_without
 ```
 
-    ## [1] 0.08777083
+    ## [1] 0.08773294
 
 ``` r
 
 mean_drift_year_with
 ```
 
-    ## [1] 0.04924515
+    ## [1] 0.04920045
 
 The level components show a similar broad pattern in both models: SST
 declines from the beginning of the record to around 2008 and then
@@ -1115,7 +1135,7 @@ the baseline model’s drift component is instead captured by the
 simulated exogenous variables.
 
 The estimated annual rate of SST change over the observation period is
-0.0878 in the model without exogenous variables and 0.0492 in the model
+0.0877 in the model without exogenous variables and 0.0492 in the model
 with exogenous variables.
 
 This simulated example illustrates that estimated long-term components
@@ -1232,7 +1252,7 @@ end(folds_without[[1]]$test_ts)
 # ts_cv_run() evaluates folds sequentially by default.
  cv_without_results <- ts_cv_run(
    folds_without,
-   ar_order = 1,
+   ar_order = 2,
    use_season = TRUE
  )
 
@@ -1241,7 +1261,7 @@ end(folds_without[[1]]$test_ts)
 # but these suggested packages must be installed.
 #cv_without_results <- ts_cv_run(
 #  folds_without,
-#  ar_order = 1,
+#  ar_order = 2,
 #  use_season = TRUE,
 #  parallel = TRUE,
 #  workers = 2
@@ -1260,7 +1280,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 
  cv_with_results <- ts_cv_run(
    folds_with,
-   ar_order = 1,
+   ar_order = 2,
    use_season = TRUE
  )
 
@@ -1269,7 +1289,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 # but these suggested packages must be installed.
 #cv_with_results <- ts_cv_run(
 #  folds_with,
-#  ar_order = 1,
+#  ar_order = 2,
 #  use_season = TRUE,
 #  parallel = TRUE,
 #  workers = 2
@@ -1297,8 +1317,8 @@ cv_comparison %>% knitr::kable()
 
 | model | n_folds | converged_n | converged_rate | mean_MAE | mean_MASE_naive | mean_MASE_seasonal |
 |:---|---:|---:|---:|---:|---:|---:|
-| Without | 12 | 12 | 1 | 0.5375966 | 0.3137671 | 0.8001065 |
-| With | 12 | 12 | 1 | 0.5135379 | 0.2997564 | 0.7705862 |
+| Without | 12 | 12 | 1 | 0.5346915 | 0.3120579 | 0.7954259 |
+| With | 12 | 12 | 1 | 0.5136672 | 0.2998310 | 0.7708534 |
 
 ``` r
 
@@ -1354,7 +1374,7 @@ data set, and the model can be considered practically accurate depending
 on the intended purpose.
 
 The model with the exogenous variables reduces the mean MAE by
-approximately 4.5% compared with the model without exogenous variables.
+approximately 3.9% compared with the model without exogenous variables.
 Similar improvements are also seen in the MASE metrics. This
 interpretation should be kept conditional on the tsCV setting used here,
 in which the test-period values of the simulated Kuroshio variables are

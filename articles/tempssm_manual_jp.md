@@ -200,38 +200,45 @@ SST の全体平均は約 18.2 °C であり、
 パラメーター推定までが一挙に処理されます。
 返り値として、フィルタリング推定値、平滑化推定値などの結果に加えて
 、構築されたモデルや入力データなどがS3クラスの`tempssm`オブジェクト
-（ここでは `res_ar1`
-）に格納されます。デフォルトでは[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)は1次の
-自己相関回帰モデルをあてはめます。
+（ここでは `res_base` ）に格納されます。
+
+本マニュアルで用いるシミュレーション SST 系列は、馬場ら (2024) の解析に
+基づき、AR(2) の設定で生成されています。そのため、この詳細例では AR(2)
+を ベースラインモデルとして用います。ただし、これは常に AR(2)
+を推奨するという
+意味ではありません。このような事前情報がない場合には、デフォルトの AR(1)
+から 始め、残差診断や感度分析を通じて AR(2)
+以上の次数を検討する流れが実用的です。
 
 ``` r
 
-# model with first-order autoregressive component
-res_ar1 <- tempssm(sst_sim) # (ar_order=1: default)
-summary(res_ar1)
+# baseline model with a second-order autoregressive component
+res_base <- tempssm(sst_sim, ar_order = 2)
+summary(res_base)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim)
+    ## tempssm(temp_data = sst_sim, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
     ##   Log-likelihood : -198.19 
-    ##   k              : 5 
+    ##   k              : 6 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
-    ##   State (Q ar): 0.1202156 
+    ##   Observation (H): 0.05517486 
+    ##   State (Q trend): 4.945287e-06 
+    ##   State (Q season): 0.0001859976 
+    ##   State (Q ar): 0.1497545 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.7579371
+    ##   Order of AR: 2 
+    ##   Coefficient of AR1: 0.655325 
+    ##   Coefficient of AR2: 0.07429946
 
 結果の要約から、モデルが収束したこと（Converged: TRUE)を確かめます。
 その他に統計量として、パラメーター数 (k)、対数尤度 (Log-likelihood)、
@@ -240,26 +247,26 @@ summary(res_ar1)
 自己回帰係数に対応します。`H` は観測誤差分散であり、潜在状態では
 説明されない観測温度系列の変動を表します。`Q` 系の項は各潜在成分の
 過程誤差分散です。`Q trend` は長期トレンド成分、`Q season` は季節成分、
-自己回帰成分の過程誤差分散は短期的な自己回帰成分の変動を表します。 `AR1`
-は、その短期成分における 1 次自己回帰依存性を表します。
+自己回帰成分の過程誤差分散は短期的な自己回帰成分の変動を表します。 `AR`
+係数は、その短期成分における系列依存性を表します。
 
 対数尤度と対応する推定パラメーター数は、[`logLik()`](https://rdrr.io/r/stats/logLik.html)
 を用いて推定済みの `tempssm` オブジェクトから直接取得できます。
 
 ``` r
 
-ll <- logLik(res_ar1)
+ll <- logLik(res_base)
 ll
 ```
 
-    ## 'log Lik.' -198.1929 (df=5)
+    ## 'log Lik.' -198.1878 (df=6)
 
 ``` r
 
 attr(ll, "df") # number of parameters
 ```
 
-    ## [1] 5
+    ## [1] 6
 
 [`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
 は、デフォルトでは KFAS の周辺尤度 (marginal likelihood) を用いて
@@ -289,12 +296,12 @@ AIC をデフォルトのモデル選択基準として提示することを避�
 ``` r
 
 # plot all components at once
-plot(res_ar1)
+plot(res_base)
 ```
 
 ![](tempssm_manual_jp_files/figure-html/unnamed-chunk-7-1.png)
 
-    ## [1] 0.08777083
+    ## [1] 0.08773294
 
 パネル左上の長期トレンドは、解析期間の前半に SST が低下し、2008 年前後
 以降に上昇するパターンを示しています。この例では、解析期間全体を通した
@@ -315,10 +322,10 @@ SST の平均的な年変化率は約 0.088 °C です。
 ``` r
 
 # extract individual component plots
-plt_level <- plot_tempssm_components(res_ar1, component = "level")
-plt_drift <- plot_tempssm_components(res_ar1, component = "drift")
-plt_season <- plot_tempssm_components(res_ar1, component = "season")
-plt_ar <- plot_tempssm_components(res_ar1, component = "ar")
+plt_level <- plot_tempssm_components(res_base, component = "level")
+plt_drift <- plot_tempssm_components(res_base, component = "drift")
+plt_season <- plot_tempssm_components(res_base, component = "season")
+plt_ar <- plot_tempssm_components(res_base, component = "ar")
 ```
 
 #### モデル診断
@@ -330,7 +337,7 @@ plt_ar <- plot_tempssm_components(res_ar1, component = "ar")
 
 ``` r
 
-resid <- get_tempssm_residuals(res_ar1)
+resid <- get_tempssm_residuals(res_base)
 plot_tempssm_residuals(resid)
 ```
 
@@ -364,6 +371,11 @@ plot_tempssm_residuals(resid)
 は、その時点でモデル推定が失敗した
 ことを直ちに意味するものではありません。むしろ、散漫成分が解消されるまで、
 比較可能な標準化再帰残差が得られないことを示しています。
+
+季節成分を含むモデルでは、外生変数を用いない場合でも、この現象が生じます。
+季節状態は散漫初期化されるため、比較可能な標準化再帰残差が得られるまでに、
+通常は少なくとも1周期分の情報が必要になります。そのため、`frequency = 12`
+の 月別データでは、最初の約1年分の残差が `NA` となる場合があります。
 
 標準化再帰残差の `NA` は、その観測値が対数尤度の計算から除外されたことを
 意味するものではありません。対数尤度は、KFAS によるカルマンフィルタの
@@ -402,7 +414,7 @@ print(diag)
     ## # A tibble: 1 × 8
     ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
     ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
-    ## 1    9.68     12    12     0.644     3.26   302        13      289
+    ## 1    9.61     12    12     0.650     3.26   302        13      289
 
 [`diagnose_residual_ts()`](https://akihirao.github.io/tempssm/reference/diagnose_residual_ts.md)
 の返り値のうち、`lb_stat`、`lb_lag`、`lb_pvalue` は それぞれ Ljung-Box
@@ -427,8 +439,8 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
-    ## 1 lag 12    9.68     12     0.644     3.26
-    ## 2 lag 24   19.5      24     0.725     3.26
+    ## 1 lag 12    9.61     12     0.650     3.26
+    ## 2 lag 24   19.4      24     0.729     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
 
 この例では、lag 24 および lag 36
@@ -440,78 +452,81 @@ diag_lags[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 
 #### 自己回帰（AR）次数の検討
 
-本マニュアルでは、[`tempssm()`](https://akihirao.github.io/tempssm/reference/tempssm.md)
-のデフォルトである AR(1) を作業モデルとして
+本マニュアルでは、シミュレーション SST 系列が馬場ら (2024) に基づく
+AR(2) 設定で生成されていることを踏まえ、AR(2) をベースライン仕様として
 用います。自己回帰成分は、潜在的な水準、ドリフト、季節成分では表現されない
-短期的な系列依存性を吸収するために組み込まれています。そのため、高いAR次数を
-自動的な改善として扱うのではなく、残差診断により自己相関が残っていると
-考えられる場合に、AR次数を増減させて検討する方針が適切です。
+短期的な系列依存性を吸収するために組み込まれています。
 
-例えば、AR(1) モデルを当てはめた後に残差自己相関が残る場合には、AR(2)
-モデルを 当てはめ、同じ残差診断を繰り返すことができます。
+ただし、AR次数の選択は残差診断とあわせて確認する必要があります。ここでは
+感度分析として AR(1) モデルも当てはめ、同じ残差診断を繰り返します。
+AR構造に関する事前情報がない応用例では、AR(1) から始め、残差自己相関が
+残る場合に AR(2) などの高次モデルを検討する流れが実用的です。
 
 ``` r
 
-# Optional sensitivity check with a second-order autoregressive component
-res_ar2 <- tempssm(sst_sim, ar_order = 2)
-summary(res_ar2)
+# Optional sensitivity check with a first-order autoregressive component
+res_ar1 <- tempssm(sst_sim, ar_order = 1)
+summary(res_ar1)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim, ar_order = 2)
+    ## tempssm(temp_data = sst_sim, ar_order = 1)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
     ##   Log-likelihood : -198.19 
-    ##   k              : 6 
+    ##   k              : 5 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.05517486 
-    ##   State (Q trend): 4.945287e-06 
-    ##   State (Q season): 0.0001859976 
-    ##   State (Q ar): 0.1497545 
+    ##   Observation (H): 0.07496413 
+    ##   State (Q trend): 4.937123e-06 
+    ##   State (Q season): 0.0001763536 
+    ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 2 
-    ##   Coefficient of AR1: 0.655325 
-    ##   Coefficient of AR2: 0.07429946
+    ##   Order of AR: 1 
+    ##   Coefficient of AR1: 0.7579371
 
 ``` r
 
-resid_ar2 <- get_tempssm_residuals(res_ar2)
-plot_tempssm_residuals(resid_ar2)
+resid_ar1 <- get_tempssm_residuals(res_ar1)
+plot_tempssm_residuals(resid_ar1)
 ```
 
 ![](tempssm_manual_jp_files/figure-html/unnamed-chunk-13-1.png)
 
 ``` r
 
-diag_lag12_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 12)
-diag_lag24_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 24)
-diag_lag36_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 36)
-diag_lags_ar2 <- rbind(diag_lag12_ar2, diag_lag24_ar2, diag_lag36_ar2)
-diag_lags_ar2$check <- c("lag 12", "lag 24", "lag 36")
-diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
+diag_lag12_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 12)
+diag_lag24_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 24)
+diag_lag36_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 36)
+diag_lags_ar1 <- rbind(diag_lag12_ar1, diag_lag24_ar1, diag_lag36_ar1)
+diag_lags_ar1$check <- c("lag 12", "lag 24", "lag 36")
+diag_lags_ar1[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ```
 
     ## # A tibble: 3 × 5
     ##   check  lb_stat lb_lag lb_pvalue kurtosis
     ##   <chr>    <dbl>  <int>     <dbl>    <dbl>
-    ## 1 lag 12    9.61     12     0.650     3.26
-    ## 2 lag 24   19.4      24     0.729     3.26
+    ## 1 lag 12    9.68     12     0.644     3.26
+    ## 2 lag 24   19.5      24     0.725     3.26
     ## 3 lag 36   27.9      36     0.831     3.26
 
-この例では、AR(2) モデルの診断結果は AR(1) モデルとよく似ているため、
-低次のAR(1) をベースラインの仕様として用います。
+この例では、AR(1) モデルの診断結果は AR(2)
+のベースラインモデルと大きくは
+異なりません。そのため、主な成分パターンはこの
+AR次数の選択に強く依存して
+いないことを確認しつつ、シミュレーション設定を反映して AR(2)
+を用います。
 
 #### 推定されたパラメータと潜在状態の成分
 
 推定済みの `tempssm` オブジェクトには、`KFAS`
-から返された平滑化状態推定値が 格納されています。`res_ar1$kfs$alphahat`
+から返された平滑化状態推定値が 格納されています。`res_base$kfs$alphahat`
 は、レベル、ドリフト、季節状態、
 自己回帰状態などの潜在状態推定値を含む行列です。この行列を確認すると、
 モデル内部で状態がどのように表現されているかを把握できます。
@@ -519,31 +534,31 @@ diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ``` r
 
 # Smoothing estimates
-alpha_hat <- res_ar1$kfs$alphahat
+alpha_hat <- res_base$kfs$alphahat
 head(alpha_hat)
 ```
 
     ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 1998 18.65840 -0.01905354 -2.0428374 -0.9196344  0.5642451  0.9553991
-    ## Feb 1998 18.63934 -0.01906722 -5.0256252 -2.0428374 -0.9196344  0.5642451
-    ## Mar 1998 18.62028 -0.01909100 -2.8244535 -5.0256252 -2.0428374 -0.9196344
-    ## Apr 1998 18.60118 -0.01911004 -2.0508949 -2.8244535 -5.0256252 -2.0428374
-    ## May 1998 18.58207 -0.01914416  0.2882283 -2.0508949 -2.8244535 -5.0256252
-    ## Jun 1998 18.56293 -0.01918604  1.9925949  0.2882283 -2.0508949 -2.8244535
+    ## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189075  0.5624220  0.9561047
+    ## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189075  0.5624220
+    ## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189075
+    ## Apr 1998 18.60145 -0.01913228 -2.0500556 -2.8254806 -5.0255618 -2.0423835
+    ## May 1998 18.58232 -0.01916624  0.2885088 -2.0500556 -2.8254806 -5.0255618
+    ## Jun 1998 18.56316 -0.01920803  1.9920043  0.2885088 -2.0500556 -2.8254806
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
-    ## Jan 1998  1.6282639  4.9410126  2.4937014  1.9925949  0.2882283  -2.0508949
-    ## Feb 1998  0.9553991  1.6282639  4.9410126  2.4937014  1.9925949   0.2882283
-    ## Mar 1998  0.5642451  0.9553991  1.6282639  4.9410126  2.4937014   1.9925949
-    ## Apr 1998 -0.9196344  0.5642451  0.9553991  1.6282639  4.9410126   2.4937014
-    ## May 1998 -2.0428374 -0.9196344  0.5642451  0.9553991  1.6282639   4.9410126
-    ## Jun 1998 -5.0256252 -2.0428374 -0.9196344  0.5642451  0.9553991   1.6282639
-    ##          sea_dummy11     arima1
-    ## Jan 1998  -2.8244535 -0.2178663
-    ## Feb 1998  -2.0508949  0.1519894
-    ## Mar 1998   0.2882283  0.4187225
-    ## Apr 1998   1.9925949  0.2408083
-    ## May 1998   2.4937014  0.7185730
-    ## Jun 1998   4.9410126  1.0167732
+    ## Jan 1998  1.6287761  4.9406562  2.4939170  1.9920043  0.2885088  -2.0500556
+    ## Feb 1998  0.9561047  1.6287761  4.9406562  2.4939170  1.9920043   0.2885088
+    ## Mar 1998  0.5624220  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043
+    ## Apr 1998 -0.9189075  0.5624220  0.9561047  1.6287761  4.9406562   2.4939170
+    ## May 1998 -2.0423835 -0.9189075  0.5624220  0.9561047  1.6287761   4.9406562
+    ## Jun 1998 -5.0255618 -2.0423835 -0.9189075  0.5624220  0.9561047   1.6287761
+    ##          sea_dummy11     arima1      arima2
+    ## Jan 1998  -2.8254806 -0.2729565 -0.01238173
+    ## Feb 1998  -2.0500556  0.1645898 -0.02028052
+    ## Mar 1998   0.2885088  0.4780657  0.01222893
+    ## Apr 1998   1.9920043  0.1615218  0.03552002
+    ## May 1998   2.4939170  0.7484155  0.01200098
+    ## Jun 1998   4.9406562  1.0843954  0.05560686
 
 通常の利用では、個別の成分を元の時系列インデックスを持つ `ts`
 オブジェクトとして
@@ -553,19 +568,19 @@ head(alpha_hat)
 ``` r
 
 # Smoothing estimate of level component
-level_ts <- get_level_ts(res_ar1)
+level_ts <- get_level_ts(res_base)
 
 # Smoothing estimate of drift component
-drift_ts <- get_drift_ts(res_ar1)
+drift_ts <- get_drift_ts(res_base)
 
 # Average drift rate per year across the full period
 mean_drift_year <- mean(drift_ts) 
 print(mean_drift_year)
 ```
 
-    ## [1] 0.08777083
+    ## [1] 0.08773294
 
-SST の平均的な年変化率は、全期間では 0.0878 °C
+SST の平均的な年変化率は、全期間では 0.0877 °C
 と推定されました。ただし、
 推定されたドリフトは時期によって符号が変化するため、この値は一定の上昇率ではなく、
 全期間を要約したモデルベースの指標として解釈します。
@@ -581,26 +596,26 @@ SST の平均的な年変化率は、全期間では 0.0878 °C
 
 ``` r
 
-pred_1 <- predict(res_ar1)
+pred_1 <- predict(res_base)
 pred_1
 ```
 
     ##           Mar
-    ## 2023 18.33035
+    ## 2023 18.32948
 
 複数時点先の予測値を取得したい場合には、`n.ahead` 引数を指定します。
 
 ``` r
 
-pred_12 <- predict(res_ar1, n.ahead = 12)
+pred_12 <- predict(res_base, n.ahead = 12)
 pred_12
 ```
 
     ##           Jan      Feb      Mar      Apr      May      Jun      Jul      Aug
-    ## 2023                   18.33035 18.96985 21.33710 23.08522 23.51856 26.03694
-    ## 2024 19.09319 16.16926                                                      
+    ## 2023                   18.32948 18.96862 21.33573 23.08507 23.51601 26.03613
+    ## 2024 19.09047 16.16883                                                      
     ##           Sep      Oct      Nov      Dec
-    ## 2023 22.69098 22.00902 21.74806 20.19190
+    ## 2023 22.68867 22.00620 21.74783 20.19009
     ## 2024
 
 予測に伴う不確実性は、`interval` 引数を指定することで取得できます。
@@ -617,7 +632,7 @@ interval の方が広くなります。信頼水準は `level` 引数で指定�
 ``` r
 
 pred_12_pi <- predict(
-  res_ar1,
+  res_base,
   n.ahead = 12,
   interval = "prediction",
   level = 0.95
@@ -627,18 +642,18 @@ pred_12_pi
 ```
 
     ##               fit      lwr      upr
-    ## Mar 2023 18.33035 17.35029 19.31042
-    ## Apr 2023 18.96985 17.85360 20.08610
-    ## May 2023 21.33710 20.13453 22.53967
-    ## Jun 2023 23.08522 21.82424 24.34619
-    ## Jul 2023 23.51856 22.21551 24.82161
-    ## Aug 2023 26.03694 24.70183 27.37204
-    ## Sep 2023 22.69098 21.33016 24.05179
-    ## Oct 2023 22.00902 20.62664 23.39141
-    ## Nov 2023 21.74806 20.34682 23.14929
-    ## Dec 2023 20.19190 18.77359 21.61020
-    ## Jan 2024 19.09319 17.65904 20.52734
-    ## Feb 2024 16.16926 14.72135 17.61717
+    ## Mar 2023 18.32948 17.34926 19.30971
+    ## Apr 2023 18.96862 17.85289 20.08435
+    ## May 2023 21.33573 20.13239 22.53907
+    ## Jun 2023 23.08507 21.82315 24.34699
+    ## Jul 2023 23.51601 22.21214 24.81988
+    ## Aug 2023 26.03613 24.70044 27.37183
+    ## Sep 2023 22.68867 21.32754 24.04981
+    ## Oct 2023 22.00620 20.62375 23.38865
+    ## Nov 2023 21.74783 20.34675 23.14890
+    ## Dec 2023 20.19009 18.77214 21.60804
+    ## Jan 2024 19.09047 17.65685 20.52409
+    ## Feb 2024 16.16883 14.72164 17.61601
 
 これらの予測値は、確定的な将来予測ではなく、モデルに基づく外挿として
 解釈してください。一般に、予測期間が長くなるほど不確実性は大きくなり、
@@ -802,35 +817,36 @@ plt_sst_exo + plt_kuroshio_a + plt_distance +
 
 演習 II では演習 I
 と同じ応答系列を用いるため、外生変数なしの参照モデルとして、
-既に当てはめた AR(1) モデルを再利用します。
+既に当てはめた AR(2) のベースラインモデルを再利用します。
 
 ``` r
 
-res_without <- res_ar1
+res_without <- res_base
 summary(res_without)
 ```
 
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim)
+    ## tempssm(temp_data = sst_sim, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
     ##   Log-likelihood : -198.19 
-    ##   k              : 5 
+    ##   k              : 6 
     ##   Diffuse states : 13 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
-    ##   State (Q ar): 0.1202156 
+    ##   Observation (H): 0.05517486 
+    ##   State (Q trend): 4.945287e-06 
+    ##   State (Q season): 0.0001859976 
+    ##   State (Q ar): 0.1497545 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.7579371
+    ##   Order of AR: 2 
+    ##   Coefficient of AR1: 0.655325 
+    ##   Coefficient of AR2: 0.07429946
 
 これにより、比較の焦点をシミュレーション黒潮変数によって追加される情報に
 絞ることができます。
@@ -908,7 +924,7 @@ sum(is.na(exo_kuroshio))
 res_with <- tempssm(
   temp_data = sst_sim,
   exo_data = exo_kuroshio,
-  ar_order = 1
+  ar_order = 2
 )
 summary(res_with)
 ```
@@ -916,28 +932,29 @@ summary(res_with)
     ## tempssm summary
     ## -----------------
     ## Call:
-    ## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 1)
+    ## tempssm(temp_data = sst_sim, exo_data = exo_kuroshio, ar_order = 2)
     ## 
     ## Model fit:
     ##   Likelihood type: marginal 
-    ##   Log-likelihood : -154.38 
-    ##   k              : 7 
+    ##   Log-likelihood : -154.36 
+    ##   k              : 8 
     ##   Diffuse states : 15 
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.003184384 
-    ##   State (Q trend): 4.132736e-06 
-    ##   State (Q season): 0.0006818028 
-    ##   State (Q ar): 0.1556755 
+    ##   Observation (H): 0.02922748 
+    ##   State (Q trend): 4.146963e-06 
+    ##   State (Q season): 0.0006867528 
+    ##   State (Q ar): 0.1157466 
     ## 
     ## Components of auto-regression:
-    ##   Order of AR: 1 
-    ##   Coefficient of AR1: 0.6585956 
+    ##   Order of AR: 2 
+    ##   Coefficient of AR1: 0.803867 
+    ##   Coefficient of AR2: -0.1059014 
     ## Exogenous variable    kuroshio_a distance 
-    ## Estimated coefficient     0.5110124 -0.007070969 
-    ## Lower CI  0.1658023 -0.00846763 
-    ## Upper CI  0.8562225 -0.005674308
+    ## Estimated coefficient     0.5079595 -0.00707018 
+    ## Lower CI  0.1635527 -0.008465811 
+    ## Upper CI  0.8523663 -0.005674548
 
 ``` r
 
@@ -956,13 +973,13 @@ print(diag_res_with)
     ## # A tibble: 1 × 8
     ##   lb_stat lb_lag lb_df lb_pvalue kurtosis     n n_missing n_finite
     ##     <dbl>  <int> <int>     <dbl>    <dbl> <int>     <int>    <int>
-    ## 1    6.50     12    12     0.889     3.07   302        80      222
+    ## 1    6.47     12    12     0.891     3.06   302        80      222
 
 残差時系列プロットからは、散漫初期化による散漫成分が解消されるまでの期間に
 対応して、標準化再帰残差が `NA` となる期間が 2004 年まで及んでいることが
 見て取れます。このモデルの残差診断でも、lag 12
 までの有意な残差自己相関は 認められません。
-したがって、ここで比較する2つのモデルでは、AR(1) は妥当な作業上の仕様と
+したがって、ここで比較する2つのモデルでは、AR(2) は許容できる仕様と
 考えられます。
 
 次に、外生変数の推定係数を確認します。
@@ -972,13 +989,13 @@ print(diag_res_with)
 exo_coef
 ```
 
-    ##     Variable  Coefficient         lwr          upr
-    ## 1 kuroshio_a  0.511012404  0.16580234  0.856222472
-    ## 2   distance -0.007070969 -0.00846763 -0.005674308
+    ##     Variable Coefficient          lwr          upr
+    ## 1 kuroshio_a  0.50795948  0.163552654  0.852366306
+    ## 2   distance -0.00707018 -0.008465811 -0.005674548
 
 係数表は、潜在成分を考慮したうえで、SST と各シミュレーション黒潮変数との
 推定された関係を要約しています。このモデルでは、`kuroshio_a`
-の推定係数は 0.51 °C であり、95% 信頼区間は 0.17 から 0.86
+の推定係数は 0.51 °C であり、95% 信頼区間は 0.16 から 0.85
 です。`kuroshio_a` はバイナリ指標なので、 この係数は、他のモデル成分と
 `distance` を条件づけたうえでの、A 型条件と 非 A 型条件の推定 SST
 差として解釈することができます。
@@ -1006,8 +1023,8 @@ pred_with_last_exo <- predict(res_with, exo_strategy = "last")
 pred_with_last_exo
 ```
 
-    ##           Mar
-    ## 2023 18.37914
+    ##          Mar
+    ## 2023 18.3759
 
 #### 推定成分の比較
 
@@ -1075,14 +1092,14 @@ mean_drift_year_with <- mean(drift_with, na.rm = TRUE)
 mean_drift_year_without
 ```
 
-    ## [1] 0.08777083
+    ## [1] 0.08773294
 
 ``` r
 
 mean_drift_year_with
 ```
 
-    ## [1] 0.04924515
+    ## [1] 0.04920045
 
 レベル成分では、両モデルとも、記録の開始期から 2008 年前後まで低下し、
 その後に上昇する大局的なパターンを示しています。ただし、外生変数ありモデルは、
@@ -1097,7 +1114,7 @@ mean_drift_year_with
 
 観測期間を通した SST
 の年あたりの変化率の推定値は、外生変数なしモデルでは
-0.0878、外生変数ありモデルでは 0.0492 となりました。
+0.0877、外生変数ありモデルでは 0.0492 となりました。
 
 このシミュレーション例は、外部要因を含めることで、推定される長期成分が
 変化しうることを示しています。
@@ -1203,7 +1220,7 @@ end(folds_without[[1]]$test_ts)
 # ts_cv_run() evaluates folds sequentially by default.
 cv_without_results <- ts_cv_run(
   folds_without,
-  ar_order = 1,
+  ar_order = 2,
   use_season = TRUE
 )
 
@@ -1212,7 +1229,7 @@ cv_without_results <- ts_cv_run(
 # but these suggested packages must be installed.
 # cv_without_results <- ts_cv_run(
 #   folds_without,
-#   ar_order = 1,
+#   ar_order = 2,
 #   use_season = TRUE,
 #   parallel = TRUE,
 #   workers = 2
@@ -1231,7 +1248,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 
 cv_with_results <- ts_cv_run(
   folds_with,
-  ar_order = 1,
+  ar_order = 2,
   use_season = TRUE
 )
 
@@ -1240,7 +1257,7 @@ cv_with_results <- ts_cv_run(
 # but these suggested packages must be installed.
 # cv_with_results <- ts_cv_run(
 #   folds_with,
-#   ar_order = 1,
+#   ar_order = 2,
 #   use_season = TRUE,
 #   parallel = TRUE,
 #   workers = 2
@@ -1268,8 +1285,8 @@ cv_comparison %>% knitr::kable()
 
 | model | n_folds | converged_n | converged_rate | mean_MAE | mean_MASE_naive | mean_MASE_seasonal |
 |:---|---:|---:|---:|---:|---:|---:|
-| Without | 12 | 12 | 1 | 0.5375966 | 0.3137671 | 0.8001065 |
-| With | 12 | 12 | 1 | 0.5135379 | 0.2997564 | 0.7705862 |
+| Without | 12 | 12 | 1 | 0.5346915 | 0.3120579 | 0.7954259 |
+| With | 12 | 12 | 1 | 0.5136672 | 0.2998310 | 0.7708534 |
 
 ``` r
 
@@ -1322,7 +1339,7 @@ naive ベンチマークを用います。`MASE_seasonal` は、訓練系列の
 予測誤差は小さく、目的に応じては実用的な精度のモデルと解釈できる可能性が
 あります。
 
-外生変数ありモデルは、外生変数なしモデルに比べて平均 MAE を約 4.5%
+外生変数ありモデルは、外生変数なしモデルに比べて平均 MAE を約 3.9%
 低下させました。同様の改善は MASE
 指標でも確認されます。ただし、この解釈は、テスト期間の
 シミュレーション黒潮変数を外生変数として与える条件付き予測の設定に
