@@ -218,6 +218,12 @@ practical workflow is to start from the default AR(1) specification and
 then examine AR(2) or higher-order alternatives through residual
 diagnostics and sensitivity checks.
 
+Here, AR means autoregressive. In `tempssm`, the autoregressive
+component captures short-term serial dependence that remains after
+accounting for the long-term level, drift, and seasonal components. An
+AR(2) specification means that this short-term component is modeled
+using dependence on the previous two time points.
+
 ``` r
 
 # baseline model with a second-order autoregressive component

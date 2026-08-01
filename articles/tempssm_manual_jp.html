@@ -267,6 +267,12 @@ Structural Time Series Model; BSTSM）を拡張したものとして
 意味ではありません。このような事前情報がない場合には、デフォルトの AR(1)
 から 始め、残差診断や感度分析を通じて AR(2)
 以上の次数を検討する流れが実用的です。</p>
+<p>ここで AR は
+autoregressive（自己回帰）を意味します。<code>tempssm</code> では、
+自己回帰成分は、長期水準、ドリフト、季節成分では説明しきれない短期的な
+系列依存性を表すために用いられます。AR(2)
+は、この短期成分が直前2時点までの
+値に依存するものとして表現されることを意味します。</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># baseline model with a second-order autoregressive component</span></span>
 <span><span class="va">res_base</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tempssm.html">tempssm</a></span><span class="op">(</span><span class="va">sst_sim</span>, ar_order <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
