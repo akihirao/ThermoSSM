@@ -275,10 +275,10 @@ plot as a `ggplot` object. Individual components can be selected with the
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # extract individual component plots
-plt_level <- plot_tempssm_components(res_ar1, component = c("level"))
-plt_drift <- plot_tempssm_components(res_ar1, component = c("drift"))
-plt_season <- plot_tempssm_components(res_ar1, component = c("season"))
-plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
+plt_level <- plot_tempssm_components(res_ar1, component = "level")
+plt_drift <- plot_tempssm_components(res_ar1, component = "drift")
+plt_season <- plot_tempssm_components(res_ar1, component = "season")
+plt_ar <- plot_tempssm_components(res_ar1, component = "ar")
 ```
 
 ### Model Diagnostics

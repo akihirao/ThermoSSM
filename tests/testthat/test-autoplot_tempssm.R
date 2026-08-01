@@ -66,7 +66,7 @@ test_that("autoplot.tempssm omits season by default for non-seasonal models", {
 })
 
 
-test_that("autoplot.tempssm errors for explicit season in non-seasonal models", {
+test_that("autoplot.tempssm errors for explicit season", {
   res_no_season <- tempssm(
     temp_ts_test,
     use_season = FALSE

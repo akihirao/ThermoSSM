@@ -142,7 +142,7 @@ get_tempssm_residuals <- function(res, keep_time = TRUE) {
         "Series length: {n}; missing residuals: {n_missing} ",
         "({sprintf('%.1f', pct)}%)."
       ),
-      "i" = paste0(
+      "*" = paste0(
         "Ljung-Box statistics are computed from the available finite ",
         "residual sequence."
       )
@@ -357,7 +357,7 @@ diagnose_residuals <- function(res, JB_test = FALSE, lb_lag = NULL) {
         "Series length: {n}; missing residuals: {n_missing} ",
         "({sprintf('%.1f', pct)}%)."
       ),
-      "i" = paste0(
+      "*" = paste0(
         "Ljung-Box statistics use available-pair autocorrelations ",
         "while preserving the time structure."
       )
@@ -598,11 +598,11 @@ diagnose_residual_ts <- function(r, lb_lag = NULL, frequency = NULL) {
         "Series length: {n}; missing residuals: {n_missing} ",
         "({sprintf('%.1f', pct)}%)."
       ),
-      "i" = paste0(
+      "*" = paste0(
         "The ACF panel preserves the time structure and uses ",
         "available pairs for each lag."
       ),
-      "i" = "The histogram and normal curve use finite residuals."
+      ">" = "The histogram and normal curve use finite residuals."
     )
   )
 

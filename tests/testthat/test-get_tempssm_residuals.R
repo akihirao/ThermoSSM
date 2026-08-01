@@ -7,7 +7,7 @@ test_that("get_tempssm_residuals returns a time-preserving ts by default", {
   expect_type(r, "double")
   expect_identical(stats::start(r), stats::start(res_tempssm$temp_data))
   expect_identical(stats::frequency(r), stats::frequency(res_tempssm$temp_data))
-  expect_identical(length(r), length(res_tempssm$temp_data))
+  expect_length(r, length(res_tempssm$temp_data))
 })
 
 
@@ -26,7 +26,7 @@ test_that("get_tempssm_residuals can preserve time structure", {
   expect_s3_class(r, "ts")
   expect_identical(stats::start(r), stats::start(res_tempssm$temp_data))
   expect_identical(stats::frequency(r), stats::frequency(res_tempssm$temp_data))
-  expect_identical(length(r), length(res_tempssm$temp_data))
+  expect_length(r, length(res_tempssm$temp_data))
 })
 
 
@@ -46,7 +46,7 @@ test_that("time-preserving residuals retain non-finite values as missing", {
   r_vec <- get_tempssm_residuals(res_with_nonfinite, keep_time = FALSE)
 
   expect_true(is.na(r_ts[1]))
-  expect_false(any(!is.finite(r_vec)))
+  expect_true(all(is.finite(r_vec)))
 })
 
 
