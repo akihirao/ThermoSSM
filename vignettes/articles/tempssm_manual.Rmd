@@ -4,12 +4,12 @@ subtitle: "Version `r packageVersion('tempssm')`"
 author: "Akira S. Hirao, Shinya Baba, and Momoko Ichinokawa"
 date: "`r Sys.Date()`"
 output:
-#  pdf_document:
-#    latex_engine: lualatex
+  pdf_document:
+    latex_engine: lualatex
 #    toc: true
 #  rmarkdown::html_vignette: default
-  md_document:
-    variant: gfm+tex_math_dollars
+#  md_document:
+#    variant: gfm+tex_math_dollars
 vignette: >
   %\VignetteIndexEntry{tempssm Reference Manual}
   %\VignetteEngine{knitr::rmarkdown}
@@ -197,14 +197,21 @@ the raw series alone.
 When a `ts` object containing temperature time-series data (here,
 `sst_sim`) is passed to the core function `tempssm()`, model construction
 and parameter estimation are performed together. The returned S3 object of
-class `tempssm` (here, `res_ar1`) stores the filtering and smoothing estimates,
-as well as the constructed model and input data. By default, `tempssm()` fits a
-first-order autoregressive model.
+class `tempssm` (here, `res_base`) stores the filtering and smoothing
+estimates, as well as the constructed model and input data.
+
+The simulated SST series used in this manual was generated under an AR(2)
+setting based on the original analysis of Baba et al. (2024). We therefore use
+an AR(2) specification as the baseline model in this detailed example. This is
+not a general recommendation that AR(2) should always be preferred. When such
+prior information is unavailable, a practical workflow is to start from the
+default AR(1) specification and then examine AR(2) or higher-order alternatives
+through residual diagnostics and sensitivity checks.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-# model with first-order autoregressive component
-res_ar1 <- tempssm(sst_sim) # (ar_order=1: default)
-summary(res_ar1)
+# baseline model with a second-order autoregressive component
+res_base <- tempssm(sst_sim, ar_order = 2)
+summary(res_base)
 ```
 
 From the summary output, confirm that the model has converged
@@ -219,14 +226,14 @@ not explained by the latent states. The `Q` terms are process error variances
 for the latent components: `Q trend` controls stochastic variation in the
 long-term trend, `Q season` controls variation in the seasonal component, and
 the autoregressive process variance controls variation in the short-term
-autoregressive component. The coefficient `AR1` represents first-order
-autoregressive dependence in that short-term component.
+autoregressive component. The `AR` coefficients represent serial dependence in
+that short-term component.
 
 The log-likelihood and parameter count can also be extracted directly with
 `logLik()`.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-ll <- logLik(res_ar1)
+ll <- logLik(res_base)
 ll
 attr(ll, "df") # number of parameters
 ```
@@ -249,12 +256,12 @@ variation, and autoregressive dependence.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # plot all components at once
-plot(res_ar1)
+plot(res_base)
 ```
 
 ```{r echo = FALSE}
 # the average annual rate of SST change over the full period
-mean_drift_year <- mean(get_drift_ts(res_ar1))
+mean_drift_year <- mean(get_drift_ts(res_base))
 mean_drift_year
 ```
 
@@ -275,10 +282,10 @@ plot as a `ggplot` object. Individual components can be selected with the
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # extract individual component plots
-plt_level <- plot_tempssm_components(res_ar1, component = "level")
-plt_drift <- plot_tempssm_components(res_ar1, component = "drift")
-plt_season <- plot_tempssm_components(res_ar1, component = "season")
-plt_ar <- plot_tempssm_components(res_ar1, component = "ar")
+plt_level <- plot_tempssm_components(res_base, component = "level")
+plt_drift <- plot_tempssm_components(res_base, component = "drift")
+plt_season <- plot_tempssm_components(res_base, component = "season")
+plt_ar <- plot_tempssm_components(res_base, component = "ar")
 ```
 
 ### Model Diagnostics
@@ -288,7 +295,7 @@ fitting. Here we inspect the residual series, residual autocorrelation,
 residual distribution, and a Ljung-Box test.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-resid <- get_tempssm_residuals(res_ar1)
+resid <- get_tempssm_residuals(res_base)
 plot_tempssm_residuals(resid)
 ```
 
@@ -316,6 +323,12 @@ available during the diffuse phase. These `NA` values therefore do not
 necessarily indicate that the fitted model failed at those time points. Rather,
 they indicate that comparable standardized recursive residuals are not defined
 until the diffuse effects have been resolved.
+
+For seasonal models, this can occur even when no exogenous variables are used.
+The seasonal states are initialized diffusely, and a full seasonal cycle is
+needed before comparable standardized recursive residuals are typically
+available. For monthly data with `frequency = 12`, the residuals for roughly
+the first year may therefore be `NA`.
 
 The `NA` values in standardized recursive residuals should not be interpreted
 as observations being omitted from likelihood evaluation. The log-likelihood is
@@ -373,41 +386,45 @@ whereas repeated or periodic spikes may suggest remaining temporal structure.
 
 ### Examine the Autoregressive Order
 
-This manual uses the default AR(1) specification as the working model. The
+This manual uses AR(2) as the baseline specification because the simulated SST
+series was generated under an AR(2) setting informed by Baba et al. (2024). The
 autoregressive component absorbs short-term serial dependence not represented
-by the level, drift, and seasonal components. A higher AR order should be
-considered when residual diagnostics suggest that notable autocorrelation
-remains, rather than treated as an automatic improvement.
+by the level, drift, and seasonal components.
 
-For example, if residual autocorrelation remains after fitting the AR(1)
-model, users can fit an AR(2) model and repeat the same diagnostics.
+The choice of AR order should still be checked against diagnostics. As a
+sensitivity check, we also fit an AR(1) model and repeat the same residual
+diagnostics. In applications without prior information about the AR structure,
+AR(1) is a reasonable starting point, and higher-order alternatives such as
+AR(2) can be examined when residual autocorrelation remains.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-# Optional sensitivity check with a second-order autoregressive component
-res_ar2 <- tempssm(sst_sim, ar_order = 2)
-summary(res_ar2)
-resid_ar2 <- get_tempssm_residuals(res_ar2)
-plot_tempssm_residuals(resid_ar2)
-diag_lag12_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 12)
-diag_lag24_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 24)
-diag_lag36_ar2 <- diagnose_residual_ts(resid_ar2, lb_lag = 36)
-diag_lags_ar2 <- rbind(diag_lag12_ar2, diag_lag24_ar2, diag_lag36_ar2)
-diag_lags_ar2$check <- c("lag 12", "lag 24", "lag 36")
-diag_lags_ar2[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
+# Optional sensitivity check with a first-order autoregressive component
+res_ar1 <- tempssm(sst_sim, ar_order = 1)
+summary(res_ar1)
+resid_ar1 <- get_tempssm_residuals(res_ar1)
+plot_tempssm_residuals(resid_ar1)
+diag_lag12_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 12)
+diag_lag24_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 24)
+diag_lag36_ar1 <- diagnose_residual_ts(resid_ar1, lb_lag = 36)
+diag_lags_ar1 <- rbind(diag_lag12_ar1, diag_lag24_ar1, diag_lag36_ar1)
+diag_lags_ar1$check <- c("lag 12", "lag 24", "lag 36")
+diag_lags_ar1[, c("check", "lb_stat", "lb_lag", "lb_pvalue", "kurtosis")]
 ```
 
-In this example, the AR(2) diagnostics are similar to those from the AR(1)
-model, so we proceed with AR(1) as the baseline specification.
+In this example, the AR(1) diagnostics are broadly similar to those from the
+AR(2) baseline model. We therefore proceed with AR(2), reflecting the
+simulation setting, while noting that the main component patterns are not
+highly sensitive to this AR-order choice in this example.
 
 ### Extract Estimated Components
 
 The fitted `tempssm` object contains smoothed state estimates returned by
-`KFAS`. The matrix `res_ar1$kfs$alphahat` stores the level, drift, seasonal
+`KFAS`. The matrix `res_base$kfs$alphahat` stores the level, drift, seasonal
 states, and autoregressive state.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # Smoothing estimates
-alpha_hat <- res_ar1$kfs$alphahat
+alpha_hat <- res_base$kfs$alphahat
 head(alpha_hat)
 ```
 
@@ -418,10 +435,10 @@ its rate of change per year.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 # Smoothing estimate of level component
-level_ts <- get_level_ts(res_ar1)
+level_ts <- get_level_ts(res_base)
 
 # Smoothing estimate of drift component
-drift_ts <- get_drift_ts(res_ar1)
+drift_ts <- get_drift_ts(res_base)
 
 # Average drift rate per year across the full period
 mean_drift_year <- mean(drift_ts) 
@@ -443,7 +460,7 @@ checks of how the fitted model extrapolates the estimated level, seasonal, and
 autoregressive components.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-pred_1 <- predict(res_ar1)
+pred_1 <- predict(res_base)
 pred_1
 ```
 
@@ -451,7 +468,7 @@ Predictions for multiple future time points can be requested by setting the
 `n.ahead` argument.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-pred_12 <- predict(res_ar1, n.ahead = 12)
+pred_12 <- predict(res_base, n.ahead = 12)
 pred_12
 ```
 
@@ -465,7 +482,7 @@ by the `level` argument and defaults to 0.95.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
 pred_12_pi <- predict(
-  res_ar1,
+  res_base,
   n.ahead = 12,
   interval = "prediction",
   level = 0.95
@@ -588,11 +605,11 @@ unobserved responses during Kalman filtering and smoothing.
 ### Reuse the Baseline Model
 
 Exercise II uses the same response series as Exercise I, so we reuse the
-previously fitted AR(1) model as the reference model without exogenous
+previously fitted AR(2) baseline model as the reference model without exogenous
 variables.
 
 ```{r message = FALSE, warning = FALSE, echo = TRUE}
-res_without <- res_ar1
+res_without <- res_base
 summary(res_without)
 ```
 
@@ -631,7 +648,7 @@ We next fit a model with the two simulated Kuroshio variables supplied through
 res_with <- tempssm(
   temp_data = sst_sim,
   exo_data = exo_kuroshio,
-  ar_order = 1
+  ar_order = 2
 )
 summary(res_with)
 
@@ -655,7 +672,7 @@ The residual time-series plot shows that standardized recursive residuals are
 `NA` until 2004, corresponding to the period before the diffuse components
 from diffuse initialization have been resolved. The residual diagnostics for
 this model also do not indicate significant residual autocorrelation up to lag
-12. Thus, AR(1) remains a reasonable working specification for both models
+12. Thus, the AR(2) specification remains acceptable for both models
 considered here.
 
 We then examine the estimated coefficients for the exogenous variables.
@@ -866,7 +883,7 @@ end(folds_without[[1]]$test_ts)
 # ts_cv_run() evaluates folds sequentially by default.
  cv_without_results <- ts_cv_run(
    folds_without,
-   ar_order = 1,
+   ar_order = 2,
    use_season = TRUE
  )
 
@@ -875,7 +892,7 @@ end(folds_without[[1]]$test_ts)
 # but these suggested packages must be installed.
 #cv_without_results <- ts_cv_run(
 #  folds_without,
-#  ar_order = 1,
+#  ar_order = 2,
 #  use_season = TRUE,
 #  parallel = TRUE,
 #  workers = 2
@@ -894,7 +911,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 
  cv_with_results <- ts_cv_run(
    folds_with,
-   ar_order = 1,
+   ar_order = 2,
    use_season = TRUE
  )
 
@@ -903,7 +920,7 @@ cv_without_tbl <- ts_cv_collect(cv_without_results, metrics_without) %>%
 # but these suggested packages must be installed.
 #cv_with_results <- ts_cv_run(
 #  folds_with,
-#  ar_order = 1,
+#  ar_order = 2,
 #  use_season = TRUE,
 #  parallel = TRUE,
 #  workers = 2
