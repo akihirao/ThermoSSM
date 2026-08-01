@@ -1,3 +1,14 @@
+# tempssm 0.3.1
+
+* Updated manuals and examples around simulated SST datasets, AR-order
+  sensitivity checks, exogenous-variable models, prediction, and tsCV.
+* Improved residual diagnostics for time-preserving residual series with
+  missing values, including plotting and Ljung-Box-type summaries.
+* Added and reorganized example datasets and harmonized SST/temperature dataset
+  naming.
+* Improved component plotting for non-seasonal models and refactored internal
+  accessor and diagnostic helpers.
+
 # tempssm 0.3.0
 
 * Added a `marginal` option to select diffuse or marginal likelihood
