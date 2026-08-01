@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/akihirao/tempssm/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/akihirao/tempssm/blob/v0.3.1/inst/CITATION)
 
 Hirao A, Baba S, Ichinokawa M (2026). “tempssm: State-space models for
 temperature time series in R.” R package version 0.2.4.
