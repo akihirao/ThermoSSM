@@ -315,10 +315,10 @@ SST の平均的な年変化率は約 0.088 °C です。
 ``` r
 
 # extract individual component plots
-plt_level <- plot_tempssm_components(res_ar1, component = c("level"))
-plt_drift <- plot_tempssm_components(res_ar1, component = c("drift"))
-plt_season <- plot_tempssm_components(res_ar1, component = c("season"))
-plt_ar <- plot_tempssm_components(res_ar1, component = c("ar"))
+plt_level <- plot_tempssm_components(res_ar1, component = "level")
+plt_drift <- plot_tempssm_components(res_ar1, component = "drift")
+plt_season <- plot_tempssm_components(res_ar1, component = "season")
+plt_ar <- plot_tempssm_components(res_ar1, component = "ar")
 ```
 
 #### モデル診断

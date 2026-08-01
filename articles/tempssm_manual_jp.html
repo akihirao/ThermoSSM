@@ -55,7 +55,7 @@
             <h3 data-toc-skip class="subtitle">Version 0.3.0</h3>
                         <h4 data-toc-skip class="author">平尾章・馬場真哉・市野川桃子</h4>
             
-            <h4 data-toc-skip class="date">2026-07-31</h4>
+            <h4 data-toc-skip class="date">2026-08-01</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/akihirao/tempssm/blob/main/vignettes/articles/tempssm_manual_jp.Rmd" class="external-link"><code>vignettes/articles/tempssm_manual_jp.Rmd</code></a></small>
       <div class="d-none name"><code>tempssm_manual_jp.Rmd</code></div>
@@ -353,10 +353,10 @@ SST の平均的な年変化率は約 0.088 °C です。</p>
 引数を 指定します。</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract individual component plots</span></span>
-<span><span class="va">plt_level</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"level"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">plt_drift</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"drift"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">plt_season</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"season"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">plt_ar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ar"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">plt_level</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"level"</span><span class="op">)</span></span>
+<span><span class="va">plt_drift</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"drift"</span><span class="op">)</span></span>
+<span><span class="va">plt_season</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"season"</span><span class="op">)</span></span>
+<span><span class="va">plt_ar</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_tempssm_components.html">plot_tempssm_components</a></span><span class="op">(</span><span class="va">res_ar1</span>, component <span class="op">=</span> <span class="st">"ar"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="モデル診断">モデル診断<a class="anchor" aria-label="anchor" href="#%E3%83%A2%E3%83%87%E3%83%AB%E8%A8%BA%E6%96%AD"></a>
