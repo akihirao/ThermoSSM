@@ -951,6 +951,7 @@ summary(res_with)
     ##   Order of AR: 2 
     ##   Coefficient of AR1: 0.803867 
     ##   Coefficient of AR2: -0.1059014 
+    ## 
     ## Exogenous variable    kuroshio_a distance 
     ## Estimated coefficient     0.5079595 -0.00707018 
     ## Lower CI  0.1635527 -0.008465811 
