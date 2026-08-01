@@ -1,15 +1,35 @@
-#' Extract standardized recursive residuals
+#' Extract residuals from a tempssm model
 #'
 #' @inheritParams get_level_ts
 #' @param keep_time Logical scalar; if TRUE, the residuals are returned as a
 #'   \code{ts} object with the same start and frequency as the input
 #'   temperature series; non-finite residuals are retained as \code{NA}. If
 #'   FALSE, only finite residuals are returned as a numeric vector.
+#' @param type Character scalar specifying the residual type. The default
+#'   \code{"recursive"} returns recursive residuals, which are the main
+#'   residuals used for model diagnostics. \code{"response"} returns
+#'   observation-minus-fitted residuals. \code{"pearson"} returns Pearson
+#'   residuals.
+#' @param standardized Logical scalar. If \code{TRUE}, standardized residuals
+#'   are returned for residual types supported by \code{stats::rstandard()}.
+#'   The default preserves the previous behavior:
+#'   \code{type = "recursive"} with \code{standardized = TRUE}. Response
+#'   residuals are returned on their original scale; use
+#'   \code{standardized = FALSE} or omit \code{standardized} when
+#'   \code{type = "response"}.
+#'
+#' @details
+#' Recursive residuals are generally preferred for residual autocorrelation
+#' diagnostics in state-space models. Response residuals are often easier to
+#' interpret as observed-minus-fitted differences, while Pearson residuals
+#' provide a variance-scaled response residual. State residuals are not returned
+#' by this function; they have a different interpretation and may be exposed
+#' separately in a future version.
 #'
 #' @return
 #' By default, a \code{ts} object preserving the time index of the input
 #' temperature series. If \code{keep_time = FALSE}, a numeric vector of finite
-#' standardized recursive residuals.
+#' residuals of the requested type.
 #'
 #' @examples
 #' \dontrun{
@@ -18,9 +38,38 @@
 #'
 #' residuals_ts <- get_tempssm_residuals(res)
 #' residuals <- get_tempssm_residuals(res, keep_time = FALSE)
+#' response_residuals <- get_tempssm_residuals(res, type = "response")
 #' }
 #' @export
-get_tempssm_residuals <- function(res, keep_time = TRUE) {
+get_tempssm_residuals <- function(res,
+                                  keep_time = TRUE,
+                                  type = c("recursive", "response", "pearson"),
+                                  standardized = TRUE) {
+  .validate_tempssm_residual_input(res, keep_time)
+  type <- match.arg(type)
+  standardized <- .resolve_tempssm_residual_standardized(
+    type = type,
+    standardized = standardized,
+    standardized_missing = missing(standardized)
+  )
+  r <- .extract_tempssm_kfs_residuals(res, type, standardized)
+
+  if (keep_time) {
+    return(.tempssm_residuals_as_ts(r, res))
+  }
+
+  as.numeric(r[is.finite(r)])
+}
+
+
+#' Validate inputs for residual extraction
+#'
+#' @inheritParams get_tempssm_residuals
+#'
+#' @return Invisibly returns \code{NULL}.
+#' @keywords internal
+#' @noRd
+.validate_tempssm_residual_input <- function(res, keep_time) {
   if (!inherits(res, "tempssm")) {
     cli::cli_abort(
       "`res` must be an object of class {.cls tempssm}."
@@ -33,27 +82,89 @@ get_tempssm_residuals <- function(res, keep_time = TRUE) {
     cli::cli_abort("{.arg keep_time} must be a logical scalar.")
   }
 
-  r <- stats::rstandard(res$kfs, type = "recursive")
-  if (keep_time) {
-    if (length(r) != length(res$temp_data)) {
-      cli::cli_abort(
-        "Time-preserving residuals require residuals and input data to have ",
-        "the same length."
-      )
-    }
+  invisible(NULL)
+}
 
-    r[!is.finite(r)] <- NA_real_
 
-    return(
-      stats::ts(
-        as.numeric(r),
-        start = stats::start(res$temp_data),
-        frequency = stats::frequency(res$temp_data)
+#' Resolve standardization for residual extraction
+#'
+#' @param type Character scalar specifying the residual type.
+#' @param standardized Logical scalar requested by the user.
+#' @param standardized_missing Logical scalar indicating whether
+#'   \code{standardized} was omitted.
+#'
+#' @return Logical scalar.
+#' @keywords internal
+#' @noRd
+.resolve_tempssm_residual_standardized <- function(type,
+                                                   standardized,
+                                                   standardized_missing) {
+  if (identical(type, "response") && standardized_missing) {
+    standardized <- FALSE
+  }
+
+  .tempssm_check_length_one(standardized, "standardized")
+  .tempssm_check_logical(standardized, "standardized")
+  if (!is.logical(standardized) || is.na(standardized)) {
+    cli::cli_abort("{.arg standardized} must be a logical scalar.")
+  }
+
+  if (identical(type, "response") && isTRUE(standardized)) {
+    cli::cli_abort(
+      c(
+        "Standardized response residuals are not available.",
+        "i" = paste0(
+          "Use {.code type = \"response\", standardized = FALSE}, ",
+          "or use {.code type = \"pearson\"} for variance-scaled residuals."
+        )
       )
     )
   }
 
-  r[is.finite(r)]
+  standardized
+}
+
+
+#' Extract residuals from the underlying KFS object
+#'
+#' @inheritParams .resolve_tempssm_residual_standardized
+#' @inheritParams get_tempssm_residuals
+#'
+#' @return A numeric vector or \code{ts} object returned by KFAS methods.
+#' @keywords internal
+#' @noRd
+.extract_tempssm_kfs_residuals <- function(res, type, standardized) {
+  if (isTRUE(standardized)) {
+    return(stats::rstandard(res$kfs, type = type))
+  }
+
+  stats::residuals(res$kfs, type = type)
+}
+
+
+#' Convert residuals to a time-preserving ts object
+#'
+#' @param r Numeric vector or \code{ts} object returned by KFAS.
+#' @inheritParams get_tempssm_residuals
+#'
+#' @return A univariate \code{ts} object.
+#' @keywords internal
+#' @noRd
+.tempssm_residuals_as_ts <- function(r, res) {
+  if (length(r) != length(res$temp_data)) {
+    cli::cli_abort(
+      "Time-preserving residuals require residuals and input data to have ",
+      "the same length."
+    )
+  }
+
+  r[!is.finite(r)] <- NA_real_
+
+  stats::ts(
+    as.numeric(r),
+    start = stats::start(res$temp_data),
+    frequency = stats::frequency(res$temp_data)
+  )
 }
 
 

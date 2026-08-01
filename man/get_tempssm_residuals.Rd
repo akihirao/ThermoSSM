@@ -2,9 +2,14 @@
 % Please edit documentation in R/model_diagnostics.R
 \name{get_tempssm_residuals}
 \alias{get_tempssm_residuals}
-\title{Extract standardized recursive residuals}
+\title{Extract residuals from a tempssm model}
 \usage{
-get_tempssm_residuals(res, keep_time = TRUE)
+get_tempssm_residuals(
+  res,
+  keep_time = TRUE,
+  type = c("recursive", "response", "pearson"),
+  standardized = TRUE
+)
 }
 \arguments{
 \item{res}{An object of class \code{"tempssm"} returned by \code{tempssm()}.}
@@ -13,14 +18,36 @@ get_tempssm_residuals(res, keep_time = TRUE)
 \code{ts} object with the same start and frequency as the input
 temperature series; non-finite residuals are retained as \code{NA}. If
 FALSE, only finite residuals are returned as a numeric vector.}
+
+\item{type}{Character scalar specifying the residual type. The default
+\code{"recursive"} returns recursive residuals, which are the main
+residuals used for model diagnostics. \code{"response"} returns
+observation-minus-fitted residuals. \code{"pearson"} returns Pearson
+residuals.}
+
+\item{standardized}{Logical scalar. If \code{TRUE}, standardized residuals
+are returned for residual types supported by \code{stats::rstandard()}.
+The default preserves the previous behavior:
+\code{type = "recursive"} with \code{standardized = TRUE}. Response
+residuals are returned on their original scale; use
+\code{standardized = FALSE} or omit \code{standardized} when
+\code{type = "response"}.}
 }
 \value{
 By default, a \code{ts} object preserving the time index of the input
 temperature series. If \code{keep_time = FALSE}, a numeric vector of finite
-standardized recursive residuals.
+residuals of the requested type.
 }
 \description{
-Extract standardized recursive residuals
+Extract residuals from a tempssm model
+}
+\details{
+Recursive residuals are generally preferred for residual autocorrelation
+diagnostics in state-space models. Response residuals are often easier to
+interpret as observed-minus-fitted differences, while Pearson residuals
+provide a variance-scaled response residual. State residuals are not returned
+by this function; they have a different interpretation and may be exposed
+separately in a future version.
 }
 \examples{
 \dontrun{
@@ -29,5 +56,6 @@ res <- tempssm(sst_niigata)
 
 residuals_ts <- get_tempssm_residuals(res)
 residuals <- get_tempssm_residuals(res, keep_time = FALSE)
+response_residuals <- get_tempssm_residuals(res, type = "response")
 }
 }

@@ -3,7 +3,8 @@
 * Updated manuals and examples around simulated SST datasets, AR-order
   sensitivity checks, exogenous-variable models, prediction, and tsCV.
 * Improved residual diagnostics for time-preserving residual series with
-  missing values, including plotting and Ljung-Box-type summaries.
+  missing values, including plotting, Ljung-Box-type summaries, and access to
+  recursive, response, and Pearson residuals.
 * Added and reorganized example datasets and harmonized SST/temperature dataset
   naming.
 * Improved component plotting for non-seasonal models and refactored internal
