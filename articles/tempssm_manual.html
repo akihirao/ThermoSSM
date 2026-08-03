@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tempssm</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,11 +52,11 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>tempssm Reference Manual</h1>
-            <h3 data-toc-skip class="subtitle">Version 0.3.1</h3>
+            <h3 data-toc-skip class="subtitle">Version 0.3.2</h3>
                         <h4 data-toc-skip class="author">Akira S. Hirao,
 Shinya Baba, and Momoko Ichinokawa</h4>
             
-            <h4 data-toc-skip class="date">2026-08-01</h4>
+            <h4 data-toc-skip class="date">2026-08-03</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/akihirao/tempssm/blob/main/vignettes/articles/tempssm_manual.Rmd" class="external-link"><code>vignettes/articles/tempssm_manual.Rmd</code></a></small>
       <div class="d-none name"><code>tempssm_manual.Rmd</code></div>
@@ -299,15 +299,15 @@ is modeled using dependence on the previous two time points.</p>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.05517486 </span></span>
-<span><span class="co">##   State (Q trend): 4.945287e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001859976 </span></span>
-<span><span class="co">##   State (Q ar): 0.1497545 </span></span>
+<span><span class="co">##   Observation (H): 0.05517483 </span></span>
+<span><span class="co">##   State (Q trend): 4.94528e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001859974 </span></span>
+<span><span class="co">##   State (Q ar): 0.1497546 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 2 </span></span>
 <span><span class="co">##   Coefficient of AR1: 0.655325 </span></span>
-<span><span class="co">##   Coefficient of AR2: 0.07429946</span></span></code></pre>
+<span><span class="co">##   Coefficient of AR2: 0.0742994</span></span></code></pre>
 <p>From the summary output, confirm that the model has converged
 (<code>Converged: TRUE</code>). The output also reports the number of
 parameters (<code>k</code>), the log-likelihood, the likelihood type,
@@ -507,9 +507,9 @@ remains.</p>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.07496413 </span></span>
-<span><span class="co">##   State (Q trend): 4.937123e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001763536 </span></span>
+<span><span class="co">##   Observation (H): 0.07496414 </span></span>
+<span><span class="co">##   State (Q trend): 4.937125e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001763537 </span></span>
 <span><span class="co">##   State (Q ar): 0.1202156 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
@@ -550,26 +550,26 @@ states, and autoregressive state.</p>
 <span><span class="va">alpha_hat</span> <span class="op">&lt;-</span> <span class="va">res_base</span><span class="op">$</span><span class="va">kfs</span><span class="op">$</span><span class="va">alphahat</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">alpha_hat</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4</span></span>
-<span><span class="co">## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189075  0.5624220  0.9561047</span></span>
-<span><span class="co">## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189075  0.5624220</span></span>
-<span><span class="co">## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189075</span></span>
+<span><span class="co">## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189076  0.5624221  0.9561047</span></span>
+<span><span class="co">## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189076  0.5624221</span></span>
+<span><span class="co">## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189076</span></span>
 <span><span class="co">## Apr 1998 18.60145 -0.01913228 -2.0500556 -2.8254806 -5.0255618 -2.0423835</span></span>
-<span><span class="co">## May 1998 18.58232 -0.01916624  0.2885088 -2.0500556 -2.8254806 -5.0255618</span></span>
-<span><span class="co">## Jun 1998 18.56316 -0.01920803  1.9920043  0.2885088 -2.0500556 -2.8254806</span></span>
+<span><span class="co">## May 1998 18.58232 -0.01916623  0.2885088 -2.0500556 -2.8254806 -5.0255618</span></span>
+<span><span class="co">## Jun 1998 18.56316 -0.01920802  1.9920043  0.2885088 -2.0500556 -2.8254806</span></span>
 <span><span class="co">##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10</span></span>
 <span><span class="co">## Jan 1998  1.6287761  4.9406562  2.4939170  1.9920043  0.2885088  -2.0500556</span></span>
 <span><span class="co">## Feb 1998  0.9561047  1.6287761  4.9406562  2.4939170  1.9920043   0.2885088</span></span>
-<span><span class="co">## Mar 1998  0.5624220  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043</span></span>
-<span><span class="co">## Apr 1998 -0.9189075  0.5624220  0.9561047  1.6287761  4.9406562   2.4939170</span></span>
-<span><span class="co">## May 1998 -2.0423835 -0.9189075  0.5624220  0.9561047  1.6287761   4.9406562</span></span>
-<span><span class="co">## Jun 1998 -5.0255618 -2.0423835 -0.9189075  0.5624220  0.9561047   1.6287761</span></span>
+<span><span class="co">## Mar 1998  0.5624221  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043</span></span>
+<span><span class="co">## Apr 1998 -0.9189076  0.5624221  0.9561047  1.6287761  4.9406562   2.4939170</span></span>
+<span><span class="co">## May 1998 -2.0423835 -0.9189076  0.5624221  0.9561047  1.6287761   4.9406562</span></span>
+<span><span class="co">## Jun 1998 -5.0255618 -2.0423835 -0.9189076  0.5624221  0.9561047   1.6287761</span></span>
 <span><span class="co">##          sea_dummy11     arima1      arima2</span></span>
-<span><span class="co">## Jan 1998  -2.8254806 -0.2729565 -0.01238173</span></span>
-<span><span class="co">## Feb 1998  -2.0500556  0.1645898 -0.02028052</span></span>
-<span><span class="co">## Mar 1998   0.2885088  0.4780657  0.01222893</span></span>
-<span><span class="co">## Apr 1998   1.9920043  0.1615218  0.03552002</span></span>
-<span><span class="co">## May 1998   2.4939170  0.7484155  0.01200098</span></span>
-<span><span class="co">## Jun 1998   4.9406562  1.0843954  0.05560686</span></span></code></pre>
+<span><span class="co">## Jan 1998  -2.8254806 -0.2729565 -0.01238172</span></span>
+<span><span class="co">## Feb 1998  -2.0500556  0.1645899 -0.02028051</span></span>
+<span><span class="co">## Mar 1998   0.2885088  0.4780659  0.01222893</span></span>
+<span><span class="co">## Apr 1998   1.9920043  0.1615217  0.03552000</span></span>
+<span><span class="co">## May 1998   2.4939170  0.7484156  0.01200096</span></span>
+<span><span class="co">## Jun 1998   4.9406562  1.0843956  0.05560682</span></span></code></pre>
 <p>For routine use, helper functions extract individual components as
 <code>ts</code> objects with the original time index. The level
 component represents the estimated long-term temperature level, while
@@ -815,15 +815,15 @@ without exogenous variables.</p>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.05517486 </span></span>
-<span><span class="co">##   State (Q trend): 4.945287e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0001859976 </span></span>
-<span><span class="co">##   State (Q ar): 0.1497545 </span></span>
+<span><span class="co">##   Observation (H): 0.05517483 </span></span>
+<span><span class="co">##   State (Q trend): 4.94528e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.0001859974 </span></span>
+<span><span class="co">##   State (Q ar): 0.1497546 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 2 </span></span>
 <span><span class="co">##   Coefficient of AR1: 0.655325 </span></span>
-<span><span class="co">##   Coefficient of AR2: 0.07429946</span></span></code></pre>
+<span><span class="co">##   Coefficient of AR2: 0.0742994</span></span></code></pre>
 <p>This keeps the comparison focused on the additional information
 introduced by the simulated Kuroshio variables.</p>
 </div>
@@ -893,20 +893,20 @@ supplied through <code>exo_data</code>.</p>
 <span><span class="co">##   Converged      : TRUE </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Variance parameters:</span></span>
-<span><span class="co">##   Observation (H): 0.02922748 </span></span>
-<span><span class="co">##   State (Q trend): 4.146963e-06 </span></span>
-<span><span class="co">##   State (Q season): 0.0006867528 </span></span>
-<span><span class="co">##   State (Q ar): 0.1157466 </span></span>
+<span><span class="co">##   Observation (H): 0.02922767 </span></span>
+<span><span class="co">##   State (Q trend): 4.146953e-06 </span></span>
+<span><span class="co">##   State (Q season): 0.000686752 </span></span>
+<span><span class="co">##   State (Q ar): 0.1157463 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Components of auto-regression:</span></span>
 <span><span class="co">##   Order of AR: 2 </span></span>
-<span><span class="co">##   Coefficient of AR1: 0.803867 </span></span>
-<span><span class="co">##   Coefficient of AR2: -0.1059014 </span></span>
+<span><span class="co">##   Coefficient of AR1: 0.8038683 </span></span>
+<span><span class="co">##   Coefficient of AR2: -0.1059025 </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Exogenous variable    kuroshio_a distance </span></span>
-<span><span class="co">## Estimated coefficient     0.5079595 -0.00707018 </span></span>
+<span><span class="co">## Estimated coefficient     0.5079594 -0.00707018 </span></span>
 <span><span class="co">## Lower CI  0.1635527 -0.008465811 </span></span>
-<span><span class="co">## Upper CI  0.8523663 -0.005674548</span></span></code></pre>
+<span><span class="co">## Upper CI  0.8523662 -0.005674548</span></span></code></pre>
 <div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">resid_with</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_tempssm_residuals.html">get_tempssm_residuals</a></span><span class="op">(</span><span class="va">res_with</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_tempssm_residuals.html">plot_tempssm_residuals</a></span><span class="op">(</span><span class="va">resid_with</span><span class="op">)</span></span></code></pre></div>
@@ -929,7 +929,7 @@ variables.</p>
 <div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">exo_coef</span></span></code></pre></div>
 <pre><code><span><span class="co">##     Variable Coefficient          lwr          upr</span></span>
-<span><span class="co">## 1 kuroshio_a  0.50795948  0.163552654  0.852366306</span></span>
+<span><span class="co">## 1 kuroshio_a  0.50795945  0.163552663  0.852366229</span></span>
 <span><span class="co">## 2   distance -0.00707018 -0.008465811 -0.005674548</span></span></code></pre>
 <p>The coefficient table summarizes the estimated association between
 SST and each simulated Kuroshio variable after accounting for the latent
@@ -1219,9 +1219,9 @@ guarantee of operational forecast improvement.</p>
 <td align="right">12</td>
 <td align="right">12</td>
 <td align="right">1</td>
-<td align="right">0.5346915</td>
+<td align="right">0.5346914</td>
 <td align="right">0.3120579</td>
-<td align="right">0.7954259</td>
+<td align="right">0.7954258</td>
 </tr>
 <tr class="even">
 <td align="left">With</td>
