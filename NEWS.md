@@ -1,3 +1,8 @@
+# tempssm 0.3.2
+
+* Maintenance update for co-author review, with minor refinements to
+  documentation, examples, and diagnostic workflows.
+
 # tempssm 0.3.1
 
 * Updated manuals and examples around simulated SST datasets, AR-order
