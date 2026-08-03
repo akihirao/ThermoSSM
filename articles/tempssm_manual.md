@@ -249,15 +249,15 @@ summary(res_base)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.05517486 
-    ##   State (Q trend): 4.945287e-06 
-    ##   State (Q season): 0.0001859976 
-    ##   State (Q ar): 0.1497545 
+    ##   Observation (H): 0.05517483 
+    ##   State (Q trend): 4.94528e-06 
+    ##   State (Q season): 0.0001859974 
+    ##   State (Q ar): 0.1497546 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 2 
     ##   Coefficient of AR1: 0.655325 
-    ##   Coefficient of AR2: 0.07429946
+    ##   Coefficient of AR2: 0.0742994
 
 From the summary output, confirm that the model has converged
 (`Converged: TRUE`). The output also reports the number of parameters
@@ -508,9 +508,9 @@ summary(res_ar1)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.07496413 
-    ##   State (Q trend): 4.937123e-06 
-    ##   State (Q season): 0.0001763536 
+    ##   Observation (H): 0.07496414 
+    ##   State (Q trend): 4.937125e-06 
+    ##   State (Q season): 0.0001763537 
     ##   State (Q ar): 0.1202156 
     ## 
     ## Components of auto-regression:
@@ -561,26 +561,26 @@ head(alpha_hat)
 ```
 
     ##             level       slope sea_dummy1 sea_dummy2 sea_dummy3 sea_dummy4
-    ## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189075  0.5624220  0.9561047
-    ## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189075  0.5624220
-    ## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189075
+    ## Jan 1998 18.65873 -0.01907585 -2.0423835 -0.9189076  0.5624221  0.9561047
+    ## Feb 1998 18.63966 -0.01908960 -5.0255618 -2.0423835 -0.9189076  0.5624221
+    ## Mar 1998 18.62057 -0.01911339 -2.8254806 -5.0255618 -2.0423835 -0.9189076
     ## Apr 1998 18.60145 -0.01913228 -2.0500556 -2.8254806 -5.0255618 -2.0423835
-    ## May 1998 18.58232 -0.01916624  0.2885088 -2.0500556 -2.8254806 -5.0255618
-    ## Jun 1998 18.56316 -0.01920803  1.9920043  0.2885088 -2.0500556 -2.8254806
+    ## May 1998 18.58232 -0.01916623  0.2885088 -2.0500556 -2.8254806 -5.0255618
+    ## Jun 1998 18.56316 -0.01920802  1.9920043  0.2885088 -2.0500556 -2.8254806
     ##          sea_dummy5 sea_dummy6 sea_dummy7 sea_dummy8 sea_dummy9 sea_dummy10
     ## Jan 1998  1.6287761  4.9406562  2.4939170  1.9920043  0.2885088  -2.0500556
     ## Feb 1998  0.9561047  1.6287761  4.9406562  2.4939170  1.9920043   0.2885088
-    ## Mar 1998  0.5624220  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043
-    ## Apr 1998 -0.9189075  0.5624220  0.9561047  1.6287761  4.9406562   2.4939170
-    ## May 1998 -2.0423835 -0.9189075  0.5624220  0.9561047  1.6287761   4.9406562
-    ## Jun 1998 -5.0255618 -2.0423835 -0.9189075  0.5624220  0.9561047   1.6287761
+    ## Mar 1998  0.5624221  0.9561047  1.6287761  4.9406562  2.4939170   1.9920043
+    ## Apr 1998 -0.9189076  0.5624221  0.9561047  1.6287761  4.9406562   2.4939170
+    ## May 1998 -2.0423835 -0.9189076  0.5624221  0.9561047  1.6287761   4.9406562
+    ## Jun 1998 -5.0255618 -2.0423835 -0.9189076  0.5624221  0.9561047   1.6287761
     ##          sea_dummy11     arima1      arima2
-    ## Jan 1998  -2.8254806 -0.2729565 -0.01238173
-    ## Feb 1998  -2.0500556  0.1645898 -0.02028052
-    ## Mar 1998   0.2885088  0.4780657  0.01222893
-    ## Apr 1998   1.9920043  0.1615218  0.03552002
-    ## May 1998   2.4939170  0.7484155  0.01200098
-    ## Jun 1998   4.9406562  1.0843954  0.05560686
+    ## Jan 1998  -2.8254806 -0.2729565 -0.01238172
+    ## Feb 1998  -2.0500556  0.1645899 -0.02028051
+    ## Mar 1998   0.2885088  0.4780659  0.01222893
+    ## Apr 1998   1.9920043  0.1615217  0.03552000
+    ## May 1998   2.4939170  0.7484156  0.01200096
+    ## Jun 1998   4.9406562  1.0843956  0.05560682
 
 For routine use, helper functions extract individual components as `ts`
 objects with the original time index. The level component represents the
@@ -863,15 +863,15 @@ summary(res_without)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.05517486 
-    ##   State (Q trend): 4.945287e-06 
-    ##   State (Q season): 0.0001859976 
-    ##   State (Q ar): 0.1497545 
+    ##   Observation (H): 0.05517483 
+    ##   State (Q trend): 4.94528e-06 
+    ##   State (Q season): 0.0001859974 
+    ##   State (Q ar): 0.1497546 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 2 
     ##   Coefficient of AR1: 0.655325 
-    ##   Coefficient of AR2: 0.07429946
+    ##   Coefficient of AR2: 0.0742994
 
 This keeps the comparison focused on the additional information
 introduced by the simulated Kuroshio variables.
@@ -968,20 +968,20 @@ summary(res_with)
     ##   Converged      : TRUE 
     ## 
     ## Variance parameters:
-    ##   Observation (H): 0.02922748 
-    ##   State (Q trend): 4.146963e-06 
-    ##   State (Q season): 0.0006867528 
-    ##   State (Q ar): 0.1157466 
+    ##   Observation (H): 0.02922767 
+    ##   State (Q trend): 4.146953e-06 
+    ##   State (Q season): 0.000686752 
+    ##   State (Q ar): 0.1157463 
     ## 
     ## Components of auto-regression:
     ##   Order of AR: 2 
-    ##   Coefficient of AR1: 0.803867 
-    ##   Coefficient of AR2: -0.1059014 
+    ##   Coefficient of AR1: 0.8038683 
+    ##   Coefficient of AR2: -0.1059025 
     ## 
     ## Exogenous variable    kuroshio_a distance 
-    ## Estimated coefficient     0.5079595 -0.00707018 
+    ## Estimated coefficient     0.5079594 -0.00707018 
     ## Lower CI  0.1635527 -0.008465811 
-    ## Upper CI  0.8523663 -0.005674548
+    ## Upper CI  0.8523662 -0.005674548
 
 ``` r
 
@@ -1017,7 +1017,7 @@ exo_coef
 ```
 
     ##     Variable Coefficient          lwr          upr
-    ## 1 kuroshio_a  0.50795948  0.163552654  0.852366306
+    ## 1 kuroshio_a  0.50795945  0.163552663  0.852366229
     ## 2   distance -0.00707018 -0.008465811 -0.005674548
 
 The coefficient table summarizes the estimated association between SST
@@ -1329,7 +1329,7 @@ cv_comparison %>% knitr::kable()
 
 | model | n_folds | converged_n | converged_rate | mean_MAE | mean_MASE_naive | mean_MASE_seasonal |
 |:---|---:|---:|---:|---:|---:|---:|
-| Without | 12 | 12 | 1 | 0.5346915 | 0.3120579 | 0.7954259 |
+| Without | 12 | 12 | 1 | 0.5346914 | 0.3120579 | 0.7954258 |
 | With | 12 | 12 | 1 | 0.5136672 | 0.2998310 | 0.7708534 |
 
 ``` r
