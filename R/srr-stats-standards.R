@@ -244,7 +244,7 @@
 #' `y_test` for observed held-out values and `y_pred` for model forecasts.
 #' The `@return` documentation for `ts_cv_run_fold()` describes these elements.
 #' 
-#' @srrstats {TS5.5} `plot_temp_dev()` provides a `connect_missing` option
+#' @srrstats {TS5.5} `plot_temp_anomaly()` provides a `connect_missing` option
 #' controlling how missing values are drawn. The default
 #' `connect_missing = FALSE` preserves explicit missing values in the plotting
 #' data, so line segments are broken at gaps. Setting

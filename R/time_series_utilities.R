@@ -103,7 +103,7 @@
 #' time-series class for modelling and related utilities. Core functions such
 #' as `tempssm()`, `ts_train_test_split()`, `trim_ts_overlap()`,
 #' `split_multi_ts()`, `compute_monthly_climatology()`,
-#' `compute_temp_anomaly()`, and `plot_temp_dev()` validate that inputs inherit
+#' `compute_temp_anomaly()`, and `plot_temp_anomaly()` validate that inputs inherit
 #' from class `ts` and reject generic non-time-series inputs. Data-frame and
 #' CSV inputs are accepted only by dedicated conversion utilities, which return
 #' explicit `ts` objects and are not used as generic substitutes for

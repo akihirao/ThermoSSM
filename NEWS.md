@@ -2,6 +2,8 @@
 
 * Maintenance update for co-author review, with minor refinements to
   documentation, examples, and diagnostic workflows.
+* Added `plot_temp_anomaly()` as the preferred name for temperature anomaly
+  plots while retaining `plot_temp_dev()` for backward compatibility.
 
 # tempssm 0.3.1
 

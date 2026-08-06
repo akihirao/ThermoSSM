@@ -100,7 +100,7 @@
 #' temperature data and `.tempssm_check_exo_ts()` to require aligned base R
 #' `ts` objects for exogenous variables. Time-series utilities such as
 #' `trim_ts_overlap()`, `split_multi_ts()`, `compute_monthly_climatology()`,
-#' `compute_temp_anomaly()`, and `plot_temp_dev()` also reject non-`ts`
+#' `compute_temp_anomaly()`, and `plot_temp_anomaly()` also reject non-`ts`
 #' inputs. The core modelling path and seasonal climatology helpers accept
 #' integer seasonal frequencies greater than 1, not only monthly
 #' `frequency = 12` data. Daily SST conversion routines that operate on

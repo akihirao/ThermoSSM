@@ -61,7 +61,7 @@ test_that("combined plot interfaces do not emit scale-selection messages", {
 
 test_that("temperature anomaly plot uses a numeric time axis silently", {
   expect_no_message(
-    anomaly_plot <- plot_temp_dev(temp_ts_test)
+    anomaly_plot <- plot_temp_anomaly(temp_ts_test)
   )
   expect_type(anomaly_plot$data$time, "double")
   expect_false(inherits(anomaly_plot$data$time, "ts"))

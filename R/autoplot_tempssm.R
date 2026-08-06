@@ -34,7 +34,7 @@
 #' `autoplot_drift()`, `autoplot_season()`, `autoplot_ar()`,
 #' `autoplot.tempssm()`, `plot_tempssm_components()`, and `plot.tempssm()` map
 #' the continuous `time()` index of the fitted `ts` series to the x-axis.
-#' `plot_temp_dev()` also labels its horizontal axis as `Time (year)`. Unit
+#' `plot_temp_anomaly()` also labels its horizontal axis as `Time (year)`. Unit
 #' tests check these axis labels.
 #'
 #' @srrstats {TS5.2} Time is placed on the horizontal axis by default.
@@ -43,11 +43,11 @@
 #' `plot.tempssm()` method delegates to `plot_tempssm_components()`, which
 #' shares the same plotting implementation as `autoplot.tempssm()`, so the
 #' same horizontal time-axis convention is used by all component-plot
-#' interfaces. `plot_temp_dev()` maps the anomaly time index to the horizontal
+#' interfaces. `plot_temp_anomaly()` maps the anomaly time index to the horizontal
 #' axis, with that axis labelled as `Time (year)`.
 #'
 #' @srrstats {TS5.3} Temporal plots print the time unit on the horizontal
-#' axis by default. Component plots and `plot_temp_dev()` use
+#' axis by default. Component plots and `plot_temp_anomaly()` use
 #' `Time (year)`, reflecting the continuous year scale returned by
 #' `time(<ts>)` for the package's seasonal temperature time series.
 #'
