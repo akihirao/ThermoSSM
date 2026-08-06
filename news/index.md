@@ -4,6 +4,11 @@
 
 - Maintenance update for co-author review, with minor refinements to
   documentation, examples, and diagnostic workflows.
+- Added
+  [`plot_temp_anomaly()`](https://akihirao.github.io/tempssm/reference/plot_temp_anomaly.md)
+  as the preferred name for temperature anomaly plots while retaining
+  [`plot_temp_dev()`](https://akihirao.github.io/tempssm/reference/plot_temp_anomaly.md)
+  for backward compatibility.
 
 ## tempssm 0.3.1
 

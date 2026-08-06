@@ -3,12 +3,17 @@
 Plots a temperature time series together with its corresponding
 temperature anomalies.
 
+`plot_temp_dev()` is retained for backward compatibility. New code
+should use `plot_temp_anomaly()`.
+
 The anomalies are computed by subtracting the long-term seasonal mean
 for each period in the seasonal cycle from the observed temperature.
 
 ## Usage
 
 ``` r
+plot_temp_anomaly(ts, connect_missing = FALSE)
+
 plot_temp_dev(ts, connect_missing = FALSE)
 ```
 
@@ -42,7 +47,7 @@ long-term mean for each calendar month.
 ``` r
 if (FALSE) { # \dontrun{
 data(sst_niigata)
-p <- plot_temp_dev(sst_niigata)
+p <- plot_temp_anomaly(sst_niigata)
 print(p)
 } # }
 ```

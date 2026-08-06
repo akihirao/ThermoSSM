@@ -96,7 +96,8 @@
 - [`plot(`*`<tempssm>`*`)`](https://akihirao.github.io/tempssm/reference/plot.tempssm.md)
   : Plot method for tempssm objects
 
-- [`plot_temp_dev()`](https://akihirao.github.io/tempssm/reference/plot_temp_dev.md)
+- [`plot_temp_anomaly()`](https://akihirao.github.io/tempssm/reference/plot_temp_anomaly.md)
+  [`plot_temp_dev()`](https://akihirao.github.io/tempssm/reference/plot_temp_anomaly.md)
   : Plot temperature anomalies
 
 - [`plot_tempssm_components()`](https://akihirao.github.io/tempssm/reference/plot_tempssm_components.md)
