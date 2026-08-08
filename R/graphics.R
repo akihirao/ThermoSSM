@@ -536,9 +536,6 @@ autoplot_ar <- function(res,
 #' Plots a temperature time series together with its corresponding
 #' temperature anomalies.
 #'
-#' `plot_temp_dev()` is retained for backward compatibility. New code should
-#' use `plot_temp_anomaly()`.
-#'
 #' The anomalies are computed by subtracting the long-term seasonal mean
 #' for each period in the seasonal cycle from the observed temperature.
 #'
@@ -599,11 +596,4 @@ plot_temp_anomaly <- function(ts, connect_missing = FALSE) {
     ggplot2::ggtitle("Temperature anomalies")
 
   return(dev_plot)
-}
-
-
-#' @rdname plot_temp_anomaly
-#' @export
-plot_temp_dev <- function(ts, connect_missing = FALSE) {
-  plot_temp_anomaly(ts = ts, connect_missing = connect_missing)
 }

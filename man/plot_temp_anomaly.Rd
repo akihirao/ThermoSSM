@@ -2,12 +2,9 @@
 % Please edit documentation in R/graphics.R
 \name{plot_temp_anomaly}
 \alias{plot_temp_anomaly}
-\alias{plot_temp_dev}
 \title{Plot temperature anomalies}
 \usage{
 plot_temp_anomaly(ts, connect_missing = FALSE)
-
-plot_temp_dev(ts, connect_missing = FALSE)
 }
 \arguments{
 \item{ts}{A univariate time series object of class \code{ts} with an integer
@@ -24,9 +21,6 @@ A \code{ggplot2} plot object showing the temperature anomaly time series.
 \description{
 Plots a temperature time series together with its corresponding
 temperature anomalies.
-
-\code{plot_temp_dev()} is retained for backward compatibility. New code should
-use \code{plot_temp_anomaly()}.
 
 The anomalies are computed by subtracting the long-term seasonal mean
 for each period in the seasonal cycle from the observed temperature.

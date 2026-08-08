@@ -67,15 +67,3 @@ test_that("plot_temp_anomaly checks connect_missing", {
     "`connect_missing` must be a single logical value"
   )
 })
-
-
-test_that("plot_temp_dev remains a backward-compatible wrapper", {
-  temp_ts <- ts(rnorm(16), frequency = 4)
-
-  p_old <- plot_temp_dev(temp_ts)
-  p_new <- plot_temp_anomaly(temp_ts)
-
-  expect_s3_class(p_old, "ggplot")
-  expect_identical(p_old$data, p_new$data)
-  expect_identical(p_old$labels$title, p_new$labels$title)
-})
